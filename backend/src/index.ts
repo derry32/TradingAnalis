@@ -1,0 +1,101 @@
+import express from 'express';
+import cors from 'cors';
+import { config } from './config';
+import { MarketDataService } from './services/marketDataService';
+import { TechnicalAnalysis } from './services/technicalAnalysis';
+import { NewsService } from './services/newsService';
+import { SentimentAnalysis, SentimentResult } from './services/sentimentAnalysis';
+import { SignalGenerator, Signal } from './services/signalGenerator';
+import { TelegramService } from './services/telegramBot';
+import { insertSignal, fetchRecentSignals } from './services/database';
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const marketData = new MarketDataService();
+const technical = new TechnicalAnalysis();
+const news = new NewsService();
+const sentiment = new SentimentAnalysis();
+const signalGenerator = new SignalGenerator();
+const telegramBot = new TelegramService();
+
+let latestSentiment: SentimentResult | null = null;
+
+// 1. Initial Sentiment Fetching
+async function updateSentiment() {
+  try {
+    const articles = await news.fetchLatestNews();
+    const combinedText = articles.map(a => `${a.title}. ${a.description}`).join(' ');
+    latestSentiment = await sentiment.analyze(combinedText);
+    console.log(`[Main] Updated Sentiment: ${latestSentiment.sentiment} (Score: ${latestSentiment.score})`);
+  } catch (e) {
+    console.error('[Main] Failed to update sentiment', e);
+  }
+}
+
+updateSentiment();
+setInterval(updateSentiment, 60 * 60 * 1000);
+
+// 2. Wire Market Data
+marketData.setOnCandleClosed((candle) => {
+  technical.addCandle(candle);
+  const techResult = technical.analyze();
+  
+  if (latestSentiment && techResult !== 'NEUTRAL') {
+    const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, candle.close, latestSentiment.score);
+    if (signal) {
+      insertSignal(signal); // Save to Database
+      telegramBot.sendSignal(signal);
+    }
+  }
+});
+
+marketData.start();
+
+function getCurrentSession() {
+  const currentHourUTC = new Date().getUTCHours();
+  const currentHourWIB = (currentHourUTC + 7) % 24;
+  
+  if (currentHourWIB >= 19 && currentHourWIB <= 23) return 'GOLDEN OVERLAP';
+  if (currentHourWIB >= 19 || currentHourWIB < 4) return 'NEW YORK';
+  if (currentHourWIB >= 14 && currentHourWIB < 19) return 'LONDON';
+  if (currentHourWIB >= 6 && currentHourWIB < 14) return 'TOKYO';
+  return 'CLOSING';
+}
+
+// 3. API Endpoints
+app.get('/api/status', (req, res) => {
+  res.json({
+    technicalStatus: technical.analyze(),
+    sentimentStatus: latestSentiment,
+    activeSession: getCurrentSession(),
+    config: {
+      timeframe: config.TIMEFRAME_MINUTES,
+      rr: config.RISK_REWARD_RATIO,
+      sl: config.STOP_LOSS_PIPS
+    }
+  });
+});
+
+app.get('/api/signals', async (req, res) => {
+  const signals = await fetchRecentSignals(50);
+  res.json(signals);
+});
+
+app.get('/api/candles', (req, res) => {
+  const candles = marketData.getCandles().map(c => ({
+    time: Math.floor(c.time / 1000), // convert to seconds for lightweight-charts
+    open: c.open,
+    high: c.high,
+    low: c.low,
+    close: c.close,
+    volume: c.volume
+  }));
+  res.json(candles);
+});
+
+app.listen(config.PORT, () => {
+  console.log(`[Backend] Server running on port ${config.PORT}`);
+  console.log(`[Backend] Config: ${config.TIMEFRAME_MINUTES}M Timeframe, 1:${config.RISK_REWARD_RATIO} Risk/Reward, ${config.STOP_LOSS_PIPS} pips max SL.`);
+});
