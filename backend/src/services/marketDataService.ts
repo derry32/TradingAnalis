@@ -139,38 +139,54 @@ export class MarketDataService {
 
   private async fetchHistoricalCandles() {
     console.log('[MarketData] Fetching historical data...');
-    // In a real app we would fetch historical data for each timeframe.
-    // For MVP, we will just generate fallbacks.
-    this.generateFallbackCandles();
+    let realCurrentPrice = 2400.00;
+    try {
+      const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=OANDA:XAU_USD&token=${config.FINNHUB_API_KEY}`);
+      const json = await res.json();
+      if (json && json.c) {
+        realCurrentPrice = json.c;
+        console.log(`[MarketData] Fetched real current price for anchor: ${realCurrentPrice}`);
+      }
+    } catch (e) {
+      console.warn('[MarketData] Failed to fetch real price for anchor, using default 2400');
+    }
+
+    this.generateFallbackCandles(realCurrentPrice);
   }
 
-  private generateFallbackCandles() {
+  private generateFallbackCandles(anchorPrice: number = 2400.00) {
     console.log('[MarketData] Generating dummy historical candles for all timeframes...');
     const now = Date.now();
-    let basePrice = 2400.00;
 
     // Generate 500 H4 candles to bootstrap the engine properly
     const m5PeriodMs = 5 * 60 * 1000;
-    const startMs = Math.floor(now / m5PeriodMs) * m5PeriodMs - (500 * 48 * m5PeriodMs); // 500 H4 candles * 48 M5 per H4
+    const startMs = Math.floor(now / m5PeriodMs) * m5PeriodMs - (500 * 48 * m5PeriodMs); 
     
-    // Actually, feeding 24,000 candles takes a split second in JS.
-    let currentPrice = 2300;
-    for (let i = 0; i < 24000; i++) {
-      const change = (Math.random() - 0.48) * 2; // Slight bullish bias
-      currentPrice += change;
+    // Generate an array of random changes, sum them up, then work backwards from the anchor price
+    const numCandles = 24000;
+    const changes = new Float32Array(numCandles);
+    let totalChange = 0;
+    for (let i = 0; i < numCandles; i++) {
+      changes[i] = (Math.random() - 0.5) * 1.5; // Neutral walk, max $1.5 per M5
+      totalChange += changes[i];
+    }
+
+    let currentPrice = anchorPrice - totalChange; // Start price so that it ends at anchorPrice
+
+    for (let i = 0; i < numCandles; i++) {
+      currentPrice += changes[i];
       const c: OHLCV = {
         time: startMs + (i * m5PeriodMs),
-        open: currentPrice - 0.5,
-        high: currentPrice + 2,
-        low: currentPrice - 2,
+        open: currentPrice - 0.2,
+        high: currentPrice + 0.8,
+        low: currentPrice - 0.8,
         close: currentPrice,
         volume: 100,
         isDummy: true
       };
-      // Feed to M5, which cascades to H1 and H4
       this.m5.processCandle(c); 
     }
-    console.log(`[MarketData] Bootstrap done. H4 candles: ${this.h4.allCandles.length}, H1 candles: ${this.h1.allCandles.length}`);
+    console.log(`[MarketData] Bootstrap done. H4 candles: ${this.h4.allCandles.length}, H1: ${this.h1.allCandles.length}. Final price: ${currentPrice.toFixed(2)}`);
   }
 
   private startSimulation() {
