@@ -18,7 +18,8 @@ export default function Home() {
     // Fetch data from backend
     const fetchData = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+        // Gunakan relative path ('') jika di production dengan Caddy, atau localhost untuk testing
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
         const statusRes = await axios.get(`${apiUrl}/api/status`);
         setStatus(statusRes.data);
         
