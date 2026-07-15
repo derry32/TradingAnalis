@@ -17,46 +17,52 @@ export class SignalGenerator {
     currentPrice: number,
     sentimentScore: number
   ): Signal | null {
-    // SOP Check
-    if (analysis.trendH4 === 'NEUTRAL') return null;
-
     let tradeType: 'BUY' | 'SELL' | null = null;
     let stopLoss = 0;
+    let strategyName = '';
 
-    if (analysis.trendH4 === 'BULLISH' && analysis.isRetracedH1 && analysis.patternM5.includes('BULLISH')) {
-      tradeType = 'BUY';
-      stopLoss = analysis.closestSwingLowM5 - 0.5; // buffer
-    }
-
-    if (analysis.trendH4 === 'BEARISH' && analysis.isRetracedH1 && analysis.patternM5.includes('BEARISH')) {
-      tradeType = 'SELL';
-      stopLoss = analysis.closestSwingHighM5 + 0.5; // buffer
-    }
-
-    // Pin bar logic
-    if (analysis.trendH4 === 'BULLISH' && analysis.isRetracedH1 && analysis.patternM5 === 'PIN_BAR') {
+    // Skenario 1: Momentum (Tren H4 Jelas, Abaikan Koreksi H1 jika M5 kuat)
+    if (analysis.trendH4 === 'BULLISH' && (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR')) {
       tradeType = 'BUY';
       stopLoss = analysis.closestSwingLowM5 - 0.5;
-    }
-    
-    if (analysis.trendH4 === 'BEARISH' && analysis.isRetracedH1 && analysis.patternM5 === 'PIN_BAR') {
+      strategyName = 'H4 Momentum';
+    } 
+    else if (analysis.trendH4 === 'BEARISH' && (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR')) {
       tradeType = 'SELL';
       stopLoss = analysis.closestSwingHighM5 + 0.5;
+      strategyName = 'H4 Momentum';
+    }
+    // Skenario 2: Scalping H1 (Jika H4 Sideways, gunakan Tren H1)
+    else if (analysis.trendH4 === 'NEUTRAL' && analysis.trendH1 === 'BULLISH' && (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR')) {
+      tradeType = 'BUY';
+      stopLoss = analysis.closestSwingLowM5 - 0.5;
+      strategyName = 'H1 Scalping';
+    }
+    else if (analysis.trendH4 === 'NEUTRAL' && analysis.trendH1 === 'BEARISH' && (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR')) {
+      tradeType = 'SELL';
+      stopLoss = analysis.closestSwingHighM5 + 0.5;
+      strategyName = 'H1 Scalping';
+    }
+    // Skenario 3: News Trading (Jika Teknikal Sideways, gunakan Sentimen + M5 Pattern)
+    else if (analysis.trendH4 === 'NEUTRAL' && analysis.trendH1 === 'NEUTRAL' && sentiment === 'BULLISH' && sentimentScore >= 7 && (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR')) {
+      tradeType = 'BUY';
+      stopLoss = analysis.closestSwingLowM5 - 0.5;
+      strategyName = 'News Trading';
+    }
+    else if (analysis.trendH4 === 'NEUTRAL' && analysis.trendH1 === 'NEUTRAL' && sentiment === 'BEARISH' && sentimentScore >= 7 && (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR')) {
+      tradeType = 'SELL';
+      stopLoss = analysis.closestSwingHighM5 + 0.5;
+      strategyName = 'News Trading';
     }
 
-    // Optional: Filter with sentiment if needed, but SOP relies purely on PA. 
-    // We will still include sentiment in strength scoring.
     if (!tradeType) return null;
 
-    // Check risk distance
+    // Check risk distance (Hapus batas $10 absolut untuk support akun Cent)
     const riskAbsolute = Math.abs(currentPrice - stopLoss);
-    // Limit max SL to $10 absolute for XAUUSD to prevent account blowout
-    if (riskAbsolute > 10) {
-      console.log(`[SignalGenerator] Ignored signal. SL distance too large: $${riskAbsolute.toFixed(2)}`);
-      return null;
-    }
     
-    if (riskAbsolute < 0.5) return null; // Invalid SL too tight
+    // Invalid SL terlalu ketat (mencegah spread hunting)
+    if (riskAbsolute < 0.3) return null; 
+
 
     const currentHourUTC = new Date().getUTCHours();
     const currentHourWIB = (currentHourUTC + 7) % 24;
@@ -82,7 +88,7 @@ export class SignalGenerator {
       stopLoss,
       takeProfit,
       timestamp: new Date().toISOString(),
-      reason: `[${strength} PROBABILITY] (${sessionName}) SOP Valid: H4 ${analysis.trendH4}, H1 Pantulan Area, M5 ${patternName}. SL dinamis RR 1:${config.RISK_REWARD_RATIO}.`
+      reason: `[${strength} PROB] [${strategyName}] (${sessionName}) M5 ${patternName}. Strict SL Dinamis & TP berjenjang dengan metode baku RR 1:${config.RISK_REWARD_RATIO}.`
     };
   }
 }
