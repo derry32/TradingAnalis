@@ -34,7 +34,7 @@ export async function fetchRecentSignals(limit: number = 50) {
   const { data, error } = await supabase
     .from('signals')
     .select('*')
-    .order('timestamp', { ascending: true }) // Yang terlama dulu, baru terbaru di akhir
+    .order('timestamp', { ascending: false }) // Ambil yang paling baru
     .limit(limit);
 
   if (error) {

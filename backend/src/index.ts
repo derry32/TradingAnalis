@@ -37,13 +37,15 @@ async function updateSentiment() {
 updateSentiment();
 setInterval(updateSentiment, 60 * 60 * 1000);
 
+let latestTechResult: any = { trendH4: 'NEUTRAL' };
+
 // 2. Wire Market Data
-marketData.setOnCandleClosed((candle) => {
-  technical.addCandle(candle);
-  const techResult = technical.analyze();
+marketData.setOnM5Closed((data) => {
+  const techResult = technical.analyze(data);
+  latestTechResult = techResult;
   
-  if (latestSentiment && techResult !== 'NEUTRAL') {
-    const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, candle.close, latestSentiment.score);
+  if (latestSentiment && techResult.trendH4 !== 'NEUTRAL') {
+    const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, data.currentM5.close, latestSentiment.score);
     if (signal) {
       insertSignal(signal); // Save to Database
       telegramBot.sendSignal(signal);
@@ -66,10 +68,24 @@ function getCurrentSession() {
 
 // 3. API Endpoints
 app.get('/api/status', (req, res) => {
+  let analysisDetail = 'Menyiapkan mesin analisis...';
+  if (latestTechResult) {
+    if (latestTechResult.trendH4 === 'NEUTRAL') {
+      analysisDetail = 'Pasar sedang konsolidasi (H4 Neutral). Menunggu tren terkonfirmasi.';
+    } else if (!latestTechResult.isRetracedH1) {
+      analysisDetail = `Tren H4 ${latestTechResult.trendH4}. Menunggu harga mencapai area Pantulan (Support/Resistance) di H1.`;
+    } else if (latestTechResult.patternM5 === 'NONE') {
+      analysisDetail = `Harga di zona H1. Menunggu konfirmasi pola Candlestick (Engulfing/Pin Bar) di M5.`;
+    } else {
+      analysisDetail = `Pola ${latestTechResult.patternM5} terdeteksi! Memeriksa rasio Risk/Reward untuk validasi sinyal...`;
+    }
+  }
+
   res.json({
-    technicalStatus: technical.analyze(),
+    technicalStatus: latestTechResult.trendH4,
     sentimentStatus: latestSentiment,
     activeSession: getCurrentSession(),
+    analysisDetail,
     config: {
       timeframe: config.TIMEFRAME_MINUTES,
       rr: config.RISK_REWARD_RATIO,
