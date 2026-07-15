@@ -1,5 +1,5 @@
-# Gunakan image Node.js versi ringan
-FROM node:20-alpine
+# Gunakan image Node.js versi 22 (dibutuhkan oleh Supabase untuk fitur WebSocket native)
+FROM node:22-alpine
 
 # Set direktori kerja di dalam container
 WORKDIR /app
