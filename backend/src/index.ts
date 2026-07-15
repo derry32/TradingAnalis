@@ -71,13 +71,19 @@ app.get('/api/status', (req, res) => {
   let analysisDetail = 'Menyiapkan mesin analisis...';
   if (latestTechResult) {
     if (latestTechResult.trendH4 === 'NEUTRAL') {
-      analysisDetail = 'Pasar sedang konsolidasi (H4 Neutral). Menunggu tren terkonfirmasi.';
-    } else if (!latestTechResult.isRetracedH1) {
-      analysisDetail = `Tren H4 ${latestTechResult.trendH4}. Menunggu harga mencapai area Pantulan (Support/Resistance) di H1.`;
-    } else if (latestTechResult.patternM5 === 'NONE') {
-      analysisDetail = `Harga di zona H1. Menunggu konfirmasi pola Candlestick (Engulfing/Pin Bar) di M5.`;
+      if (latestTechResult.trendH1 !== 'NEUTRAL') {
+        analysisDetail = `Mode Agresif (Skenario 2). H4 Sideways, namun tren H1 ${latestTechResult.trendH1}. Mengincar peluang Scalping M5.`;
+      } else {
+        analysisDetail = `Konsolidasi Ekstrem (H4 & H1 Neutral). Menunggu momentum breakout atau dorongan Berita Fundamental (Skenario 3).`;
+      }
     } else {
-      analysisDetail = `Pola ${latestTechResult.patternM5} terdeteksi! Memeriksa rasio Risk/Reward untuk validasi sinyal...`;
+      if (!latestTechResult.isRetracedH1) {
+        analysisDetail = `Mode Momentum (Skenario 1). Tren H4 ${latestTechResult.trendH4}. Mengintai pola Engulfing/Pin Bar di M5.`;
+      } else if (latestTechResult.patternM5 === 'NONE') {
+        analysisDetail = `Harga memantul di zona H1! Menunggu konfirmasi pola pembalikan kuat di grafik M5.`;
+      } else {
+        analysisDetail = `Pola ${latestTechResult.patternM5} terdeteksi! Memeriksa rasio Risk/Reward 1:2 untuk finalisasi eksekusi...`;
+      }
     }
   }
 
