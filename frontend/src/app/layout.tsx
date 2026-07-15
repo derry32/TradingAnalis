@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aurum AI | Trading Platform",
+  title: "Trade Signal",
   description: "AI-Powered XAU/USD Price Action Trading Platform",
 };
 
