@@ -77,8 +77,12 @@ export class SignalGenerator {
     if (isAsianSession) sessionName = 'Sesi Asia';
     if (isGoldenOverlap) sessionName = 'Golden Overlap';
 
-    const tpDistance = riskAbsolute * config.RISK_REWARD_RATIO;
-    let takeProfit = tradeType === 'BUY' ? currentPrice + tpDistance : currentPrice - tpDistance;
+    // Calculate TP1 (1:2) and TP2 (1:3)
+    const tp1Distance = riskAbsolute * 2;
+    const tp2Distance = riskAbsolute * 3;
+    
+    let takeProfit1 = tradeType === 'BUY' ? currentPrice + tp1Distance : currentPrice - tp1Distance;
+    let takeProfit2 = tradeType === 'BUY' ? currentPrice + tp2Distance : currentPrice - tp2Distance;
 
     const patternName = analysis.patternM5.replace('_', ' ');
 
@@ -86,9 +90,9 @@ export class SignalGenerator {
       type: tradeType,
       entryPrice: currentPrice,
       stopLoss,
-      takeProfit,
+      takeProfit: takeProfit1, // TP1 sebagai TP utama di database
       timestamp: new Date().toISOString(),
-      reason: `[${strength} PROB] [${strategyName}] (${sessionName}) M5 ${patternName}. Strict SL Dinamis & TP berjenjang dengan metode baku RR 1:${config.RISK_REWARD_RATIO}.`
+      reason: `[${strength} PROB] [${strategyName}] (${sessionName}) M5 ${patternName}. Strict SL Dinamis. Target TP1: ${takeProfit1.toFixed(2)} (RR 1:2) & TP2: ${takeProfit2.toFixed(2)} (RR 1:3).`
     };
   }
 }
