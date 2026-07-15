@@ -87,8 +87,13 @@ app.get('/api/status', (req, res) => {
     }
   }
 
+  let activeTrend = latestTechResult ? latestTechResult.trendH4 : 'NEUTRAL';
+  if (activeTrend === 'NEUTRAL' && latestTechResult) {
+    activeTrend = latestTechResult.trendH1;
+  }
+
   res.json({
-    technicalStatus: latestTechResult.trendH4,
+    technicalStatus: activeTrend,
     sentimentStatus: latestSentiment,
     activeSession: getCurrentSession(),
     analysisDetail,
