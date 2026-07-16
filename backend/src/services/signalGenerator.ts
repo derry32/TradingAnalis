@@ -117,9 +117,11 @@ export class SignalGenerator {
     // Invalid SL terlalu ketat (mencegah spread hunting)
     if (riskAbsolute < 0.3) return null; 
 
-    // Calculate TP1 (1:2)
+    // Calculate TP1 (1:2) and TP2 (1:3)
     const tp1Distance = riskAbsolute * 2;
+    const tp2Distance = riskAbsolute * 3;
     let takeProfit = tradeType === 'BUY' ? currentPrice + tp1Distance : currentPrice - tp1Distance;
+    let takeProfit2 = tradeType === 'BUY' ? currentPrice + tp2Distance : currentPrice - tp2Distance;
 
     // Convert Score to Probability Label
     let probabilityLabel = '⭐ Low';
@@ -127,7 +129,7 @@ export class SignalGenerator {
     else if (score >= 80) probabilityLabel = '⭐⭐⭐⭐ High';
     else if (score >= 65) probabilityLabel = '⭐⭐⭐ Medium';
 
-    const reasonString = `[Agent Derry] ${probabilityLabel} (${score}% Confidence).\\nReasons:\\n${reasons.join('\\n')}`;
+    const reasonString = `[Agent Derry] ${probabilityLabel} (${score}% Confidence).\\nTarget TP1: ${takeProfit.toFixed(2)} (RR 1:2) | TP2: ${takeProfit2.toFixed(2)} (RR 1:3)\\nReasons:\\n${reasons.join('\\n')}`;
 
     return {
       type: tradeType,
