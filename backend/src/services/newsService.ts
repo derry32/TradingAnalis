@@ -21,7 +21,10 @@ export class NewsService {
 
   private async fetchNews() {
     try {
-      const response = await axios.get('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+      const response = await axios.get(
+        'https://nfs.faireconomy.media/ff_calendar_thisweek.json',
+        { timeout: 10000 }
+      );
       if (Array.isArray(response.data)) {
         this.newsCache = response.data;
         this.lastFetch = Date.now();
@@ -58,5 +61,23 @@ export class NewsService {
     const windowEnd = eventTime + (30 * 60 * 1000);
     
     return now >= windowStart && now <= windowEnd;
+  }
+
+  public async fetchLatestNews(): Promise<any[]> {
+    try {
+      // Import config dynamically to avoid circular dependencies if any, but let's just require it.
+      const { config } = require('../config');
+      const response = await axios.get(
+        `https://finnhub.io/api/v1/news?category=general&token=${config.FINNHUB_API_KEY}`,
+        { timeout: 10000 }
+      );
+      if (Array.isArray(response.data)) {
+        return response.data.slice(0, 5); // Return top 5 latest news
+      }
+      return [];
+    } catch (error: any) {
+      console.error(`[NewsService] Failed to fetch general news:`, error.message);
+      return [];
+    }
   }
 }
