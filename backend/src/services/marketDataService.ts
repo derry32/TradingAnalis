@@ -106,9 +106,10 @@ export class MarketDataService {
     this.onM5Closed = callback;
   }
 
+  private isBootstrapped = false;
+
   public async start() {
     if (config.FINNHUB_API_KEY) {
-      await this.fetchHistoricalCandles();
       this.connectFinnhub();
     } else {
       console.warn('[MarketData] No API Key found, starting Simulation Mode.');
@@ -128,6 +129,11 @@ export class MarketDataService {
         const parsed = JSON.parse(data.toString());
         if (parsed.type === 'trade') {
           parsed.data.forEach((trade: any) => {
+            if (!this.isBootstrapped) {
+              this.isBootstrapped = true;
+              console.log(`[MarketData] First tick received: ${trade.p}. Bootstrapping history...`);
+              this.generateFallbackCandles(trade.p);
+            }
             this.m1.processTick(trade.p, trade.v, trade.t);
           });
         }
@@ -135,23 +141,6 @@ export class MarketDataService {
         console.error('[MarketData] WebSocket Parse Error', e);
       }
     });
-  }
-
-  private async fetchHistoricalCandles() {
-    console.log('[MarketData] Fetching historical data...');
-    let realCurrentPrice = 2400.00;
-    try {
-      const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=OANDA:XAU_USD&token=${config.FINNHUB_API_KEY}`);
-      const json = await res.json();
-      if (json && json.c) {
-        realCurrentPrice = json.c;
-        console.log(`[MarketData] Fetched real current price for anchor: ${realCurrentPrice}`);
-      }
-    } catch (e) {
-      console.warn('[MarketData] Failed to fetch real price for anchor, using default 2400');
-    }
-
-    this.generateFallbackCandles(realCurrentPrice);
   }
 
   private generateFallbackCandles(anchorPrice: number = 2400.00) {
