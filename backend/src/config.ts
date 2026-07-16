@@ -5,6 +5,7 @@ export const config = {
   PORT: process.env.PORT || 3001,
   FINNHUB_API_KEY: process.env.FINNHUB_API_KEY || '',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
   TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
   TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || '',
   // Database
