@@ -119,10 +119,19 @@ export class SignalGenerator {
     const reasons = bestTrade.reasons;
 
     let stopLoss = 0;
+    const minDistance = 2.0; // Minimal $2 distance for SL on XAUUSD to avoid immediate stop out
     if (tradeType === 'BUY') {
       stopLoss = analysis.closestSwingLowM5 - 0.5;
+      // Ensure SL is strictly below Entry
+      if (stopLoss >= currentPrice - minDistance) {
+        stopLoss = currentPrice - minDistance;
+      }
     } else {
       stopLoss = analysis.closestSwingHighM5 + 0.5;
+      // Ensure SL is strictly above Entry
+      if (stopLoss <= currentPrice + minDistance) {
+        stopLoss = currentPrice + minDistance;
+      }
     }
 
     const riskAbsolute = Math.abs(currentPrice - stopLoss);
