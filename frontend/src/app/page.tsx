@@ -159,7 +159,7 @@ export default function Home() {
                       </div>
                     </div>
                     <p className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-700 whitespace-pre-line">
-                      {sig.reason}
+                      {sig.reason ? sig.reason.replace(/\\n/g, '\n') : ''}
                     </p>
                   </div>
                 );
