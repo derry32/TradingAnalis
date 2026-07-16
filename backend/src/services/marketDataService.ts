@@ -1,5 +1,7 @@
 import WebSocket from 'ws';
 import { config } from '../config';
+import fs from 'fs';
+import path from 'path';
 
 export interface OHLCV {
   time: number;
@@ -87,6 +89,7 @@ export class MarketDataService {
     this.m1.onCandleClosed = (c) => this.m5.processCandle(c);
     this.m5.onCandleClosed = (c) => {
       this.h1.processCandle(c);
+      this.saveHistory(); // Save real candles to disk whenever M5 closes
       
       if (this.onM5Closed && this.m5.currentCandle && this.h1.currentCandle && this.h4.currentCandle) {
         this.onM5Closed({
@@ -143,26 +146,71 @@ export class MarketDataService {
     });
   }
 
+  private getHistoryFilePath(): string {
+    const dataDir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    return path.join(dataDir, 'market_history.json');
+  }
+
+  private saveHistory() {
+    try {
+      const realCandles = this.m5.allCandles.filter(c => !c.isDummy);
+      if (realCandles.length > 0) {
+        fs.writeFileSync(this.getHistoryFilePath(), JSON.stringify(realCandles));
+        console.log(`[MarketData] Saved ${realCandles.length} real M5 candles to disk.`);
+      }
+    } catch (e) {
+      console.error('[MarketData] Failed to save history to disk', e);
+    }
+  }
+
+  private loadHistory(): OHLCV[] {
+    try {
+      const filePath = this.getHistoryFilePath();
+      if (fs.existsSync(filePath)) {
+        const data = fs.readFileSync(filePath, 'utf-8');
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          console.log(`[MarketData] Successfully loaded ${parsed.length} real M5 candles from disk.`);
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('[MarketData] Failed to load history from disk', e);
+    }
+    return [];
+  }
+
   private generateFallbackCandles(anchorPrice: number = 2400.00) {
     console.log('[MarketData] Generating dummy historical candles for all timeframes...');
     const now = Date.now();
+    const savedRealCandles = this.loadHistory();
+    const numSaved = savedRealCandles.length;
 
     // Generate 500 H4 candles to bootstrap the engine properly
     const m5PeriodMs = 5 * 60 * 1000;
     const startMs = Math.floor(now / m5PeriodMs) * m5PeriodMs - (500 * 48 * m5PeriodMs); 
     
     // Generate an array of random changes, sum them up, then work backwards from the anchor price
-    const numCandles = 24000;
-    const changes = new Float32Array(numCandles);
+    // We generate enough dummies so that dummies + real = 24000
+    const numDummies = Math.max(0, 24000 - numSaved);
+    const changes = new Float32Array(numDummies);
     let totalChange = 0;
-    for (let i = 0; i < numCandles; i++) {
+    for (let i = 0; i < numDummies; i++) {
       changes[i] = (Math.random() - 0.5) * 1.5; // Neutral walk, max $1.5 per M5
       totalChange += changes[i];
     }
 
-    let currentPrice = anchorPrice - totalChange; // Start price so that it ends at anchorPrice
+    let currentPrice = anchorPrice - totalChange; 
+    
+    // If we have saved candles, the dummy generation should target the OPEN of the first saved candle
+    if (numSaved > 0) {
+       currentPrice = savedRealCandles[0].open - totalChange;
+    }
 
-    for (let i = 0; i < numCandles; i++) {
+    for (let i = 0; i < numDummies; i++) {
       currentPrice += changes[i];
       const c: OHLCV = {
         time: startMs + (i * m5PeriodMs),
@@ -175,7 +223,14 @@ export class MarketDataService {
       };
       this.m5.processCandle(c); 
     }
-    console.log(`[MarketData] Bootstrap done. H4 candles: ${this.h4.allCandles.length}, H1: ${this.h1.allCandles.length}. Final price: ${currentPrice.toFixed(2)}`);
+    
+    // Append real candles after dummies
+    for (const c of savedRealCandles) {
+      this.m5.processCandle(c);
+      currentPrice = c.close; // update current price to the last real candle
+    }
+
+    console.log(`[MarketData] Bootstrap done. Loaded ${numSaved} real candles. H4 candles: ${this.h4.allCandles.length}, H1: ${this.h1.allCandles.length}. Final price: ${currentPrice.toFixed(2)}`);
   }
 
   private startSimulation() {
