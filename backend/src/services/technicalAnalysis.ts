@@ -6,18 +6,19 @@ export interface SwingPoint {
   time: number;
 }
 
+export type MarketCondition = 'TRENDING_BULLISH' | 'TRENDING_BEARISH' | 'SIDEWAYS';
+
 export interface AnalysisResult {
-  trendH4: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
   trendH1: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+  marketCondition: MarketCondition;
   isRetracedH1: boolean;
+  marketStructureM15: 'BOS_BULL' | 'BOS_BEAR' | 'CHOCH_BULL' | 'CHOCH_BEAR' | 'NONE';
   patternM5: 'BULLISH_ENGULFING' | 'BEARISH_ENGULFING' | 'PIN_BAR' | 'NONE';
   closestSwingLowM5: number;
   closestSwingHighM5: number;
-  ema20_H1: number;
-  ema50_H1: number;
-  ema200_H1: number;
-  atr_H1: number;
-  marketStructureH1: 'BOS_BULL' | 'BOS_BEAR' | 'CHOCH_BULL' | 'CHOCH_BEAR' | 'NONE';
+  ema20_M5: number;
+  ema50_M5: number;
+  atr_M15: number;
   volumeSpikeM5: boolean;
 }
 
@@ -33,8 +34,10 @@ export class TechnicalAnalysis {
 
       for (let j = i - leftBars; j <= i + rightBars; j++) {
         if (i === j) continue;
-        if (candles[j].high > current.high) isHigh = false;
-        if (candles[j].low < current.low) isLow = false;
+        const compareCandle = candles[j];
+        if (!compareCandle) continue;
+        if (compareCandle.high > current.high) isHigh = false;
+        if (compareCandle.low < current.low) isLow = false;
       }
 
       if (isHigh) swings.push({ type: 'HIGH', price: current.high, time: current.time });
@@ -52,6 +55,8 @@ export class TechnicalAnalysis {
     const [prevHigh, lastHigh] = highs;
     const [prevLow, lastLow] = lows;
 
+    if (!prevHigh || !lastHigh || !prevLow || !lastLow) return 'NEUTRAL';
+
     if (lastHigh.price > prevHigh.price && lastLow.price > prevLow.price) {
       return 'BULLISH'; // Higher High & Higher Low
     }
@@ -60,6 +65,13 @@ export class TechnicalAnalysis {
     }
 
     return 'NEUTRAL';
+  }
+
+  private detectMarketCondition(swings: SwingPoint[]): MarketCondition {
+     const trend = this.detectTrend(swings);
+     if (trend === 'BULLISH') return 'TRENDING_BULLISH';
+     if (trend === 'BEARISH') return 'TRENDING_BEARISH';
+     return 'SIDEWAYS';
   }
 
   private checkRetracementH1(currentPrice: number, swingsH1: SwingPoint[], trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL'): boolean {
@@ -137,6 +149,7 @@ export class TechnicalAnalysis {
     
     const lastHigh = highs[highs.length - 1];
     const lastLow = lows[lows.length - 1];
+    if (!lastHigh || !lastLow) return 'NONE';
     
     if (trend === 'BULLISH') {
       if (currentPrice > lastHigh.price) return 'BOS_BULL';
@@ -160,19 +173,24 @@ export class TechnicalAnalysis {
   }
 
   public analyze(data: MultiTimeframeData): AnalysisResult {
-    const swingsH4 = this.findSwingPoints(data.h4, 2, 2);
-    const trendH4 = this.detectTrend(swingsH4);
-
     const swingsH1 = this.findSwingPoints(data.h1, 3, 3);
     const trendH1 = this.detectTrend(swingsH1);
+    const marketCondition = this.detectMarketCondition(swingsH1);
     
-    const activeTrendForSupport = trendH4 !== 'NEUTRAL' ? trendH4 : trendH1;
-    const isRetracedH1 = this.checkRetracementH1(data.currentH1.close, swingsH1, activeTrendForSupport);
+    const isRetracedH1 = this.checkRetracementH1(data.currentH1.close, swingsH1, trendH1);
+
+    const swingsM15 = this.findSwingPoints(data.m15, 2, 2);
+    // BOS/CHoCH detection uses H1 trend as context to evaluate M15 structure break
+    const marketStructureM15 = this.detectBOSCHoCH(data.currentM15.close, swingsM15, trendH1);
 
     const len = data.m5.length;
     let patternM5: 'BULLISH_ENGULFING' | 'BEARISH_ENGULFING' | 'PIN_BAR' | 'NONE' = 'NONE';
     if (len >= 2) {
-      patternM5 = this.detectCandlestickPattern(data.m5[len - 2], data.m5[len - 1]);
+      const c1 = data.m5[len - 2];
+      const c2 = data.m5[len - 1];
+      if (c1 && c2) {
+        patternM5 = this.detectCandlestickPattern(c1, c2);
+      }
     }
 
     const swingsM5 = this.findSwingPoints(data.m5, 3, 3);
@@ -180,17 +198,16 @@ export class TechnicalAnalysis {
     const lastM5High = swingsM5.filter(s => s.type === 'HIGH').pop()?.price || data.currentM5.high + 3;
 
     return {
-      trendH4,
       trendH1,
+      marketCondition,
       isRetracedH1,
+      marketStructureM15,
       patternM5,
       closestSwingLowM5: lastM5Low,
       closestSwingHighM5: lastM5High,
-      ema20_H1: this.calculateEMA(data.h1, 20),
-      ema50_H1: this.calculateEMA(data.h1, 50),
-      ema200_H1: this.calculateEMA(data.h1, 200),
-      atr_H1: this.calculateATR(data.h1, 14),
-      marketStructureH1: this.detectBOSCHoCH(data.currentH1.close, swingsH1, trendH1),
+      ema20_M5: this.calculateEMA(data.m5, 20),
+      ema50_M5: this.calculateEMA(data.m5, 50),
+      atr_M15: this.calculateATR(data.m15, 14),
       volumeSpikeM5: this.checkVolumeSpike(data.m5)
     };
   }

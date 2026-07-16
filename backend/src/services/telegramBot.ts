@@ -25,20 +25,30 @@ export class TelegramService {
       return;
     }
 
-    const emoji = signal.type === 'BUY' ? '🟢 BUY' : '🔴 SELL';
+    const emoji = signal.type === 'BUY' ? '🟢' : '🔴';
+    
+    // Convert reason string into a readable format, handling checklists
+    const formattedReason = signal.reason.split('\n').map(r => r.startsWith('✔') || r.startsWith('✖') || r.startsWith('🚨') ? r : `* ${r}`).join('\n');
+
     const message = `
-🚨 *SINYAL TRADING XAU/USD* 🚨
-${emoji}
+${emoji} **${signal.type} - ${signal.probabilityLabel}**
+Signal ID: \`${signal.id}\`
+Confidence: ${signal.confidenceScore}%
 
-Entry Price: ${signal.entryPrice.toFixed(2)}
-Stop Loss: ${signal.stopLoss.toFixed(2)}
-Take Profit: ${signal.takeProfit.toFixed(2)}
+Session: ${signal.session}
+Market Condition: ${signal.marketCondition}
 
-📝 Alasan: ${signal.reason}
-⏰ Waktu: ${signal.timestamp}
+**Entry**: ${signal.entryPrice.toFixed(2)}
+**SL**: ${signal.stopLoss.toFixed(2)}
+**TP1**: ${signal.takeProfit1.toFixed(2)} (RR 1:2)
+**TP2**: ${signal.takeProfit2.toFixed(2)} (RR 1:3)
 
-⚠️ *Disclaimer: Not Financial Advice.*
-`;
+Valid Time: ${signal.validTime}
+Est. TP Time: ${signal.estimatedTpTime}
+
+**Reason:**
+${formattedReason}
+    `.trim();
 
     try {
       await this.bot.sendMessage(config.TELEGRAM_CHAT_ID, message, { parse_mode: 'Markdown' });

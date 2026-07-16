@@ -69,11 +69,11 @@ export class CandleBuilder {
 
 export type MultiTimeframeData = {
   m5: OHLCV[];
+  m15: OHLCV[];
   h1: OHLCV[];
-  h4: OHLCV[];
   currentM5: OHLCV;
+  currentM15: OHLCV;
   currentH1: OHLCV;
-  currentH4: OHLCV;
 };
 
 export class MarketDataService {
@@ -82,27 +82,27 @@ export class MarketDataService {
 
   public m1 = new CandleBuilder(1);
   public m5 = new CandleBuilder(5);
+  public m15 = new CandleBuilder(15);
   public h1 = new CandleBuilder(60);
-  public h4 = new CandleBuilder(240);
 
   constructor() {
     this.m1.onCandleClosed = (c) => this.m5.processCandle(c);
     this.m5.onCandleClosed = (c) => {
-      this.h1.processCandle(c);
+      this.m15.processCandle(c);
       this.saveHistory(); // Save real candles to disk whenever M5 closes
       
-      if (this.onM5Closed && this.m5.currentCandle && this.h1.currentCandle && this.h4.currentCandle) {
+      if (this.onM5Closed && this.m5.currentCandle && this.m15.currentCandle && this.h1.currentCandle) {
         this.onM5Closed({
           m5: this.m5.allCandles,
+          m15: this.m15.allCandles,
           h1: this.h1.allCandles,
-          h4: this.h4.allCandles,
           currentM5: this.m5.currentCandle,
-          currentH1: this.h1.currentCandle,
-          currentH4: this.h4.currentCandle
+          currentM15: this.m15.currentCandle,
+          currentH1: this.h1.currentCandle
         });
       }
     };
-    this.h1.onCandleClosed = (c) => this.h4.processCandle(c);
+    this.m15.onCandleClosed = (c) => this.h1.processCandle(c);
   }
 
   public setOnM5Closed(callback: (data: MultiTimeframeData) => void) {
@@ -189,13 +189,12 @@ export class MarketDataService {
     const savedRealCandles = this.loadHistory();
     const numSaved = savedRealCandles.length;
 
-    // Generate 500 H4 candles to bootstrap the engine properly
+    // Generate 500 H1 candles to bootstrap the engine properly
     const m5PeriodMs = 5 * 60 * 1000;
-    const startMs = Math.floor(now / m5PeriodMs) * m5PeriodMs - (500 * 48 * m5PeriodMs); 
+    const startMs = Math.floor(now / m5PeriodMs) * m5PeriodMs - (500 * 12 * m5PeriodMs); 
     
-    // Generate an array of random changes, sum them up, then work backwards from the anchor price
-    // We generate enough dummies so that dummies + real = 24000
-    const numDummies = Math.max(0, 24000 - numSaved);
+    // We generate enough dummies so that dummies + real = 6000 (500 H1 candles * 12 M5 candles)
+    const numDummies = Math.max(0, 6000 - numSaved);
     const changes = new Float32Array(numDummies);
     let totalChange = 0;
     for (let i = 0; i < numDummies; i++) {
@@ -230,7 +229,7 @@ export class MarketDataService {
       currentPrice = c.close; // update current price to the last real candle
     }
 
-    console.log(`[MarketData] Bootstrap done. Loaded ${numSaved} real candles. H4 candles: ${this.h4.allCandles.length}, H1: ${this.h1.allCandles.length}. Final price: ${currentPrice.toFixed(2)}`);
+    console.log(`[MarketData] Bootstrap done. Loaded ${numSaved} real candles. H1 candles: ${this.h1.allCandles.length}, M15: ${this.m15.allCandles.length}. Final price: ${currentPrice.toFixed(2)}`);
   }
 
   private startSimulation() {

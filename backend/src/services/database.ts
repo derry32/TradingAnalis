@@ -10,14 +10,26 @@ export async function insertSignal(signal: any) {
     return;
   }
   
-  const { error } = await supabase.from('signals').insert([{
+  const payload = {
     type: signal.type,
     entry_price: signal.entryPrice,
     stop_loss: signal.stopLoss,
-    take_profit: signal.takeProfit,
-    reason: signal.reason,
+    take_profit: signal.takeProfit1, // Map takeProfit1 to the old take_profit column
+    reason: JSON.stringify({
+      text: signal.reason,
+      tp2: signal.takeProfit2,
+      probability: signal.probabilityLabel,
+      confidence: signal.confidenceScore,
+      condition: signal.marketCondition,
+      session: signal.session,
+      validTime: signal.validTime,
+      estTpTime: signal.estimatedTpTime,
+      id: signal.id
+    }),
     timestamp: signal.timestamp
-  }]);
+  };
+
+  const { error } = await supabase.from('signals').insert([payload]);
 
   if (error) {
     console.error('[DB] Error inserting signal:', error);

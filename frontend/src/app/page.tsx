@@ -128,8 +128,18 @@ export default function Home() {
                 </div>
               ) : (
                 signals.map((sig, idx) => {
-                  const isHighProb = sig.reason?.includes('[HIGH PROBABILITY]');
-                  const isLowProb = sig.reason?.includes('[LOW PROBABILITY]');
+                  let textReason = sig.reason;
+                  let ext: any = null;
+                  try {
+                    // Coba parse jika reason adalah JSON dari backend baru
+                    ext = JSON.parse(sig.reason);
+                    textReason = ext.text;
+                  } catch (e) {
+                    // Fallback untuk sinyal lama (teks biasa)
+                  }
+
+                  const isHighProb = ext?.probability?.includes('High') || textReason?.includes('[HIGH PROBABILITY]');
+                  const isLowProb = ext?.probability?.includes('Low') || textReason?.includes('[LOW PROBABILITY]');
                   let displayType = sig.type;
                   if (isHighProb) displayType = `HIGH ${sig.type}`;
                   if (isLowProb) displayType = `LOW ${sig.type}`;
@@ -137,30 +147,54 @@ export default function Home() {
                   return (
                   <div key={idx} className="bg-gray-800 rounded-xl p-4 shadow-md border border-gray-700 hover:border-gray-600 transition-colors">
                     <div className="flex justify-between items-center mb-2">
-                      <span className={"px-2 py-1 rounded text-xs font-bold " + (sig.type === 'BUY' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400')}>
-                        {displayType}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={"px-2 py-1 rounded text-xs font-bold " + (sig.type === 'BUY' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400')}>
+                          {ext?.probability ? `${sig.type} - ${ext.probability}` : displayType}
+                        </span>
+                        {ext?.confidence && (
+                           <span className="text-xs bg-gray-900 border border-gray-700 px-2 py-1 rounded font-bold text-yellow-500">
+                             {ext.confidence}% Conf
+                           </span>
+                        )}
+                      </div>
                       <span className="text-xs text-gray-500">
                         {new Date(sig.timestamp).toLocaleTimeString()}
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 text-sm mt-3">
+
+                    {ext?.id && (
+                      <p className="text-[10px] text-gray-500 font-mono mb-2">ID: {ext.id} | Session: {ext.session}</p>
+                    )}
+
+                    <div className="grid grid-cols-4 gap-2 text-sm mt-3">
                       <div>
-                        <p className="text-gray-500 text-xs">ENTRY</p>
-                        <p className="font-mono text-gray-200">{sig.entryPrice.toFixed(2)}</p>
+                        <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest">ENTRY</p>
+                        <p className="font-mono text-gray-200">{sig.entry_price?.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500 text-xs">SL</p>
-                        <p className="font-mono text-red-400">{sig.stopLoss.toFixed(2)}</p>
+                        <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest">SL</p>
+                        <p className="font-mono text-red-400">{sig.stop_loss?.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500 text-xs">TP</p>
-                        <p className="font-mono text-emerald-400">{sig.takeProfit?.toFixed(2)}</p>
+                        <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest">TP1 (1:2)</p>
+                        <p className="font-mono text-emerald-400">{sig.take_profit?.toFixed(2)}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest">TP2 (1:3)</p>
+                        <p className="font-mono text-emerald-400">{ext?.tp2 ? ext.tp2.toFixed(2) : '-'}</p>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-700 whitespace-pre-line">
-                      {sig.reason ? sig.reason.replace(/\\n/g, '\n') : ''}
-                    </p>
+
+                    {ext?.validTime && (
+                      <div className="flex justify-between text-[10px] text-gray-500 mt-2 uppercase tracking-widest">
+                         <span>Valid: {ext.validTime}</span>
+                         <span>Est TP: {ext.estTpTime}</span>
+                      </div>
+                    )}
+
+                    <div className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-700 whitespace-pre-line leading-relaxed font-medium">
+                      {textReason ? textReason.replace(/\\n/g, '\n') : ''}
+                    </div>
                   </div>
                 );
                 })

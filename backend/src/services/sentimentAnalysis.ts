@@ -38,7 +38,7 @@ export class SentimentAnalysis {
             responseMimeType: "application/json"
           }
         },
-        { headers: { 'Content-Type': 'application/json' } }
+        { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
       );
       
       let content = response.data.candidates[0].content.parts[0].text;
@@ -72,7 +72,8 @@ export class SentimentAnalysis {
           headers: {
             'Authorization': `Bearer ${config.OPENAI_API_KEY}`,
             'Content-Type': 'application/json'
-          }
+          },
+          timeout: 10000
         }
       );
       

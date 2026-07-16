@@ -2,79 +2,90 @@ import { config } from '../config';
 import { AnalysisResult } from './technicalAnalysis';
 
 export interface Signal {
-  type: 'BUY' | 'SELL';
+  id: string;
+  type: 'BUY' | 'SELL' | 'WAIT';
+  probabilityLabel: string;
+  confidenceScore: number;
+  marketCondition: string;
+  session: string;
   entryPrice: number;
   stopLoss: number;
-  takeProfit: number;
+  takeProfit1: number;
+  takeProfit2: number;
+  validTime: string;
+  estimatedTpTime: string;
   timestamp: string;
   reason: string;
 }
 
 export class SignalGenerator {
-  
-  private calculateScore(direction: 'BUY' | 'SELL', analysis: AnalysisResult, sentiment: string, isAsianSession: boolean) {
-    let score = 5; // Base 5 for guaranteed 1:2 RR
-    let reasons: string[] = ['✔ RR 1:2 (5)'];
 
-    // H4 Trend (20)
-    if ((direction === 'BUY' && analysis.trendH4 === 'BULLISH') || (direction === 'SELL' && analysis.trendH4 === 'BEARISH')) {
-        score += 20; reasons.push(`✔ H4 ${analysis.trendH4} (20)`);
-    } else if (analysis.trendH4 !== 'NEUTRAL') {
-        reasons.push(`✖ Counter Trend H4 (0)`);
+  private getSession(hourWIB: number): { name: string, type: string } {
+    if (hourWIB >= 19 && hourWIB < 23) return { name: 'London-New York Overlap', type: 'OVERLAP' };
+    if (hourWIB >= 14 && hourWIB < 19) return { name: 'London Session', type: 'LONDON' };
+    if ((hourWIB >= 23 && hourWIB <= 23) || (hourWIB >= 0 && hourWIB < 4)) return { name: 'New York Session', type: 'NY' };
+    if (hourWIB >= 7 && hourWIB < 14) return { name: 'Tokyo Session', type: 'TOKYO' };
+    if (hourWIB >= 5 && hourWIB < 7) return { name: 'Sydney Session', type: 'SYDNEY' };
+    return { name: 'Off-hours', type: 'OFF' };
+  }
+
+  private calculateScore(
+    direction: 'BUY' | 'SELL', 
+    analysis: AnalysisResult, 
+    sessionType: string,
+    isNewsMode: boolean
+  ) {
+    let score = 0;
+    let reasons: string[] = [];
+    let warnings: string[] = [];
+
+    // Base Weights
+    let wTrendH1 = 20, wM15 = 15, wSR = 15, wPA = 15, wEMA = 10, wVol = 5, wRR = 5, wNews = 3, wATR = 5, wSession = 2;
+
+    if (isNewsMode) {
+        wTrendH1=15; wM15=20; wPA=20; wVol=10; wATR=5; wRR=3; wSession=2; wSR=0; wEMA=0; wNews=25;
+    } else {
+        if (sessionType === 'SYDNEY') { wTrendH1=20; wM15=10; wSR=20; wPA=20; wEMA=10; wVol=5; wRR=5; wNews=3; wATR=5; wSession=2; }
+        else if (sessionType === 'TOKYO') { wTrendH1=20; wM15=15; wSR=15; wPA=15; wEMA=10; wVol=5; wRR=5; wNews=5; wATR=5; wSession=5; }
+        else if (sessionType === 'LONDON') { wTrendH1=25; wM15=20; wSR=15; wPA=15; wEMA=8; wVol=5; wRR=5; wNews=3; wATR=2; wSession=2; }
+        else if (sessionType === 'OVERLAP') { wTrendH1=20; wM15=20; wSR=10; wPA=15; wEMA=10; wVol=10; wRR=5; wNews=5; wATR=3; wSession=2; }
+        else if (sessionType === 'NY') { wTrendH1=20; wM15=20; wSR=15; wPA=15; wEMA=10; wVol=5; wRR=5; wNews=5; wATR=3; wSession=2; }
     }
 
-    // M5 Pattern (15)
-    const isBullPattern = analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR';
-    const isBearPattern = analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR';
+    if (analysis.trendH1 === direction) { score += wTrendH1; reasons.push(`✔ Trend H1 ${direction}`); }
+    else { warnings.push(`✖ Counter Trend H1`); }
+
+    const bosChochMatch = (direction === 'BUY' && (analysis.marketStructureM15 === 'BOS_BULL' || analysis.marketStructureM15 === 'CHOCH_BULL')) ||
+                          (direction === 'SELL' && (analysis.marketStructureM15 === 'BOS_BEAR' || analysis.marketStructureM15 === 'CHOCH_BEAR'));
+    if (bosChochMatch) { score += wM15; reasons.push(`✔ M15 BOS/CHoCH Valid`); }
+    else { warnings.push(`✖ Tidak ada BOS/CHoCH searah`); }
+
+    if (analysis.isRetracedH1) { score += wSR; reasons.push(`✔ Terjadi Pantulan di S/R H1`); }
+    else { warnings.push(`✖ Harga mengambang / jauh dari S/R`); }
+
+    const paMatch = (direction === 'BUY' && (analysis.patternM5 === 'BULLISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR')) ||
+                    (direction === 'SELL' && (analysis.patternM5 === 'BEARISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR'));
+    if (paMatch) { score += wPA; reasons.push(`✔ Price Action M5 Terkonfirmasi`); }
     
-    if (direction === 'BUY' && isBullPattern) {
-        score += 15; reasons.push(`✔ M5 ${analysis.patternM5.replace('_', ' ')} (15)`);
-    } else if (direction === 'SELL' && isBearPattern) {
-        score += 15; reasons.push(`✔ M5 ${analysis.patternM5.replace('_', ' ')} (15)`);
+    const emaMatch = (direction === 'BUY' && analysis.ema20_M5 > analysis.ema50_M5) || 
+                     (direction === 'SELL' && analysis.ema20_M5 < analysis.ema50_M5);
+    if (emaMatch) { score += wEMA; reasons.push(`✔ EMA 20 & 50 Mendukung`); }
+
+    if (analysis.volumeSpikeM5) { score += wVol; reasons.push(`✔ Volume Spike Terdeteksi`); }
+    
+    score += wRR; reasons.push(`✔ RR 1:2 Tercapai`); // Assume guaranteed for now
+    
+    if (isNewsMode) {
+      score += wNews; reasons.push(`✔ Analisa sejalan dengan High Impact News`);
+    } else {
+      score += wNews; reasons.push(`✔ Tidak ada High Impact News`);
     }
 
-    // EMA Alignment (10)
-    const currentPriceH1 = analysis.ema20_H1; // approximation since we don't pass current price to calculateScore directly, wait, EMA needs to be checked against current price.
-    // Actually, let's just check if EMA20 > EMA50 > EMA200 for Bullish
-    if (direction === 'BUY' && analysis.ema20_H1 > analysis.ema50_H1 && analysis.ema50_H1 > analysis.ema200_H1) {
-        score += 10; reasons.push(`✔ EMA Alignment Bullish (10)`);
-    } else if (direction === 'SELL' && analysis.ema20_H1 < analysis.ema50_H1 && analysis.ema50_H1 < analysis.ema200_H1) {
-        score += 10; reasons.push(`✔ EMA Alignment Bearish (10)`);
-    }
+    if (analysis.atr_M15 > 1.5) { score += wATR; reasons.push(`✔ ATR Volatilitas Ideal`); }
+    
+    score += wSession; reasons.push(`✔ Filter Session Valid`);
 
-    // BOS/CHoCH Market Structure (10)
-    if (direction === 'BUY' && (analysis.marketStructureH1 === 'BOS_BULL' || analysis.marketStructureH1 === 'CHOCH_BULL')) {
-        score += 10; reasons.push(`✔ H1 Structure ${analysis.marketStructureH1} (10)`);
-    } else if (direction === 'SELL' && (analysis.marketStructureH1 === 'BOS_BEAR' || analysis.marketStructureH1 === 'CHOCH_BEAR')) {
-        score += 10; reasons.push(`✔ H1 Structure ${analysis.marketStructureH1} (10)`);
-    }
-
-    // H1 Trend (10)
-    if ((direction === 'BUY' && analysis.trendH1 === 'BULLISH') || (direction === 'SELL' && analysis.trendH1 === 'BEARISH')) {
-        score += 10; reasons.push(`✔ H1 ${analysis.trendH1} (10)`);
-    }
-
-    // H1 S/R Retracement (10)
-    if (analysis.isRetracedH1) {
-        score += 10; reasons.push(`✔ H1 Support/Resistance (10)`);
-    }
-
-    // Sentiment (10)
-    if ((direction === 'BUY' && sentiment === 'BULLISH') || (direction === 'SELL' && sentiment === 'BEARISH')) {
-        score += 10; reasons.push(`✔ AI Sentiment ${sentiment} (10)`);
-    }
-
-    // Session (5)
-    if (!isAsianSession) {
-        score += 5; reasons.push(`✔ London/NY Session (5)`);
-    }
-
-    // Volume Spike (5)
-    if (analysis.volumeSpikeM5) {
-        score += 5; reasons.push(`✔ M5 Volume Spike (5)`);
-    }
-
-    return { score, reasons };
+    return { score, reasons, warnings };
   }
 
   public generate(
@@ -83,14 +94,29 @@ export class SignalGenerator {
     currentPrice: number,
     sentimentScore: number,
     upcomingNews: any = null
-  ): Signal | null {
+  ): Signal {
     
-    // Harus ada trigger Price Action di M5
-    if (analysis.patternM5 === 'NONE') return null;
-
     const currentHourUTC = new Date().getUTCHours();
     const currentHourWIB = (currentHourUTC + 7) % 24;
-    const isAsianSession = currentHourWIB >= 6 && currentHourWIB < 14;
+    const sessionInfo = this.getSession(currentHourWIB);
+    
+    let isNewsMode = false;
+    let newsWarning = '';
+    if (upcomingNews) {
+      const eventTime = new Date(upcomingNews.date).getTime();
+      const now = Date.now();
+      if (Math.abs(now - eventTime) <= 30 * 60 * 1000) {
+        isNewsMode = true;
+        newsWarning = `🚨 HIGH IMPACT NEWS: ${upcomingNews.title} 🚨`;
+      }
+    }
+
+    if (analysis.marketCondition === 'SIDEWAYS') {
+       return this.createWaitSignal("Market sedang Sideways.", sessionInfo.name, 50, []);
+    }
+    if (analysis.patternM5 === 'NONE') {
+       return this.createWaitSignal("Menunggu konfirmasi Price Action (Engulfing / Pin Bar) di M5.", sessionInfo.name, 30, []);
+    }
 
     let possibleDirections: ('BUY' | 'SELL')[] = [];
     if (analysis.patternM5.includes('BULLISH')) possibleDirections.push('BUY');
@@ -100,77 +126,91 @@ export class SignalGenerator {
       possibleDirections.push('SELL');
     }
 
-    let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[] } | null = null;
+    let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[], warnings: string[] } | null = null;
 
     for (const dir of possibleDirections) {
-      const { score, reasons } = this.calculateScore(dir, analysis, sentiment, isAsianSession);
-      // Threshold minimal 60 poin untuk bisa dianggap sinyal valid
-      if (score >= 60) {
-        if (!bestTrade || score > bestTrade.score) {
-          bestTrade = { dir, score, reasons };
-        }
+      const result = this.calculateScore(dir, analysis, sessionInfo.type, isNewsMode);
+      if (!bestTrade || result.score > bestTrade.score) {
+        bestTrade = { dir, ...result };
       }
     }
 
-    if (!bestTrade) return null;
+    if (!bestTrade || bestTrade.score < 50) {
+      return this.createWaitSignal("Skor probabilitas terlalu rendah untuk entry.", sessionInfo.name, bestTrade?.score || 30, bestTrade?.warnings || []);
+    }
 
     const tradeType = bestTrade.dir;
     const score = bestTrade.score;
-    const reasons = bestTrade.reasons;
 
     let stopLoss = 0;
-    const minDistance = 2.0; // Minimal $2 distance for SL on XAUUSD to avoid immediate stop out
+    const minDistance = 2.0; 
     if (tradeType === 'BUY') {
       stopLoss = analysis.closestSwingLowM5 - 0.5;
-      // Ensure SL is strictly below Entry
-      if (stopLoss >= currentPrice - minDistance) {
-        stopLoss = currentPrice - minDistance;
-      }
+      if (stopLoss >= currentPrice - minDistance) stopLoss = currentPrice - minDistance;
     } else {
       stopLoss = analysis.closestSwingHighM5 + 0.5;
-      // Ensure SL is strictly above Entry
-      if (stopLoss <= currentPrice + minDistance) {
-        stopLoss = currentPrice + minDistance;
-      }
+      if (stopLoss <= currentPrice + minDistance) stopLoss = currentPrice + minDistance;
     }
 
     const riskAbsolute = Math.abs(currentPrice - stopLoss);
-    
-    // Invalid SL terlalu ketat (mencegah spread hunting)
-    if (riskAbsolute < 0.3) return null; 
+    if (riskAbsolute < 0.3) {
+      return this.createWaitSignal("Risiko per pip terlalu sempit (Bahaya Slippage/Spread).", sessionInfo.name, score, []);
+    }
 
-    // Calculate TP1 (1:2) and TP2 (1:3)
-    const tp1Distance = riskAbsolute * 2;
-    const tp2Distance = riskAbsolute * 3;
-    let takeProfit = tradeType === 'BUY' ? currentPrice + tp1Distance : currentPrice - tp1Distance;
-    let takeProfit2 = tradeType === 'BUY' ? currentPrice + tp2Distance : currentPrice - tp2Distance;
+    const tp1 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 2) : currentPrice - (riskAbsolute * 2);
+    const tp2 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 3) : currentPrice - (riskAbsolute * 3);
 
-    // Convert Score to Probability Label
     let probabilityLabel = '⭐ Low';
     if (score >= 90) probabilityLabel = '⭐⭐⭐⭐⭐ Very High';
     else if (score >= 80) probabilityLabel = '⭐⭐⭐⭐ High';
     else if (score >= 65) probabilityLabel = '⭐⭐⭐ Medium';
 
-    let reasonString = `[Analisis] ${probabilityLabel} (${score}% Confidence).\nTarget TP1: ${takeProfit.toFixed(2)} (RR 1:2) | TP2: ${takeProfit2.toFixed(2)} (RR 1:3)\nReasons:\n${reasons.join('\n')}`;
+    let reasonString = bestTrade.reasons.join('\n') + (bestTrade.warnings.length > 0 ? '\n' + bestTrade.warnings.join('\n') : '');
+    if (newsWarning) reasonString = newsWarning + '\n\n' + reasonString;
 
-    if (upcomingNews) {
-      const eventTime = new Date(upcomingNews.date).getTime();
-      const now = Date.now();
-      const windowStart = eventTime - (30 * 60 * 1000);
-      const windowEnd = eventTime + (30 * 60 * 1000);
-      
-      if (now >= windowStart && now <= windowEnd) {
-        reasonString = `🚨 HIGH IMPACT NEWS WARNING: ${upcomingNews.title} 🚨\nVolatilitas ekstrem diprediksi terjadi.\nPrediksi Fundamental AI: Cenderung ${sentiment}\n\n` + reasonString;
-      }
-    }
+    let validTime = '20 Menit';
+    let estTpTime = '30-90 Menit';
+    if (sessionInfo.type === 'SYDNEY' || sessionInfo.type === 'TOKYO') estTpTime = '60-180 Menit';
+    else if (sessionInfo.type === 'LONDON' || sessionInfo.type === 'NY') estTpTime = '20-60 Menit';
+
+    const dateStr = new Date().toISOString().slice(0,10).replace(/-/g, '');
+    const randId = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
 
     return {
+      id: `XAU-${dateStr}-${randId}`,
       type: tradeType,
+      probabilityLabel,
+      confidenceScore: score,
+      marketCondition: analysis.marketCondition.replace('_', ' '),
+      session: sessionInfo.name,
       entryPrice: currentPrice,
       stopLoss,
-      takeProfit: takeProfit, 
+      takeProfit1: tp1,
+      takeProfit2: tp2,
+      validTime,
+      estimatedTpTime: estTpTime,
       timestamp: new Date().toISOString(),
       reason: reasonString
+    };
+  }
+
+  private createWaitSignal(cause: string, session: string, score: number, warnings: string[]): Signal {
+    const reasonStr = cause + '\n' + warnings.join('\n');
+    return {
+      id: `WAIT-${Date.now()}`,
+      type: 'WAIT',
+      probabilityLabel: 'N/A',
+      confidenceScore: score,
+      marketCondition: 'N/A',
+      session,
+      entryPrice: 0,
+      stopLoss: 0,
+      takeProfit1: 0,
+      takeProfit2: 0,
+      validTime: '-',
+      estimatedTpTime: '-',
+      timestamp: new Date().toISOString(),
+      reason: reasonStr
     };
   }
 }

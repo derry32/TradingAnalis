@@ -51,8 +51,7 @@ marketData.setOnM5Closed((data) => {
     const upcomingNews = news.getUpcomingHighImpactNews();
     const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, data.currentM5.close, latestSentiment.score, upcomingNews);
     if (signal) {
-      const scoreMatch = signal.reason.match(/\\((\\d+)%\\s+Confidence\\)/);
-      const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
+      const score = signal.confidenceScore;
       
       const now = Date.now();
       let shouldSend = true;
@@ -61,15 +60,21 @@ marketData.setOnM5Closed((data) => {
         if (timeDiffMins < COOLDOWN_MINUTES) {
            if (lastSignalSent.type === signal.type && score <= lastSignalSent.score) {
               shouldSend = false; // Spam prevention (Cooldown)
-              console.log(`[Agent Derry] Ignored duplicate ${signal.type} signal (Score: ${score}%) due to Cooldown.`);
+              if (signal.type !== 'WAIT') {
+                 console.log(`[Agent Derry] Ignored duplicate ${signal.type} signal (Score: ${score}%) due to Cooldown.`);
+              }
            }
         }
       }
 
-      if (shouldSend) {
+      if (shouldSend && signal.type !== 'WAIT') {
         lastSignalSent = { type: signal.type, timeMs: now, score };
         insertSignal(signal); // Save to Database
         telegramBot.sendSignal(signal);
+      } else if (shouldSend && signal.type === 'WAIT') {
+        // We can log WAIT signals but we don't spam them to Telegram/DB
+        lastSignalSent = { type: 'WAIT', timeMs: now, score: 0 };
+        console.log(`[Agent Derry] Decision: WAIT. Reason: ${signal.reason.split('\n')[0]}`);
       }
     }
   }

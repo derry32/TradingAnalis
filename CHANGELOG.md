@@ -1,6 +1,6 @@
-# Changelog
+# Changelog & Update Historis
 
-Semua perubahan penting pada Aurum AI Trading Platform akan didokumentasikan di file ini.
+Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
 
 ## [1.1.1] - Sprint 3 (Price Action & Multi-Timeframe Engine)
 ### Ditambahkan
