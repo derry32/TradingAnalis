@@ -39,16 +39,37 @@ setInterval(updateSentiment, 60 * 60 * 1000);
 
 let latestTechResult: any = { trendH4: 'NEUTRAL' };
 
+let lastSignalSent: { type: string, timeMs: number, score: number } | null = null;
+const COOLDOWN_MINUTES = 30;
+
 // 2. Wire Market Data
 marketData.setOnM5Closed((data) => {
   const techResult = technical.analyze(data);
   latestTechResult = techResult;
   
-  if (latestSentiment && techResult.trendH4 !== 'NEUTRAL') {
+  if (latestSentiment) {
     const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, data.currentM5.close, latestSentiment.score);
     if (signal) {
-      insertSignal(signal); // Save to Database
-      telegramBot.sendSignal(signal);
+      const scoreMatch = signal.reason.match(/\\((\\d+)%\\s+Confidence\\)/);
+      const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
+      
+      const now = Date.now();
+      let shouldSend = true;
+      if (lastSignalSent) {
+        const timeDiffMins = (now - lastSignalSent.timeMs) / (1000 * 60);
+        if (timeDiffMins < COOLDOWN_MINUTES) {
+           if (lastSignalSent.type === signal.type && score <= lastSignalSent.score) {
+              shouldSend = false; // Spam prevention (Cooldown)
+              console.log(`[Agent Derry] Ignored duplicate ${signal.type} signal (Score: ${score}%) due to Cooldown.`);
+           }
+        }
+      }
+
+      if (shouldSend) {
+        lastSignalSent = { type: signal.type, timeMs: now, score };
+        insertSignal(signal); // Save to Database
+        telegramBot.sendSignal(signal);
+      }
     }
   }
 });
