@@ -179,8 +179,8 @@ export class MarketDataService {
   }
 
   private startSimulation() {
-    this.generateFallbackCandles();
     let basePrice = 2450.00;
+    this.generateFallbackCandles(basePrice);
     // Fast simulation: 1 tick every 50ms, mimicking 1 minute of real time per tick (for fast forward)
     const tickIntervalMs = 60000; // 1 virtual minute per tick
     let virtualTime = Date.now();
