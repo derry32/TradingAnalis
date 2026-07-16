@@ -2,6 +2,16 @@
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
 
+## [1.2.0] - Sprint 4 (Institutional Grade AI Upgrade & UI Pro Max)
+### Ditambahkan
+- **Dynamic Session Weighting:** Mengubah mesin AI menjadi sistem skoring dinamis (*Dynamic Score*) yang mampu membaca karakter tiap sesi pasar (Sydney, Tokyo, London, New York, dan Golden Overlap). AI akan memprioritaskan pantulan S/R di Asia, dan agresif memburu *Breakout* saat volatilitas tinggi (London/NY).
+- **H4 Deprecated:** Menghapus sepenuhnya ketergantungan pada grafik H4 (yang dianggap terlalu lambat/terlambat). Kini sistem mengandalkan H1 sebagai *Kompas Tren* dan M15 sebagai *Detektor Struktur* (mencari konfirmasi patahan BOS/CHoCH).
+- **Dual Target Profit (TP1 & TP2):** Sistem kini mengalkulasi dua batas Target Profit. TP1 untuk keamanan (Rasio 1:2) dan TP2 untuk memaksimalkan *swing* (Rasio 1:3).
+- **Institutional UI/UX Redesign:** Merombak total *Frontend* menggunakan panduan *Pro Max*. Emoji yang terlihat amatiran telah diganti seluruhnya dengan vektor **Lucide Icons**. Tema beralih ke *Neo-Dark Mode* (Deep Space #0B0F19) dipadukan dengan efek *Glassmorphism*, *hover animation*, dan fon *Plus Jakarta Sans* agar tampil kelas atas.
+- **Strict "WAIT" Mechanism:** AI tidak akan lagi memaksakan sinyal jika probabilitas (*confidence score*) di bawah 50 poin atau tidak ada *Price Action* yang jelas di M5. Sistem lebih disiplin membuang sinyal "sampah" dan mempertahankan modal (Equity).
+- **Cooldown Optimization:** Menurunkan sistem penahan (*Cooldown*) dari 30 menit menjadi 15 menit, memastikan AI memiliki waktu yang cukup untuk berburu hingga 5 target sinyal dalam satu sesi.
+- **Bug Fix JSON Parsing:** Memperbaiki insiden malfungsi visual di Web Frontend akibat perubahan penamaan *camelCase* (`entryPrice`) dan lolosnya karakter baris-baru (`\n`) secara *literal* di basis data PostgreSQL Supabase.
+
 ## [1.1.1] - Sprint 3 (Price Action & Multi-Timeframe Engine)
 ### Ditambahkan
 - **Multi-Timeframe Aggregator:** Mengubah mesin pendeteksi harga untuk mampu mengolah data *tick* secara *real-time* dan menjahit (membangun) *candle* M1, M5, H1, dan H4 di dalam memori, untuk mengakali keterbatasan API gratis Finnhub.
