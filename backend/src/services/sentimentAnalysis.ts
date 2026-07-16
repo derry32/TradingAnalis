@@ -41,7 +41,8 @@ export class SentimentAnalysis {
         { headers: { 'Content-Type': 'application/json' } }
       );
       
-      const content = response.data.candidates[0].content.parts[0].text;
+      let content = response.data.candidates[0].content.parts[0].text;
+      content = content.replace(/```json/gi, '').replace(/```/g, '').trim();
       return JSON.parse(content) as SentimentResult;
     } catch (e) {
       console.error('[Sentiment] Gemini API Error', e);
