@@ -206,7 +206,7 @@ export default function Home() {
                         <p className="font-mono text-xs text-gray-200">{sig.entryPrice?.toFixed(2) || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1">Stop Loss</p>
+                        <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1">SL</p>
                         <p className="font-mono text-xs text-rose-400/90">{sig.stopLoss?.toFixed(2) || '-'}</p>
                       </div>
                       <div>
