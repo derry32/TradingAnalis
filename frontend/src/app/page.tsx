@@ -131,14 +131,12 @@ export default function Home() {
                   let textReason = sig.reason;
                   let ext: any = null;
                   try {
-                    // Coba parse jika reason adalah JSON dari backend baru
-                    // Postgres mungkin mengembalikan newline asli (literal), jadi kita harus escape sebelum parse
-                    const sanitizedJSON = sig.reason.replace(/\\n/g, "\\\\n").replace(/\n/g, "\\n").replace(/\r/g, "");
-                    ext = JSON.parse(sanitizedJSON);
-                    textReason = ext.text;
-                  } catch (e) {
+                    // console.log("Raw reason from DB:", sig.reason);
+                    ext = typeof sig.reason === 'string' ? JSON.parse(sig.reason) : sig.reason;
+                    textReason = ext.text || sig.reason;
+                  } catch (e: any) {
                     // Fallback untuk sinyal lama (teks biasa)
-                    console.log("Fallback parse:", e);
+                    console.log("Fallback parse error:", e.message, "on string:", sig.reason);
                   }
 
                   const isHighProb = ext?.probability?.includes('High') || textReason?.includes('[HIGH PROBABILITY]');
@@ -172,15 +170,15 @@ export default function Home() {
                     <div className="grid grid-cols-4 gap-2 text-sm mt-3">
                       <div>
                         <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest">ENTRY</p>
-                        <p className="font-mono text-gray-200">{sig.entry_price?.toFixed(2)}</p>
+                        <p className="font-mono text-gray-200">{sig.entryPrice?.toFixed(2)}</p>
                       </div>
                       <div>
                         <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest">SL</p>
-                        <p className="font-mono text-red-400">{sig.stop_loss?.toFixed(2)}</p>
+                        <p className="font-mono text-red-400">{sig.stopLoss?.toFixed(2)}</p>
                       </div>
                       <div>
                         <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest">TP1 (1:2)</p>
-                        <p className="font-mono text-emerald-400">{sig.take_profit?.toFixed(2)}</p>
+                        <p className="font-mono text-emerald-400">{sig.takeProfit?.toFixed(2)}</p>
                       </div>
                       <div>
                         <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest">TP2 (1:3)</p>
