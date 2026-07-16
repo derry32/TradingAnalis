@@ -40,7 +40,7 @@ setInterval(updateSentiment, 60 * 60 * 1000);
 let latestTechResult: any = { trendH4: 'NEUTRAL' };
 
 let lastSignalSent: { type: string, timeMs: number, score: number } | null = null;
-const COOLDOWN_MINUTES = 30;
+const COOLDOWN_MINUTES = 15;
 
 // 2. Wire Market Data
 marketData.setOnM5Closed((data) => {

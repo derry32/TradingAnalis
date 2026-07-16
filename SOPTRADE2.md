@@ -315,3 +315,10 @@ Signal Expiry
 Estimated TP Time
 Time Stop Loss
 Output Signal Format
+
+## Target Frekuensi Sinyal
+- **Sydney:** 1-2 sinyal maksimal
+- **Tokyo:** 2-4 sinyal
+- **London:** 2-5 sinyal
+- **New York:** 2-5 sinyal
+
