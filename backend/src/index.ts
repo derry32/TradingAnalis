@@ -48,7 +48,8 @@ marketData.setOnM5Closed((data) => {
   latestTechResult = techResult;
   
   if (latestSentiment) {
-    const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, data.currentM5.close, latestSentiment.score);
+    const upcomingNews = news.getUpcomingHighImpactNews();
+    const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, data.currentM5.close, latestSentiment.score, upcomingNews);
     if (signal) {
       const scoreMatch = signal.reason.match(/\\((\\d+)%\\s+Confidence\\)/);
       const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
@@ -87,6 +88,8 @@ function getCurrentSession() {
   return 'CLOSING';
 }
 
+news.start(); // Start fetching news
+
 // 3. API Endpoints
 app.get('/api/status', (req, res) => {
   let analysisDetail = 'Menyiapkan mesin analisis...';
@@ -118,6 +121,7 @@ app.get('/api/status', (req, res) => {
     sentimentStatus: latestSentiment,
     activeSession: getCurrentSession(),
     analysisDetail,
+    upcomingNews: news.getUpcomingHighImpactNews(), // Expose upcoming high impact news
     config: {
       timeframe: config.TIMEFRAME_MINUTES,
       rr: config.RISK_REWARD_RATIO,

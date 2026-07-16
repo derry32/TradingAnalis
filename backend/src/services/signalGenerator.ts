@@ -13,28 +13,14 @@ export interface Signal {
 export class SignalGenerator {
   
   private calculateScore(direction: 'BUY' | 'SELL', analysis: AnalysisResult, sentiment: string, isAsianSession: boolean) {
-    let score = 10; // Base 10 for guaranteed 1:2 RR
-    let reasons: string[] = ['✔ RR 1:2 (10)'];
+    let score = 5; // Base 5 for guaranteed 1:2 RR
+    let reasons: string[] = ['✔ RR 1:2 (5)'];
 
     // H4 Trend (20)
     if ((direction === 'BUY' && analysis.trendH4 === 'BULLISH') || (direction === 'SELL' && analysis.trendH4 === 'BEARISH')) {
         score += 20; reasons.push(`✔ H4 ${analysis.trendH4} (20)`);
     } else if (analysis.trendH4 !== 'NEUTRAL') {
         reasons.push(`✖ Counter Trend H4 (0)`);
-    } else {
-        reasons.push(`✖ H4 Neutral (0)`);
-    }
-
-    // H1 Trend (15)
-    if ((direction === 'BUY' && analysis.trendH1 === 'BULLISH') || (direction === 'SELL' && analysis.trendH1 === 'BEARISH')) {
-        score += 15; reasons.push(`✔ H1 ${analysis.trendH1} (15)`);
-    } else if (analysis.trendH1 !== 'NEUTRAL') {
-        reasons.push(`✖ Counter Trend H1 (0)`);
-    }
-
-    // H1 S/R Retracement (15)
-    if (analysis.isRetracedH1) {
-        score += 15; reasons.push(`✔ H1 Support/Resistance (15)`);
     }
 
     // M5 Pattern (15)
@@ -47,14 +33,40 @@ export class SignalGenerator {
         score += 15; reasons.push(`✔ M5 ${analysis.patternM5.replace('_', ' ')} (15)`);
     }
 
+    // EMA Alignment (10)
+    const currentPriceH1 = analysis.ema20_H1; // approximation since we don't pass current price to calculateScore directly, wait, EMA needs to be checked against current price.
+    // Actually, let's just check if EMA20 > EMA50 > EMA200 for Bullish
+    if (direction === 'BUY' && analysis.ema20_H1 > analysis.ema50_H1 && analysis.ema50_H1 > analysis.ema200_H1) {
+        score += 10; reasons.push(`✔ EMA Alignment Bullish (10)`);
+    } else if (direction === 'SELL' && analysis.ema20_H1 < analysis.ema50_H1 && analysis.ema50_H1 < analysis.ema200_H1) {
+        score += 10; reasons.push(`✔ EMA Alignment Bearish (10)`);
+    }
+
+    // BOS/CHoCH Market Structure (10)
+    if (direction === 'BUY' && (analysis.marketStructureH1 === 'BOS_BULL' || analysis.marketStructureH1 === 'CHOCH_BULL')) {
+        score += 10; reasons.push(`✔ H1 Structure ${analysis.marketStructureH1} (10)`);
+    } else if (direction === 'SELL' && (analysis.marketStructureH1 === 'BOS_BEAR' || analysis.marketStructureH1 === 'CHOCH_BEAR')) {
+        score += 10; reasons.push(`✔ H1 Structure ${analysis.marketStructureH1} (10)`);
+    }
+
+    // H1 Trend (10)
+    if ((direction === 'BUY' && analysis.trendH1 === 'BULLISH') || (direction === 'SELL' && analysis.trendH1 === 'BEARISH')) {
+        score += 10; reasons.push(`✔ H1 ${analysis.trendH1} (10)`);
+    }
+
+    // H1 S/R Retracement (10)
+    if (analysis.isRetracedH1) {
+        score += 10; reasons.push(`✔ H1 Support/Resistance (10)`);
+    }
+
     // Sentiment (10)
     if ((direction === 'BUY' && sentiment === 'BULLISH') || (direction === 'SELL' && sentiment === 'BEARISH')) {
         score += 10; reasons.push(`✔ AI Sentiment ${sentiment} (10)`);
     }
 
-    // Session (10)
+    // Session (5)
     if (!isAsianSession) {
-        score += 10; reasons.push(`✔ London/NY Session (10)`);
+        score += 5; reasons.push(`✔ London/NY Session (5)`);
     }
 
     // Volume Spike (5)
@@ -69,7 +81,8 @@ export class SignalGenerator {
     analysis: AnalysisResult,
     sentiment: 'BULLISH' | 'BEARISH' | 'NEUTRAL',
     currentPrice: number,
-    sentimentScore: number
+    sentimentScore: number,
+    upcomingNews: any = null
   ): Signal | null {
     
     // Harus ada trigger Price Action di M5
@@ -129,7 +142,18 @@ export class SignalGenerator {
     else if (score >= 80) probabilityLabel = '⭐⭐⭐⭐ High';
     else if (score >= 65) probabilityLabel = '⭐⭐⭐ Medium';
 
-    const reasonString = `[Agent Derry] ${probabilityLabel} (${score}% Confidence).\\nTarget TP1: ${takeProfit.toFixed(2)} (RR 1:2) | TP2: ${takeProfit2.toFixed(2)} (RR 1:3)\\nReasons:\\n${reasons.join('\\n')}`;
+    let reasonString = `[Agent Derry] ${probabilityLabel} (${score}% Confidence).\\nTarget TP1: ${takeProfit.toFixed(2)} (RR 1:2) | TP2: ${takeProfit2.toFixed(2)} (RR 1:3)\\nReasons:\\n${reasons.join('\\n')}`;
+
+    if (upcomingNews) {
+      const eventTime = new Date(upcomingNews.date).getTime();
+      const now = Date.now();
+      const windowStart = eventTime - (30 * 60 * 1000);
+      const windowEnd = eventTime + (30 * 60 * 1000);
+      
+      if (now >= windowStart && now <= windowEnd) {
+        reasonString = `🚨 HIGH IMPACT NEWS WARNING: ${upcomingNews.title} 🚨\\nVolatilitas ekstrem diprediksi terjadi.\\nPrediksi Fundamental AI: Cenderung ${sentiment}\\n\\n` + reasonString;
+      }
+    }
 
     return {
       type: tradeType,

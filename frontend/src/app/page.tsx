@@ -75,6 +75,33 @@ export default function Home() {
             </p>
           </div>
 
+          {status?.upcomingNews && (
+            <div className="bg-orange-950/30 border border-orange-500/50 rounded-xl p-4 shadow-lg w-full relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-orange-500/10 rounded-bl-full"></div>
+              <p className="text-xs text-orange-400 uppercase font-bold tracking-wider mb-2 flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                </span>
+                High Impact News Radar
+              </p>
+              <p className="text-sm font-semibold text-gray-200 mb-1">
+                {status.upcomingNews.title} ({status.upcomingNews.country})
+              </p>
+              <div className="flex justify-between items-end mt-2">
+                <div>
+                  <p className="text-xs text-gray-400">Time: {new Date(status.upcomingNews.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest">AI Forecast</p>
+                  <p className={"text-xs font-bold " + (status?.sentimentStatus?.sentiment === 'BULLISH' ? 'text-emerald-500' : status?.sentimentStatus?.sentiment === 'BEARISH' ? 'text-red-500' : 'text-gray-400')}>
+                    Bias {status?.sentimentStatus?.sentiment || 'UNKNOWN'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl flex flex-col h-[530px]">
             <div className="p-4 border-b border-gray-800 flex justify-between items-center">
               <h2 className="text-lg font-bold flex items-center gap-2">
