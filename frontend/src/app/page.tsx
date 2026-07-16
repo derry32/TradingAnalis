@@ -44,7 +44,7 @@ export default function Home() {
             style={{ width: `${conf}%` }}
           />
         </div>
-        <span className="text-[10px] font-bold text-gray-400 tracking-wider">PROBABILITAS: {conf}%</span>
+        <span className="text-[10px] font-bold text-gray-400 tracking-wider whitespace-nowrap">WIN: {conf}%</span>
       </div>
     );
   };
@@ -66,7 +66,7 @@ export default function Home() {
           {/* Status Pills */}
           <div className="grid grid-cols-2 gap-4 w-full">
             <div className="bg-[#111827]/80 backdrop-blur-md border border-gray-800/50 rounded-xl p-4 shadow-lg group hover:border-gray-700 transition-all duration-300">
-              <div className="flex justify-between items-start mb-1">
+              <div className="flex flex-wrap justify-between items-start gap-1 mb-1">
                 <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest flex items-center gap-1">
                   <Activity size={12} /> Sentiment
                 </p>
@@ -178,7 +178,7 @@ export default function Home() {
                     {/* Signal Header */}
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-bold tracking-wide mb-2 ${isBuy ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-bold tracking-wide mb-2 whitespace-nowrap ${isBuy ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
                           {isBuy ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                           {ext?.probability ? `${sig.type} • ${ext.probability.replace(/[^\x00-\x7F]/g, "").trim()}` : sig.type}
                         </div>
