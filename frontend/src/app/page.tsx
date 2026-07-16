@@ -44,7 +44,7 @@ export default function Home() {
             style={{ width: `${conf}%` }}
           />
         </div>
-        <span className="text-[10px] font-bold text-gray-400">{conf}%</span>
+        <span className="text-[10px] font-bold text-gray-400 tracking-wider">PROBABILITAS: {conf}%</span>
       </div>
     );
   };
@@ -71,8 +71,8 @@ export default function Home() {
                   <Activity size={12} /> Sentiment
                 </p>
                 {status?.sentimentStatus?.score && (
-                   <span className="text-[10px] bg-gray-800/80 px-2 py-0.5 rounded-full text-gray-400 border border-gray-700/50">
-                     Score: {status.sentimentStatus.score}
+                   <span className="text-[9px] bg-gray-800/80 px-2 py-1 rounded border border-gray-700/50 text-gray-300 font-medium whitespace-nowrap">
+                     Skor: {status.sentimentStatus.score}
                    </span>
                 )}
               </div>
