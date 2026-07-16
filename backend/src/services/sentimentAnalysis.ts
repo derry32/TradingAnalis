@@ -27,7 +27,7 @@ export class SentimentAnalysis {
   private async analyzeWithGemini(newsText: string): Promise<SentimentResult> {
     try {
       const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${config.GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${config.GEMINI_API_KEY}`,
         {
           contents: [{
             parts: [{

@@ -142,7 +142,7 @@ export class SignalGenerator {
     else if (score >= 80) probabilityLabel = '⭐⭐⭐⭐ High';
     else if (score >= 65) probabilityLabel = '⭐⭐⭐ Medium';
 
-    let reasonString = `[Agent Derry] ${probabilityLabel} (${score}% Confidence).\\nTarget TP1: ${takeProfit.toFixed(2)} (RR 1:2) | TP2: ${takeProfit2.toFixed(2)} (RR 1:3)\\nReasons:\\n${reasons.join('\\n')}`;
+    let reasonString = `[Analisis] ${probabilityLabel} (${score}% Confidence).\nTarget TP1: ${takeProfit.toFixed(2)} (RR 1:2) | TP2: ${takeProfit2.toFixed(2)} (RR 1:3)\nReasons:\n${reasons.join('\n')}`;
 
     if (upcomingNews) {
       const eventTime = new Date(upcomingNews.date).getTime();
@@ -151,7 +151,7 @@ export class SignalGenerator {
       const windowEnd = eventTime + (30 * 60 * 1000);
       
       if (now >= windowStart && now <= windowEnd) {
-        reasonString = `🚨 HIGH IMPACT NEWS WARNING: ${upcomingNews.title} 🚨\\nVolatilitas ekstrem diprediksi terjadi.\\nPrediksi Fundamental AI: Cenderung ${sentiment}\\n\\n` + reasonString;
+        reasonString = `🚨 HIGH IMPACT NEWS WARNING: ${upcomingNews.title} 🚨\nVolatilitas ekstrem diprediksi terjadi.\nPrediksi Fundamental AI: Cenderung ${sentiment}\n\n` + reasonString;
       }
     }
 

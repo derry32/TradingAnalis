@@ -158,7 +158,7 @@ export default function Home() {
                         <p className="font-mono text-emerald-400">{sig.takeProfit?.toFixed(2)}</p>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-700">
+                    <p className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-700 whitespace-pre-line">
                       {sig.reason}
                     </p>
                   </div>
