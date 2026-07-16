@@ -37,7 +37,7 @@ async function updateSentiment() {
 updateSentiment();
 setInterval(updateSentiment, 60 * 60 * 1000);
 
-let latestTechResult: any = { trendH4: 'NEUTRAL' };
+let latestTechResult: any = { trendH1: 'NEUTRAL' };
 
 let lastSignalSent: { type: string, timeMs: number, score: number } | null = null;
 const COOLDOWN_MINUTES = 15;
@@ -99,26 +99,25 @@ news.start(); // Start fetching news
 app.get('/api/status', (req, res) => {
   let analysisDetail = 'Menyiapkan mesin analisis...';
   if (latestTechResult) {
-    if (latestTechResult.trendH4 === 'NEUTRAL') {
-      if (latestTechResult.trendH1 !== 'NEUTRAL') {
-        analysisDetail = `Mode Agresif (Skenario 2). H4 Sideways, namun tren H1 ${latestTechResult.trendH1}. Mengincar peluang Scalping M5.`;
-      } else {
-        analysisDetail = `Konsolidasi Ekstrem (H4 & H1 Neutral). Menunggu momentum breakout atau dorongan Berita Fundamental (Skenario 3).`;
-      }
+    if (latestTechResult.trendH1 === 'NEUTRAL') {
+      analysisDetail = `Konsolidasi Ekstrem (Tren H1 Sideways). Menunggu momentum breakout atau dorongan Berita Fundamental.`;
     } else {
-      if (!latestTechResult.isRetracedH1) {
-        analysisDetail = `Mode Momentum (Skenario 1). Tren H4 ${latestTechResult.trendH4}. Mengintai pola Engulfing/Pin Bar di M5.`;
+      if (latestTechResult.marketCondition === 'SIDEWAYS') {
+         analysisDetail = `Tren H1 ${latestTechResult.trendH1}, namun Market M15 Sideways. Menunggu konfirmasi Breakout BOS/CHoCH.`;
+      } else if (!latestTechResult.isRetracedH1) {
+         analysisDetail = `Mode Momentum. Tren H1 ${latestTechResult.trendH1}. Mengintai pola Engulfing/Pin Bar di M5 pada area Support/Resistance.`;
       } else if (latestTechResult.patternM5 === 'NONE') {
-        analysisDetail = `Harga memantul di zona H1! Menunggu konfirmasi pola pembalikan kuat di grafik M5.`;
+         analysisDetail = `Harga memantul di zona H1! Menunggu konfirmasi pola candlestick yang valid di M5.`;
       } else {
-        analysisDetail = `Pola ${latestTechResult.patternM5} terdeteksi! Memeriksa rasio Risk/Reward 1:2 untuk finalisasi eksekusi...`;
+         analysisDetail = `Pola ${latestTechResult.patternM5} terdeteksi! Mengkalkulasi Dynamic Session Score...`;
       }
     }
   }
 
-  let activeTrend = latestTechResult ? latestTechResult.trendH4 : 'NEUTRAL';
+  let activeTrend = latestTechResult ? latestTechResult.trendH1 : 'NEUTRAL';
   if (activeTrend === 'NEUTRAL' && latestTechResult) {
-    activeTrend = latestTechResult.trendH1;
+    if (latestTechResult.marketStructureM15?.includes('BULL')) activeTrend = 'BULLISH';
+    else if (latestTechResult.marketStructureM15?.includes('BEAR')) activeTrend = 'BEARISH';
   }
 
   res.json({

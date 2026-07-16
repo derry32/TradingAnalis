@@ -132,10 +132,13 @@ export default function Home() {
                   let ext: any = null;
                   try {
                     // Coba parse jika reason adalah JSON dari backend baru
-                    ext = JSON.parse(sig.reason);
+                    // Postgres mungkin mengembalikan newline asli (literal), jadi kita harus escape sebelum parse
+                    const sanitizedJSON = sig.reason.replace(/\\n/g, "\\\\n").replace(/\n/g, "\\n").replace(/\r/g, "");
+                    ext = JSON.parse(sanitizedJSON);
                     textReason = ext.text;
                   } catch (e) {
                     // Fallback untuk sinyal lama (teks biasa)
+                    console.log("Fallback parse:", e);
                   }
 
                   const isHighProb = ext?.probability?.includes('High') || textReason?.includes('[HIGH PROBABILITY]');
