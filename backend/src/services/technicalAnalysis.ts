@@ -12,8 +12,8 @@ export interface AnalysisResult {
   trendH1: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
   marketCondition: MarketCondition;
   isRetracedH1: boolean;
-  marketStructureM15: 'BOS_BULL' | 'BOS_BEAR' | 'CHOCH_BULL' | 'CHOCH_BEAR' | 'NONE';
-  patternM5: 'BULLISH_ENGULFING' | 'BEARISH_ENGULFING' | 'PIN_BAR' | 'NONE';
+  marketStructureM15: 'BOS_BULL' | 'BOS_BEAR' | 'CHOCH_BULL' | 'CHOCH_BEAR' | 'FAKE_BREAKOUT_BULL' | 'FAKE_BREAKOUT_BEAR' | 'NONE';
+  patternM5: 'BULLISH_ENGULFING' | 'BEARISH_ENGULFING' | 'PIN_BAR' | 'MARUBOZU_BULL' | 'MARUBOZU_BEAR' | 'THREE_WHITE_SOLDIERS' | 'THREE_BLACK_CROWS' | 'NONE';
   closestSwingLowM5: number;
   closestSwingHighM5: number;
   ema20_M5: number;
@@ -94,9 +94,19 @@ export class TechnicalAnalysis {
     return false;
   }
 
-  private detectCandlestickPattern(candle1: OHLCV, candle2: OHLCV): 'BULLISH_ENGULFING' | 'BEARISH_ENGULFING' | 'PIN_BAR' | 'NONE' {
+  private detectCandlestickPattern(candle0: OHLCV | undefined, candle1: OHLCV, candle2: OHLCV, atr: number): AnalysisResult['patternM5'] {
     const isBullish1 = candle1.close > candle1.open;
     const isBullish2 = candle2.close > candle2.open;
+
+    if (candle0) {
+      const isBullish0 = candle0.close > candle0.open;
+      if (isBullish0 && isBullish1 && isBullish2 && candle1.close > candle0.close && candle2.close > candle1.close) {
+         return 'THREE_WHITE_SOLDIERS';
+      }
+      if (!isBullish0 && !isBullish1 && !isBullish2 && candle1.close < candle0.close && candle2.close < candle1.close) {
+         return 'THREE_BLACK_CROWS';
+      }
+    }
 
     if (!isBullish1 && isBullish2 && candle2.close > candle1.open && candle2.open < candle1.close) {
       return 'BULLISH_ENGULFING';
@@ -113,6 +123,10 @@ export class TechnicalAnalysis {
     if (totalSize > 0) {
       if (lowerWick > bodySize * 2 && lowerWick > upperWick * 2) return 'PIN_BAR';
       if (upperWick > bodySize * 2 && upperWick > lowerWick * 2) return 'PIN_BAR';
+
+      if (bodySize / totalSize > 0.85 && totalSize > (atr * 0.8)) {
+         return isBullish2 ? 'MARUBOZU_BULL' : 'MARUBOZU_BEAR';
+      }
     }
 
     return 'NONE';
@@ -141,7 +155,7 @@ export class TechnicalAnalysis {
     return trSum / period;
   }
 
-  private detectBOSCHoCH(currentPrice: number, swings: SwingPoint[], trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL'): 'BOS_BULL' | 'BOS_BEAR' | 'CHOCH_BULL' | 'CHOCH_BEAR' | 'NONE' {
+  private detectBOSCHoCH(currentPrice: number, swings: SwingPoint[], trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL', hasVolumeSpike: boolean, atr: number): AnalysisResult['marketStructureM15'] {
     if (trend === 'NEUTRAL') return 'NONE';
     const highs = swings.filter(s => s.type === 'HIGH');
     const lows = swings.filter(s => s.type === 'LOW');
@@ -151,12 +165,14 @@ export class TechnicalAnalysis {
     const lastLow = lows[lows.length - 1];
     if (!lastHigh || !lastLow) return 'NONE';
     
+    const isValidBreakout = hasVolumeSpike || atr > 1.0;
+
     if (trend === 'BULLISH') {
-      if (currentPrice > lastHigh.price) return 'BOS_BULL';
-      if (currentPrice < lastLow.price) return 'CHOCH_BEAR';
+      if (currentPrice > lastHigh.price) return isValidBreakout ? 'BOS_BULL' : 'FAKE_BREAKOUT_BULL';
+      if (currentPrice < lastLow.price) return isValidBreakout ? 'CHOCH_BEAR' : 'FAKE_BREAKOUT_BEAR';
     } else {
-      if (currentPrice < lastLow.price) return 'BOS_BEAR';
-      if (currentPrice > lastHigh.price) return 'CHOCH_BULL';
+      if (currentPrice < lastLow.price) return isValidBreakout ? 'BOS_BEAR' : 'FAKE_BREAKOUT_BEAR';
+      if (currentPrice > lastHigh.price) return isValidBreakout ? 'CHOCH_BULL' : 'FAKE_BREAKOUT_BULL';
     }
     return 'NONE';
   }
@@ -179,17 +195,21 @@ export class TechnicalAnalysis {
     
     const isRetracedH1 = this.checkRetracementH1(data.currentH1.close, swingsH1, trendH1);
 
+    const atr_M15 = this.calculateATR(data.m15, 14);
+    const volumeSpikeM5 = this.checkVolumeSpike(data.m5);
+
     const swingsM15 = this.findSwingPoints(data.m15, 2, 2);
     // BOS/CHoCH detection uses H1 trend as context to evaluate M15 structure break
-    const marketStructureM15 = this.detectBOSCHoCH(data.currentM15.close, swingsM15, trendH1);
+    const marketStructureM15 = this.detectBOSCHoCH(data.currentM15.close, swingsM15, trendH1, volumeSpikeM5, atr_M15);
 
     const len = data.m5.length;
-    let patternM5: 'BULLISH_ENGULFING' | 'BEARISH_ENGULFING' | 'PIN_BAR' | 'NONE' = 'NONE';
+    let patternM5: AnalysisResult['patternM5'] = 'NONE';
     if (len >= 2) {
+      const c0 = len >= 3 ? data.m5[len - 3] : undefined;
       const c1 = data.m5[len - 2];
       const c2 = data.m5[len - 1];
       if (c1 && c2) {
-        patternM5 = this.detectCandlestickPattern(c1, c2);
+        patternM5 = this.detectCandlestickPattern(c0, c1, c2, atr_M15);
       }
     }
 
@@ -207,8 +227,8 @@ export class TechnicalAnalysis {
       closestSwingHighM5: lastM5High,
       ema20_M5: this.calculateEMA(data.m5, 20),
       ema50_M5: this.calculateEMA(data.m5, 50),
-      atr_M15: this.calculateATR(data.m15, 14),
-      volumeSpikeM5: this.checkVolumeSpike(data.m5)
+      atr_M15,
+      volumeSpikeM5
     };
   }
 }

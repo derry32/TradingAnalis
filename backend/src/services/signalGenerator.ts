@@ -70,9 +70,9 @@ export class SignalGenerator {
     if (analysis.isRetracedH1) { score += wSR; reasons.push(`✔ Terjadi Pantulan di S/R H1`); }
     else { warnings.push(`✖ Harga mengambang / jauh dari S/R`); }
 
-    const paMatch = (direction === 'BUY' && (analysis.patternM5 === 'BULLISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR')) ||
-                    (direction === 'SELL' && (analysis.patternM5 === 'BEARISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR'));
-    if (paMatch) { score += wPA; reasons.push(`✔ Price Action M5 Terkonfirmasi`); }
+    const paMatch = (direction === 'BUY' && (analysis.patternM5 === 'BULLISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'MARUBOZU_BULL' || analysis.patternM5 === 'THREE_WHITE_SOLDIERS')) ||
+                    (direction === 'SELL' && (analysis.patternM5 === 'BEARISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'MARUBOZU_BEAR' || analysis.patternM5 === 'THREE_BLACK_CROWS'));
+    if (paMatch) { score += wPA; reasons.push(`✔ Price Action M5 (${analysis.patternM5.replace('_', ' ')}) Terkonfirmasi`); }
     
     const emaMatch = (direction === 'BUY' && analysis.ema20_M5 > analysis.ema50_M5) || 
                      (direction === 'SELL' && analysis.ema20_M5 < analysis.ema50_M5);
@@ -107,8 +107,8 @@ export class SignalGenerator {
 
   private evaluateSidewaysMode(analysis: AnalysisResult, currentPrice: number, sessionType: string, isNewsMode: boolean, activeStrategy: 'SNIPER' | 'HYPER_SCALPER') {
     let possibleDirections: ('BUY' | 'SELL')[] = [];
-    if (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR') possibleDirections.push('BUY');
-    if (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR') possibleDirections.push('SELL');
+    if (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BULL') || analysis.patternM5 === 'THREE_WHITE_SOLDIERS') possibleDirections.push('BUY');
+    if (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'THREE_BLACK_CROWS') possibleDirections.push('SELL');
 
     let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[], warnings: string[] } | null = null;
     for (const dir of possibleDirections) {
@@ -122,10 +122,16 @@ export class SignalGenerator {
          warnings.push(`✖ Harga mengambang di tengah range Sideways`); 
       }
 
-      if (dir === 'BUY' && (analysis.patternM5 === 'BULLISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR')) {
-         score += 30; reasons.push(`✔ Price Action M5 (Bullish) Terkonfirmasi di Support`);
-      } else if (dir === 'SELL' && (analysis.patternM5 === 'BEARISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR')) {
-         score += 30; reasons.push(`✔ Price Action M5 (Bearish) Terkonfirmasi di Resistance`);
+      if (dir === 'BUY' && (analysis.patternM5 === 'BULLISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'MARUBOZU_BULL' || analysis.patternM5 === 'THREE_WHITE_SOLDIERS')) {
+         score += 30; reasons.push(`✔ Price Action M5 (${analysis.patternM5.replace('_', ' ')}) Terkonfirmasi di Support`);
+      } else if (dir === 'SELL' && (analysis.patternM5 === 'BEARISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'MARUBOZU_BEAR' || analysis.patternM5 === 'THREE_BLACK_CROWS')) {
+         score += 30; reasons.push(`✔ Price Action M5 (${analysis.patternM5.replace('_', ' ')}) Terkonfirmasi di Resistance`);
+      }
+
+      if (dir === 'BUY' && analysis.marketStructureM15 === 'FAKE_BREAKOUT_BEAR') {
+         score += 50; reasons.push(`✔ Setup Liquidity Grab (Stop Hunt) Valid di Support`);
+      } else if (dir === 'SELL' && analysis.marketStructureM15 === 'FAKE_BREAKOUT_BULL') {
+         score += 50; reasons.push(`✔ Setup Liquidity Grab (Stop Hunt) Valid di Resistance`);
       }
 
       if (analysis.volumeSpikeM5) { score += 10; reasons.push(`✔ Volume Spike mendukung False Breakout/Rejection`); }
@@ -145,8 +151,8 @@ export class SignalGenerator {
 
   private evaluateTrendingMode(analysis: AnalysisResult, currentPrice: number, sessionType: string, isNewsMode: boolean, activeStrategy: 'SNIPER' | 'HYPER_SCALPER') {
     let possibleDirections: ('BUY' | 'SELL')[] = [];
-    if (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR') possibleDirections.push('BUY');
-    if (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR') possibleDirections.push('SELL');
+    if (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BULL') || analysis.patternM5 === 'THREE_WHITE_SOLDIERS') possibleDirections.push('BUY');
+    if (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'THREE_BLACK_CROWS') possibleDirections.push('SELL');
 
     let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[], warnings: string[] } | null = null;
     for (const dir of possibleDirections) {
