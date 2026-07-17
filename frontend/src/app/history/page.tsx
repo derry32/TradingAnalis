@@ -12,15 +12,17 @@ import Link from 'next/link';
 export default function HistoryPage() {
   const [signals, setSignals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'TODAY' | 'WEEK' | 'MONTH' | 'ALL'>('TODAY');
+  const [filter, setFilter] = useState<'TODAY' | 'WEEK' | 'MONTH' | 'ALL' | 'CUSTOM'>('TODAY');
+  const [customDate, setCustomDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
-  const fetchHistory = async (filterType: string) => {
+  const fetchHistory = async (filterType: string, dateVal?: string) => {
     setLoading(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       
       const now = new Date();
       let start = new Date();
+      let end = new Date();
       
       if (filterType === 'TODAY') {
         start.setHours(0, 0, 0, 0);
@@ -34,10 +36,15 @@ export default function HistoryPage() {
         start.setHours(0, 0, 0, 0);
       } else if (filterType === 'ALL') {
         start = new Date('2020-01-01');
+      } else if (filterType === 'CUSTOM' && dateVal) {
+        start = new Date(dateVal);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(dateVal);
+        end.setHours(23, 59, 59, 999);
       }
 
       const startStr = start.toISOString();
-      const endStr = now.toISOString();
+      const endStr = filterType === 'CUSTOM' ? end.toISOString() : now.toISOString();
 
       const res = await axios.get(`${apiUrl}/api/history?start=${startStr}&end=${endStr}`);
       setSignals(res.data);
@@ -49,8 +56,8 @@ export default function HistoryPage() {
   };
 
   useEffect(() => {
-    fetchHistory(filter);
-  }, [filter]);
+    fetchHistory(filter, customDate);
+  }, [filter, customDate]);
 
   // Compute Statistics
   const stats = useMemo(() => {
@@ -107,17 +114,28 @@ export default function HistoryPage() {
 
           {/* Date Filters */}
           <div className="flex items-center bg-gray-900/60 p-1.5 rounded-xl border border-gray-800/80 backdrop-blur-md">
-            {['TODAY', 'WEEK', 'MONTH', 'ALL'].map((f) => (
+            {['TODAY', 'WEEK', 'MONTH', 'ALL', 'CUSTOM'].map((f) => (
               <button 
                 key={f}
                 onClick={() => setFilter(f as any)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${filter === f ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/20 border border-blue-500/50' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 {f === 'ALL' ? <Calendar size={14} /> : <Clock size={14} />} 
-                {f === 'TODAY' ? 'Hari Ini' : f === 'WEEK' ? 'Minggu Ini' : f === 'MONTH' ? 'Bulan Ini' : 'Semua'}
+                {f === 'TODAY' ? 'Hari Ini' : f === 'WEEK' ? 'Minggu Ini' : f === 'MONTH' ? 'Bulan Ini' : f === 'CUSTOM' ? 'Custom' : 'Semua'}
               </button>
             ))}
           </div>
+          
+          {filter === 'CUSTOM' && (
+             <div className="flex items-center bg-gray-900/60 p-1.5 rounded-xl border border-gray-800/80 backdrop-blur-md">
+                <input 
+                  type="date"
+                  value={customDate}
+                  onChange={(e) => setCustomDate(e.target.value)}
+                  className="bg-transparent text-gray-200 text-sm font-bold border-none outline-none px-3"
+                />
+             </div>
+          )}
         </header>
 
         {/* Global Statistics */}
@@ -192,7 +210,12 @@ export default function HistoryPage() {
                   return (
                   <tr key={idx} className="hover:bg-gray-800/30 transition-colors group">
                     <td className="p-4 pl-6 align-top">
-                      <span className="font-mono text-xs text-gray-300 font-medium">{ext.id || '-'}</span>
+                      <div className="font-mono text-xs text-gray-300 font-medium mb-1">{ext.id || '-'}</div>
+                      {sig.timestamp && (
+                        <div className="text-[10px] text-gray-500 flex items-center gap-1">
+                           <Clock size={10} /> {new Date(sig.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })} WIB
+                        </div>
+                      )}
                     </td>
                     
                     <td className="p-4 align-top">
