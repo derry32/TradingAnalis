@@ -37,16 +37,57 @@ async function updateSentiment() {
 updateSentiment();
 setInterval(updateSentiment, 60 * 60 * 1000);
 
+export interface TradeState {
+  id: string;
+  type: 'BUY' | 'SELL';
+  entryPrice: number;
+  stopLoss: number;
+  takeProfit1: number;
+  timeMs: number;
+  status: 'ACTIVE' | 'HIT_TP' | 'HIT_SL' | 'EXPIRED';
+  score: number;
+}
+
 let latestTechResult: any = { trendH1: 'NEUTRAL' };
 
-let lastSignalSentSniper: { type: string, timeMs: number, score: number } | null = null;
-let lastSignalSentScalper: { type: string, timeMs: number, score: number } | null = null;
+let activeTradeSniper: TradeState | null = null;
+let activeTradeScalper: TradeState | null = null;
 let activeStrategy: 'SNIPER' | 'HYPER_SCALPER' = 'SNIPER';
+
+function updateTradeState(trade: TradeState | null, currentM5: any, strategy: string): TradeState | null {
+  if (!trade || trade.status !== 'ACTIVE') return trade;
+  
+  const high = currentM5.high;
+  const low = currentM5.low;
+
+  if (trade.type === 'BUY') {
+      if (low <= trade.stopLoss) trade.status = 'HIT_SL';
+      else if (high >= trade.takeProfit1) trade.status = 'HIT_TP';
+  } else {
+      if (high >= trade.stopLoss) trade.status = 'HIT_SL';
+      else if (low <= trade.takeProfit1) trade.status = 'HIT_TP';
+  }
+  
+  // Expiry check (4 hours max hold for Sniper, 1.5 hours for Scalper)
+  const maxHoldTime = strategy === 'SNIPER' ? 4 * 60 * 60 * 1000 : 90 * 60 * 1000;
+  if (trade.status === 'ACTIVE' && Date.now() - trade.timeMs > maxHoldTime) {
+     trade.status = 'EXPIRED';
+  }
+
+  if (trade.status !== 'ACTIVE') {
+      console.log(`[Agent Derry][${strategy}] Trade ${trade.id} Closed: ${trade.status}`);
+  }
+
+  return trade;
+}
 
 // 2. Wire Market Data
 marketData.setOnM5Closed((data) => {
   const techResult = technical.analyze(data);
   latestTechResult = techResult;
+  
+  activeTradeSniper = updateTradeState(activeTradeSniper, data.currentM5, 'SNIPER');
+  activeTradeScalper = updateTradeState(activeTradeScalper, data.currentM5, 'HYPER_SCALPER');
   
   if (latestSentiment) {
     const upcomingNews = news.getUpcomingHighImpactNews();
@@ -59,34 +100,34 @@ marketData.setOnM5Closed((data) => {
         const now = Date.now();
         let shouldSend = true;
         
-        let lastSignalSent = strategy === 'SNIPER' ? lastSignalSentSniper : lastSignalSentScalper;
+        let activeTrade = strategy === 'SNIPER' ? activeTradeSniper : activeTradeScalper;
         
-        if (lastSignalSent) {
-          const timeDiffMins = (now - lastSignalSent.timeMs) / (1000 * 60);
-          const currentCooldown = strategy === 'HYPER_SCALPER' ? 5 : 15;
-          if (timeDiffMins < currentCooldown) {
-             if (lastSignalSent.type === signal.type && score <= lastSignalSent.score) {
-                shouldSend = false; // Spam prevention (Cooldown)
-                if (signal.type !== 'WAIT') {
-                   console.log(`[Agent Derry][${strategy}] Ignored duplicate ${signal.type} signal (Score: ${score}%) due to Cooldown.`);
-                }
-             }
-          }
+        if (activeTrade && activeTrade.status === 'ACTIVE') {
+           if (activeTrade.type === signal.type) {
+              shouldSend = false; // Cooldown for same direction
+              if (signal.type !== 'WAIT' && score > activeTrade.score + 10) {
+                 shouldSend = true; // Allow if score is significantly higher
+              } else if (signal.type !== 'WAIT') {
+                 console.log(`[Agent Derry][${strategy}] Ignored duplicate ${signal.type} signal (Score: ${score}%) due to Active Trade Cooldown.`);
+              }
+           } else if (signal.type !== 'WAIT') {
+              console.log(`[Agent Derry][${strategy}] REVERSAL DETECTED! Closing previous ${activeTrade.type} and opening ${signal.type}.`);
+              activeTrade.status = 'EXPIRED'; // Close previous
+           }
         }
 
         if (shouldSend && signal.type !== 'WAIT') {
-          const updatedSignalState = { type: signal.type, timeMs: now, score };
-          if (strategy === 'SNIPER') lastSignalSentSniper = updatedSignalState;
-          else lastSignalSentScalper = updatedSignalState;
+          const newTradeState: TradeState = { 
+            id: signal.id, type: signal.type as 'BUY' | 'SELL', 
+            entryPrice: signal.entryPrice, stopLoss: signal.stopLoss, takeProfit1: signal.takeProfit1, 
+            timeMs: now, status: 'ACTIVE', score 
+          };
+          if (strategy === 'SNIPER') activeTradeSniper = newTradeState;
+          else activeTradeScalper = newTradeState;
           
           insertSignal(signal); // Save to Database
           telegramBot.sendSignal(signal);
-        } else if (shouldSend && signal.type === 'WAIT') {
-          // We can log WAIT signals but we don't spam them to Telegram/DB
-          const updatedSignalState = { type: 'WAIT', timeMs: now, score: 0 };
-          if (strategy === 'SNIPER') lastSignalSentSniper = updatedSignalState;
-          else lastSignalSentScalper = updatedSignalState;
-          
+        } else if (signal.type === 'WAIT') {
           console.log(`[Agent Derry][${strategy}] Decision: WAIT. Reason: ${signal.reason.split('\n')[0]}`);
         }
       }

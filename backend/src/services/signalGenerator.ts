@@ -204,12 +204,18 @@ export class SignalGenerator {
     }
 
     const threshold = this.getDynamicConfidence(activeStrategy, analysis.marketCondition, sessionInfo.type);
+    let isOpportunityMode = false;
+    
     if (!bestTrade || bestTrade.score < threshold) {
-      return this.createWaitSignal(`Skor probabilitas ${bestTrade?.score || 0} terlalu rendah untuk mode ${analysis.marketCondition} (Minimal ${threshold}).`, activeStrategy);
+      if (bestTrade && bestTrade.score >= threshold - 15) {
+         isOpportunityMode = true;
+         bestTrade.warnings.push(`⚠️ OPPORTUNITY MODE: Skor probabilitas (${bestTrade.score}) di bawah standar ideal (${threshold}). Risiko lebih tinggi.`);
+      } else {
+         return this.createWaitSignal(`Skor probabilitas ${bestTrade?.score || 0} terlalu rendah untuk mode ${analysis.marketCondition} (Minimal ${threshold}).`, activeStrategy);
+      }
     }
 
-    const tradeType = bestTrade.dir;
-    const score = bestTrade.score;
+    const { dir: tradeType, score, reasons, warnings } = bestTrade!;
 
     let stopLoss = 0;
     const minDistance = 2.0; 
@@ -238,14 +244,16 @@ export class SignalGenerator {
     }
 
     let probabilityLabel = '⭐ Low';
-    if (activeStrategy === 'HYPER_SCALPER') {
-      if (score >= 95) probabilityLabel = '⭐⭐⭐⭐⭐ Very High';
-      else if (score >= 85) probabilityLabel = '⭐⭐⭐⭐ High';
-      else if (score >= 70) probabilityLabel = '⭐⭐⭐ Medium';
-    } else {
-      if (score >= 90) probabilityLabel = '⭐⭐⭐⭐⭐ Very High';
-      else if (score >= 80) probabilityLabel = '⭐⭐⭐⭐ High';
-      else if (score >= 65) probabilityLabel = '⭐⭐⭐ Medium';
+    if (!isOpportunityMode) {
+      if (activeStrategy === 'SNIPER') {
+        if (score >= 95) probabilityLabel = '⭐⭐⭐⭐⭐ Very High';
+        else if (score >= 85) probabilityLabel = '⭐⭐⭐⭐ High';
+        else if (score >= 70) probabilityLabel = '⭐⭐⭐ Medium';
+      } else {
+        if (score >= 90) probabilityLabel = '⭐⭐⭐⭐⭐ Very High';
+        else if (score >= 80) probabilityLabel = '⭐⭐⭐⭐ High';
+        else if (score >= 65) probabilityLabel = '⭐⭐⭐ Medium';
+      }
     }
 
     let reasonString = bestTrade.reasons.join('\n') + (bestTrade.warnings.length > 0 ? '\n' + bestTrade.warnings.join('\n') : '');
