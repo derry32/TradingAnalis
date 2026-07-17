@@ -34,6 +34,20 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  const toggleStrategy = async (newStrategy: string) => {
+    if (!status || status.config?.strategy === newStrategy) return;
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      await axios.post(`${apiUrl}/api/settings/strategy`, { strategy: newStrategy });
+      setStatus({
+        ...status,
+        config: { ...status.config, strategy: newStrategy }
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   // Helper to render confidence stars as progress bar
   const renderConfidence = (conf: number) => {
     return (
@@ -51,6 +65,37 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-gray-100 p-6 font-sans selection:bg-emerald-500/30">
+      
+      {/* Top Header & Strategy Toggle */}
+      <header className="max-w-[1400px] mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-blue-500/20 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+            <Target size={20} className="text-emerald-400" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-100 to-gray-400">
+              Institutional AI
+            </h1>
+            <p className="text-[10px] text-emerald-400/70 font-medium tracking-widest uppercase">Trading Analyst Engine</p>
+          </div>
+        </div>
+
+        <div className="flex items-center bg-gray-900/60 p-1.5 rounded-xl border border-gray-800/80 backdrop-blur-md">
+          <button 
+            onClick={() => toggleStrategy('SNIPER')}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'SNIPER' ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/20 border border-blue-500/50' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            <Crosshair size={14} /> Sniper (M15)
+          </button>
+          <button 
+            onClick={() => toggleStrategy('HYPER_SCALPER')}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'HYPER_SCALPER' ? 'bg-rose-600/90 text-white shadow-lg shadow-rose-500/20 border border-rose-500/50' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            <Zap size={14} /> Scalper (M5)
+          </button>
+        </div>
+      </header>
+
       <main className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Side: Chart */}
         <section className="lg:col-span-3 space-y-6">
@@ -210,20 +255,25 @@ export default function Home() {
                         <p className="font-mono text-xs text-rose-400/90">{sig.stopLoss?.toFixed(2) || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1">TP1 (1:2)</p>
+                        <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1">
+                          TP1 {status?.config?.strategy === 'HYPER_SCALPER' ? '(1:1.5)' : '(1:2)'}
+                        </p>
                         <p className="font-mono text-xs text-emerald-400/90">{sig.takeProfit?.toFixed(2) || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1">TP2 (1:3)</p>
+                        <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1">
+                          TP2 {status?.config?.strategy === 'HYPER_SCALPER' ? '(1:2)' : '(1:3)'}
+                        </p>
                         <p className="font-mono text-xs text-emerald-400/90">{ext?.tp2 ? ext.tp2.toFixed(2) : '-'}</p>
                       </div>
                     </div>
 
                     {/* Time Estimates */}
                     {ext?.validTime && (
-                      <div className="flex justify-between text-[9px] text-gray-500 mt-3 px-1 uppercase tracking-widest font-semibold">
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[9px] text-gray-500 mt-3 px-1 uppercase tracking-widest font-semibold">
                          <span>Valid: <span className="text-gray-400">{ext.validTime}</span></span>
                          <span>Est TP: <span className="text-gray-400">{ext.estTpTime}</span></span>
+                         {ext.timeStopLoss && <span>Time SL: <span className="text-gray-400">{ext.timeStopLoss}</span></span>}
                       </div>
                     )}
 

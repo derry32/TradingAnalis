@@ -40,7 +40,7 @@ setInterval(updateSentiment, 60 * 60 * 1000);
 let latestTechResult: any = { trendH1: 'NEUTRAL' };
 
 let lastSignalSent: { type: string, timeMs: number, score: number } | null = null;
-const COOLDOWN_MINUTES = 15;
+let activeStrategy: 'SNIPER' | 'HYPER_SCALPER' = 'SNIPER';
 
 // 2. Wire Market Data
 marketData.setOnM5Closed((data) => {
@@ -49,7 +49,7 @@ marketData.setOnM5Closed((data) => {
   
   if (latestSentiment) {
     const upcomingNews = news.getUpcomingHighImpactNews();
-    const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, data.currentM5.close, latestSentiment.score, upcomingNews);
+    const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, data.currentM5.close, latestSentiment.score, upcomingNews, activeStrategy);
     if (signal) {
       const score = signal.confidenceScore;
       
@@ -57,7 +57,8 @@ marketData.setOnM5Closed((data) => {
       let shouldSend = true;
       if (lastSignalSent) {
         const timeDiffMins = (now - lastSignalSent.timeMs) / (1000 * 60);
-        if (timeDiffMins < COOLDOWN_MINUTES) {
+        const currentCooldown = activeStrategy === 'HYPER_SCALPER' ? 5 : 15;
+        if (timeDiffMins < currentCooldown) {
            if (lastSignalSent.type === signal.type && score <= lastSignalSent.score) {
               shouldSend = false; // Spam prevention (Cooldown)
               if (signal.type !== 'WAIT') {
@@ -95,6 +96,20 @@ function getCurrentSession() {
 
 news.start(); // Start fetching news
 
+app.get('/api/settings/strategy', (req, res) => {
+  res.json({ strategy: activeStrategy });
+});
+
+app.post('/api/settings/strategy', (req, res) => {
+  const { strategy } = req.body;
+  if (strategy === 'SNIPER' || strategy === 'HYPER_SCALPER') {
+    activeStrategy = strategy;
+    res.json({ success: true, strategy: activeStrategy });
+  } else {
+    res.status(400).json({ error: 'Invalid strategy' });
+  }
+});
+
 // 3. API Endpoints
 app.get('/api/status', (req, res) => {
   let analysisDetail = 'Menyiapkan mesin analisis...';
@@ -129,7 +144,8 @@ app.get('/api/status', (req, res) => {
     config: {
       timeframe: config.TIMEFRAME_MINUTES,
       rr: config.RISK_REWARD_RATIO,
-      sl: config.STOP_LOSS_PIPS
+      sl: config.STOP_LOSS_PIPS,
+      strategy: activeStrategy
     }
   });
 });

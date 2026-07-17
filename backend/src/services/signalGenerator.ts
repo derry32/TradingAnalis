@@ -14,6 +14,7 @@ export interface Signal {
   takeProfit2: number;
   validTime: string;
   estimatedTpTime: string;
+  timeStopLoss?: string;
   timestamp: string;
   reason: string;
 }
@@ -33,7 +34,8 @@ export class SignalGenerator {
     direction: 'BUY' | 'SELL', 
     analysis: AnalysisResult, 
     sessionType: string,
-    isNewsMode: boolean
+    isNewsMode: boolean,
+    strategy: 'SNIPER' | 'HYPER_SCALPER'
   ) {
     let score = 0;
     let reasons: string[] = [];
@@ -42,7 +44,9 @@ export class SignalGenerator {
     // Base Weights
     let wTrendH1 = 20, wM15 = 15, wSR = 15, wPA = 15, wEMA = 10, wVol = 5, wRR = 5, wNews = 3, wATR = 5, wSession = 2;
 
-    if (isNewsMode) {
+    if (strategy === 'HYPER_SCALPER') {
+        wTrendH1=20; wM15=20; wSR=15; wPA=15; wEMA=10; wVol=8; wRR=5; wNews=3; wATR=2; wSession=2;
+    } else if (isNewsMode) {
         wTrendH1=15; wM15=20; wPA=20; wVol=10; wATR=5; wRR=3; wSession=2; wSR=0; wEMA=0; wNews=25;
     } else {
         if (sessionType === 'SYDNEY') { wTrendH1=20; wM15=10; wSR=20; wPA=20; wEMA=10; wVol=5; wRR=5; wNews=3; wATR=5; wSession=2; }
@@ -93,12 +97,17 @@ export class SignalGenerator {
     sentiment: 'BULLISH' | 'BEARISH' | 'NEUTRAL',
     currentPrice: number,
     sentimentScore: number,
-    upcomingNews: any = null
+    upcomingNews: any = null,
+    strategy: 'SNIPER' | 'HYPER_SCALPER' = 'SNIPER'
   ): Signal {
     
     const currentHourUTC = new Date().getUTCHours();
     const currentHourWIB = (currentHourUTC + 7) % 24;
     const sessionInfo = this.getSession(currentHourWIB);
+    
+    if (strategy === 'HYPER_SCALPER' && (sessionInfo.type === 'SYDNEY' || sessionInfo.type === 'TOKYO' || sessionInfo.type === 'OFF')) {
+        return this.createWaitSignal("Sesi tidak valid untuk Hyper Scalper. Harap tunggu sesi London atau New York.", sessionInfo.name, 20, []);
+    }
     
     let isNewsMode = false;
     let newsWarning = '';
@@ -129,7 +138,7 @@ export class SignalGenerator {
     let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[], warnings: string[] } | null = null;
 
     for (const dir of possibleDirections) {
-      const result = this.calculateScore(dir, analysis, sessionInfo.type, isNewsMode);
+      const result = this.calculateScore(dir, analysis, sessionInfo.type, isNewsMode, strategy);
       if (!bestTrade || result.score > bestTrade.score) {
         bestTrade = { dir, ...result };
       }
@@ -157,21 +166,43 @@ export class SignalGenerator {
       return this.createWaitSignal("Risiko per pip terlalu sempit (Bahaya Slippage/Spread).", sessionInfo.name, score, []);
     }
 
-    const tp1 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 2) : currentPrice - (riskAbsolute * 2);
-    const tp2 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 3) : currentPrice - (riskAbsolute * 3);
+    let tp1 = 0;
+    let tp2 = 0;
+    
+    if (strategy === 'HYPER_SCALPER') {
+      tp1 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 1.5) : currentPrice - (riskAbsolute * 1.5);
+      tp2 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 2) : currentPrice - (riskAbsolute * 2);
+    } else {
+      tp1 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 2) : currentPrice - (riskAbsolute * 2);
+      tp2 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 3) : currentPrice - (riskAbsolute * 3);
+    }
 
     let probabilityLabel = '⭐ Low';
-    if (score >= 90) probabilityLabel = '⭐⭐⭐⭐⭐ Very High';
-    else if (score >= 80) probabilityLabel = '⭐⭐⭐⭐ High';
-    else if (score >= 65) probabilityLabel = '⭐⭐⭐ Medium';
+    if (strategy === 'HYPER_SCALPER') {
+      if (score >= 95) probabilityLabel = '⭐⭐⭐⭐⭐ Very High';
+      else if (score >= 85) probabilityLabel = '⭐⭐⭐⭐ High';
+      else if (score >= 70) probabilityLabel = '⭐⭐⭐ Medium';
+    } else {
+      if (score >= 90) probabilityLabel = '⭐⭐⭐⭐⭐ Very High';
+      else if (score >= 80) probabilityLabel = '⭐⭐⭐⭐ High';
+      else if (score >= 65) probabilityLabel = '⭐⭐⭐ Medium';
+    }
 
     let reasonString = bestTrade.reasons.join('\n') + (bestTrade.warnings.length > 0 ? '\n' + bestTrade.warnings.join('\n') : '');
     if (newsWarning) reasonString = newsWarning + '\n\n' + reasonString;
 
     let validTime = '20 Menit';
     let estTpTime = '30-90 Menit';
-    if (sessionInfo.type === 'SYDNEY' || sessionInfo.type === 'TOKYO') estTpTime = '60-180 Menit';
-    else if (sessionInfo.type === 'LONDON' || sessionInfo.type === 'NY') estTpTime = '20-60 Menit';
+    let timeStopLoss = undefined;
+    
+    if (strategy === 'HYPER_SCALPER') {
+      validTime = '5-15 Menit';
+      estTpTime = '5-30 Menit';
+      timeStopLoss = '30-45 Menit';
+    } else {
+      if (sessionInfo.type === 'SYDNEY' || sessionInfo.type === 'TOKYO') estTpTime = '60-180 Menit';
+      else if (sessionInfo.type === 'LONDON' || sessionInfo.type === 'NY') estTpTime = '20-60 Menit';
+    }
 
     const dateStr = new Date().toISOString().slice(0,10).replace(/-/g, '');
     const randId = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
@@ -189,6 +220,7 @@ export class SignalGenerator {
       takeProfit2: tp2,
       validTime,
       estimatedTpTime: estTpTime,
+      timeStopLoss,
       timestamp: new Date().toISOString(),
       reason: reasonString
     };
