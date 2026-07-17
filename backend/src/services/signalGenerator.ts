@@ -95,6 +95,69 @@ export class SignalGenerator {
     return { score, reasons, warnings };
   }
 
+  private getDynamicConfidence(strategy: 'SNIPER' | 'HYPER_SCALPER', marketCondition: string, sessionType: string): number {
+    let base = strategy === 'SNIPER' ? 80 : 70;
+    if (marketCondition === 'SIDEWAYS') {
+       base += (strategy === 'SNIPER' ? 5 : -5);
+    }
+    if (sessionType === 'SYDNEY') base += 10;
+    else if (sessionType === 'TOKYO') base += 5;
+    return base;
+  }
+
+  private evaluateSidewaysMode(analysis: AnalysisResult, currentPrice: number, sessionType: string, isNewsMode: boolean, activeStrategy: 'SNIPER' | 'HYPER_SCALPER') {
+    let possibleDirections: ('BUY' | 'SELL')[] = [];
+    if (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR') possibleDirections.push('BUY');
+    if (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR') possibleDirections.push('SELL');
+
+    let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[], warnings: string[] } | null = null;
+    for (const dir of possibleDirections) {
+      let score = 0;
+      let reasons: string[] = [];
+      let warnings: string[] = [];
+
+      if (analysis.isRetracedH1) { 
+         score += 40; reasons.push(`✔ Harga memantul di area S/R (Sideways Range)`); 
+      } else { 
+         warnings.push(`✖ Harga mengambang di tengah range Sideways`); 
+      }
+
+      if (dir === 'BUY' && (analysis.patternM5 === 'BULLISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR')) {
+         score += 30; reasons.push(`✔ Price Action M5 (Bullish) Terkonfirmasi di Support`);
+      } else if (dir === 'SELL' && (analysis.patternM5 === 'BEARISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR')) {
+         score += 30; reasons.push(`✔ Price Action M5 (Bearish) Terkonfirmasi di Resistance`);
+      }
+
+      if (analysis.volumeSpikeM5) { score += 10; reasons.push(`✔ Volume Spike mendukung False Breakout/Rejection`); }
+      if (analysis.atr_M15 > 1.0) { score += 10; reasons.push(`✔ ATR Volatilitas Cukup`); }
+      score += 10; reasons.push(`✔ Risk:Reward Valid`); 
+
+      if (isNewsMode) {
+          score -= 20; warnings.push(`🚨 Berbahaya trading Sideways saat High Impact News!`);
+      }
+
+      if (!bestTrade || score > bestTrade.score) {
+        bestTrade = { dir, score, reasons, warnings };
+      }
+    }
+    return bestTrade;
+  }
+
+  private evaluateTrendingMode(analysis: AnalysisResult, currentPrice: number, sessionType: string, isNewsMode: boolean, activeStrategy: 'SNIPER' | 'HYPER_SCALPER') {
+    let possibleDirections: ('BUY' | 'SELL')[] = [];
+    if (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR') possibleDirections.push('BUY');
+    if (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR') possibleDirections.push('SELL');
+
+    let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[], warnings: string[] } | null = null;
+    for (const dir of possibleDirections) {
+      const result = this.calculateScore(dir, analysis, sessionType, isNewsMode, activeStrategy);
+      if (!bestTrade || result.score > bestTrade.score) {
+        bestTrade = { dir, ...result };
+      }
+    }
+    return bestTrade;
+  }
+
   public generate(
     analysis: AnalysisResult,
     sentiment: 'BULLISH' | 'BEARISH' | 'NEUTRAL',
@@ -123,33 +186,20 @@ export class SignalGenerator {
       }
     }
 
-    if (analysis.marketCondition === 'SIDEWAYS') {
-       return this.createWaitSignal("Market sedang Sideways.", activeStrategy);
-    }
     if (analysis.patternM5 === 'NONE') {
        return this.createWaitSignal("Menunggu konfirmasi Price Action (Engulfing / Pin Bar) di M5.", activeStrategy);
     }
 
-    let possibleDirections: ('BUY' | 'SELL')[] = [];
-    if (analysis.patternM5.includes('BULLISH')) possibleDirections.push('BUY');
-    if (analysis.patternM5.includes('BEARISH')) possibleDirections.push('SELL');
-    if (analysis.patternM5 === 'PIN_BAR') {
-      possibleDirections.push('BUY');
-      possibleDirections.push('SELL');
+    let bestTrade;
+    if (analysis.marketCondition === 'SIDEWAYS') {
+       bestTrade = this.evaluateSidewaysMode(analysis, currentPrice, sessionInfo.type, isNewsMode, activeStrategy);
+    } else {
+       bestTrade = this.evaluateTrendingMode(analysis, currentPrice, sessionInfo.type, isNewsMode, activeStrategy);
     }
 
-    let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[], warnings: string[] } | null = null;
-
-    for (const dir of possibleDirections) {
-      const result = this.calculateScore(dir, analysis, sessionInfo.type, isNewsMode, activeStrategy);
-      if (!bestTrade || result.score > bestTrade.score) {
-        bestTrade = { dir, ...result };
-      }
-    }
-
-    const threshold = activeStrategy === 'HYPER_SCALPER' ? 70 : 50;
+    const threshold = this.getDynamicConfidence(activeStrategy, analysis.marketCondition, sessionInfo.type);
     if (!bestTrade || bestTrade.score < threshold) {
-      return this.createWaitSignal(`Skor probabilitas ${bestTrade?.score || 0} terlalu rendah untuk entry (Minimal ${threshold}).`, activeStrategy);
+      return this.createWaitSignal(`Skor probabilitas ${bestTrade?.score || 0} terlalu rendah untuk mode ${analysis.marketCondition} (Minimal ${threshold}).`, activeStrategy);
     }
 
     const tradeType = bestTrade.dir;

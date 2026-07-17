@@ -46,7 +46,20 @@
 | C-03 | UI | Real-Time Charting | Menghapus dummy data di Frontend dan menghubungkan grafik ke endpoint API backend. | ✅ Selesai |
 | C-04 | UI | Advanced TV Widget | Mengganti *lightweight-charts* dengan *Advanced TradingView Widget* (lengkap dengan Countdown & Volume). | ✅ Selesai |
 
-## 🚀 Mendatang: SPRINT 4 (Production Ready)
+## 🚀 SPRINT 4 (AI Trading Engine V2.0)
+**Status:** Sedang Berjalan (In Progress)
+**Fokus:** Perombakan arsitektur kecerdasan buatan menjadi *Decision Tree* untuk menyesuaikan kondisi pasar secara dinamis.
+
+### Backlog Sprint 4 (V2.0 Blueprint)
+| ID | Tipe | Judul | Deskripsi Singkat | Status |
+|----|------|-------|-------------------|--------|
+| V2-1 | Core | Phase 1: Decision Tree & Dynamics | Pemisahan strategi Trending/Sideways, Dynamic Confidence, dan Session Aggressiveness. | ⏳ Belum Dimulai |
+| V2-2 | Core | Phase 2: Advanced Price Action | Deteksi Momentum Candle (Marubozu), Breakout Confirmation (Vol+ATR), dan Liquidity Grab. | ⏳ Belum Dimulai |
+| V2-3 | Core | Phase 3: State & Opportunity Mode | Cooldown berbasis siklus trade (TP/SL/Expired) dan fitur sinyal kuning (Opportunity Mode). | ⏳ Belum Dimulai |
+
+---
+
+## 🚀 Mendatang: SPRINT 5 (Production Ready)
 **Status:** Backlog (Belum Dimulai)
 
 ### Product Backlog (Prioritas Tinggi - Menengah)
@@ -60,7 +73,7 @@
 
 ---
 
-## 💡 Masa Depan: SPRINT 5 (Fase 2 - Monetisasi & Otomatisasi Eksekusi)
+## 💡 Masa Depan: SPRINT 6 (Fase 2 - Monetisasi & Otomatisasi Eksekusi)
 **Status:** Perencanaan Panjang (Icebox)
 
 | ID | Tipe | Judul | Deskripsi Singkat |
