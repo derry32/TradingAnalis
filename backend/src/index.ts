@@ -129,6 +129,11 @@ app.get('/api/status', (req, res) => {
     }
   }
 
+  const currentSession = getCurrentSession();
+  if (activeStrategy === 'HYPER_SCALPER' && (currentSession === 'SYDNEY' || currentSession === 'TOKYO' || currentSession === 'OFF')) {
+    analysisDetail = "Sesi tidak valid untuk Hyper Scalper. Harap tunggu sesi London atau New York.";
+  }
+
   let activeTrend = latestTechResult ? latestTechResult.trendH1 : 'NEUTRAL';
   if (activeTrend === 'NEUTRAL' && latestTechResult) {
     if (latestTechResult.marketStructureM15?.includes('BULL')) activeTrend = 'BULLISH';

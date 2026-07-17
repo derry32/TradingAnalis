@@ -14,7 +14,7 @@ export interface Signal {
   takeProfit2: number;
   validTime: string;
   estimatedTpTime: string;
-  timeStopLoss?: string;
+  timeStopLoss?: string | undefined;
   timestamp: string;
   reason: string;
 }
@@ -56,7 +56,9 @@ export class SignalGenerator {
         else if (sessionType === 'NY') { wTrendH1=20; wM15=20; wSR=15; wPA=15; wEMA=10; wVol=5; wRR=5; wNews=5; wATR=3; wSession=2; }
     }
 
-    if (analysis.trendH1 === direction) { score += wTrendH1; reasons.push(`✔ Trend H1 ${direction}`); }
+    const trendMatch = (direction === 'BUY' && analysis.trendH1 === 'BULLISH') || 
+                       (direction === 'SELL' && analysis.trendH1 === 'BEARISH');
+    if (trendMatch) { score += wTrendH1; reasons.push(`✔ Trend H1 ${analysis.trendH1}`); }
     else { warnings.push(`✖ Counter Trend H1`); }
 
     const bosChochMatch = (direction === 'BUY' && (analysis.marketStructureM15 === 'BOS_BULL' || analysis.marketStructureM15 === 'CHOCH_BULL')) ||
