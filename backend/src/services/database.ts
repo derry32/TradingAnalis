@@ -7,7 +7,7 @@ export const supabase = createClient(config.SUPABASE_URL, config.SUPABASE_KEY);
 export async function insertSignal(signal: any) {
   if (!config.SUPABASE_URL || !config.SUPABASE_KEY) {
     console.warn('[DB] Supabase not configured. Skipping DB insert.');
-    return;
+    return null;
   }
   
   const payload = {
@@ -30,12 +30,14 @@ export async function insertSignal(signal: any) {
     timestamp: signal.timestamp
   };
 
-  const { error } = await supabase.from('signals').insert([payload]);
+  const { data, error } = await supabase.from('signals').insert([payload]).select();
 
   if (error) {
     console.error('[DB] Error inserting signal:', error);
+    return null;
   } else {
     console.log('[DB] Signal saved to Supabase.');
+    return data && data.length > 0 ? data[0].id : null;
   }
 }
 
@@ -64,6 +66,51 @@ export async function fetchRecentSignals(limit: number = 50) {
   }
 
   // Petakan kembali format kolom snake_case ke camelCase untuk frontend
+  return data.map((row: any) => ({
+    id: row.id,
+    type: row.type,
+    entryPrice: Number(row.entry_price),
+    stopLoss: Number(row.stop_loss),
+    takeProfit: Number(row.take_profit),
+    reason: row.reason,
+    timestamp: row.timestamp
+  }));
+}
+
+export async function updateSignalStatus(dbId: number | string, status: string, hitTime: string, durationMins: number, accuracy: number, pips: number) {
+  if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return;
+  
+  const { data, error } = await supabase.from('signals').select('reason').eq('id', dbId).single();
+  if (error || !data) return;
+  
+  let reasonObj: any = {};
+  try {
+    reasonObj = JSON.parse(data.reason);
+  } catch(e) {}
+  
+  reasonObj.finalStatus = status;
+  reasonObj.hitTime = hitTime;
+  reasonObj.duration = durationMins;
+  reasonObj.accuracy = accuracy;
+  reasonObj.pips = pips;
+  
+  await supabase.from('signals').update({ reason: JSON.stringify(reasonObj) }).eq('id', dbId);
+}
+
+export async function fetchSignalsByDate(startDate: string, endDate: string) {
+  if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return [];
+  const { data, error } = await supabase
+    .from('signals')
+    .select('*')
+    .gte('timestamp', startDate)
+    .lte('timestamp', endDate)
+    .order('timestamp', { ascending: false });
+    
+  if (error) {
+    console.error('[DB] Error fetching signals by date:', error);
+    return [];
+  }
+  
   return data.map((row: any) => ({
     id: row.id,
     type: row.type,

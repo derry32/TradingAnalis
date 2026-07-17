@@ -9,6 +9,7 @@ import {
   ArrowUpRight, ArrowDownRight, Zap, Target,
   Crosshair, ShieldAlert, RadioTower, BarChart2
 } from 'lucide-react';
+import Link from 'next/link';
 
 const Chart = dynamic(() => import('@/components/Chart'), { ssr: false });
 
@@ -81,6 +82,10 @@ export default function Home() {
         </div>
 
         <div className="flex items-center bg-gray-900/60 p-1.5 rounded-xl border border-gray-800/80 backdrop-blur-md">
+          <Link href="/history" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-all mr-1">
+            <Activity size={14} /> Tracker
+          </Link>
+          <div className="w-[1px] h-6 bg-gray-700/50 mr-1"></div>
           <button 
             onClick={() => toggleStrategy('SNIPER')}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'SNIPER' ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/20 border border-blue-500/50' : 'text-gray-500 hover:text-gray-300'}`}

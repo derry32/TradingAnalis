@@ -7,7 +7,7 @@ import { NewsService } from './services/newsService';
 import { SentimentAnalysis, SentimentResult } from './services/sentimentAnalysis';
 import { SignalGenerator, Signal } from './services/signalGenerator';
 import { TelegramService } from './services/telegramBot';
-import { insertSignal, fetchRecentSignals } from './services/database';
+import { insertSignal, fetchRecentSignals, updateSignalStatus, fetchSignalsByDate } from './services/database';
 
 const app = express();
 app.use(cors());
@@ -46,6 +46,7 @@ export interface TradeState {
   timeMs: number;
   status: 'ACTIVE' | 'HIT_TP' | 'HIT_SL' | 'EXPIRED';
   score: number;
+  dbId?: string | number;
 }
 
 let latestTechResult: any = { trendH1: 'NEUTRAL' };
@@ -76,6 +77,27 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
 
   if (trade.status !== 'ACTIVE') {
       console.log(`[Agent Derry][${strategy}] Trade ${trade.id} Closed: ${trade.status}`);
+      if (trade.dbId && (trade.status === 'HIT_TP' || trade.status === 'HIT_SL')) {
+          const hitTimeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) + ' WIB';
+          const durationMins = Math.floor((Date.now() - trade.timeMs) / (60 * 1000));
+          
+          let accuracy = 0;
+          let pips = 0;
+          if (trade.status === 'HIT_SL') {
+              accuracy = 0;
+              pips = trade.type === 'BUY' ? trade.stopLoss - trade.entryPrice : trade.entryPrice - trade.stopLoss;
+              pips = Math.round(pips * 10);
+          } else if (trade.status === 'HIT_TP') {
+              accuracy = 100;
+              if (durationMins > 20) {
+                  accuracy = Math.max(0, 100 - ((durationMins - 20) * 0.5));
+              }
+              pips = trade.type === 'BUY' ? trade.takeProfit1 - trade.entryPrice : trade.entryPrice - trade.takeProfit1;
+              pips = Math.round(pips * 10);
+          }
+          
+          updateSignalStatus(trade.dbId, trade.status, hitTimeStr, durationMins, accuracy, pips);
+      }
   }
 
   return trade;
@@ -125,7 +147,16 @@ marketData.setOnM5Closed((data) => {
           if (strategy === 'SNIPER') activeTradeSniper = newTradeState;
           else activeTradeScalper = newTradeState;
           
-          insertSignal(signal); // Save to Database
+          insertSignal(signal).then(dbId => {
+              if (dbId) {
+                  if (strategy === 'SNIPER' && activeTradeSniper && activeTradeSniper.id === signal.id) {
+                      activeTradeSniper.dbId = dbId;
+                  } else if (strategy === 'HYPER_SCALPER' && activeTradeScalper && activeTradeScalper.id === signal.id) {
+                      activeTradeScalper.dbId = dbId;
+                  }
+              }
+          });
+          
           telegramBot.sendSignal(signal);
         } else if (signal.type === 'WAIT') {
           console.log(`[Agent Derry][${strategy}] Decision: WAIT. Reason: ${signal.reason.split('\n')[0]}`);
@@ -161,6 +192,20 @@ app.post('/api/settings/strategy', (req, res) => {
     res.json({ success: true, strategy: activeStrategy });
   } else {
     res.status(400).json({ error: 'Invalid strategy' });
+  }
+});
+
+app.get('/api/history', async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    if (!start || !end) {
+      return res.status(400).json({ error: 'Missing start or end date' });
+    }
+    const signals = await fetchSignalsByDate(start as string, end as string);
+    res.json(signals);
+  } catch (error) {
+    console.error('Error in /api/history:', error);
+    res.status(500).json({ error: 'Failed to fetch history' });
   }
 });
 
