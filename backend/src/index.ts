@@ -156,8 +156,20 @@ app.get('/api/status', (req, res) => {
 });
 
 app.get('/api/signals', async (req, res) => {
-  const signals = await fetchRecentSignals(50);
-  res.json(signals);
+  const signals = await fetchRecentSignals(100);
+  
+  const filteredSignals = signals.filter(sig => {
+    try {
+      const reasonObj = JSON.parse(sig.reason);
+      // Fallback to SNIPER if strategy is not defined (for older signals)
+      const sigStrategy = reasonObj.strategy || 'SNIPER';
+      return sigStrategy === activeStrategy;
+    } catch (e) {
+      return activeStrategy === 'SNIPER';
+    }
+  });
+
+  res.json(filteredSignals.slice(0, 50));
 });
 
 app.get('/api/candles', (req, res) => {

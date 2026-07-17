@@ -17,6 +17,7 @@ export interface Signal {
   timeStopLoss?: string | undefined;
   timestamp: string;
   reason: string;
+  strategy: 'SNIPER' | 'HYPER_SCALPER';
 }
 
 export class SignalGenerator {
@@ -100,15 +101,15 @@ export class SignalGenerator {
     currentPrice: number,
     sentimentScore: number,
     upcomingNews: any = null,
-    strategy: 'SNIPER' | 'HYPER_SCALPER' = 'SNIPER'
+    activeStrategy: 'SNIPER' | 'HYPER_SCALPER' = 'SNIPER'
   ): Signal {
     
     const currentHourUTC = new Date().getUTCHours();
     const currentHourWIB = (currentHourUTC + 7) % 24;
     const sessionInfo = this.getSession(currentHourWIB);
     
-    if (strategy === 'HYPER_SCALPER' && (sessionInfo.type === 'SYDNEY' || sessionInfo.type === 'TOKYO' || sessionInfo.type === 'OFF')) {
-        return this.createWaitSignal("Sesi tidak valid untuk Hyper Scalper. Harap tunggu sesi London atau New York.", sessionInfo.name, 20, []);
+    if (activeStrategy === 'HYPER_SCALPER' && (sessionInfo.type === 'SYDNEY' || sessionInfo.type === 'TOKYO' || sessionInfo.type === 'OFF')) {
+        return this.createWaitSignal("Sesi tidak valid untuk Hyper Scalper. Harap tunggu sesi London atau New York.", activeStrategy);
     }
     
     let isNewsMode = false;
@@ -123,10 +124,10 @@ export class SignalGenerator {
     }
 
     if (analysis.marketCondition === 'SIDEWAYS') {
-       return this.createWaitSignal("Market sedang Sideways.", sessionInfo.name, 50, []);
+       return this.createWaitSignal("Market sedang Sideways.", activeStrategy);
     }
     if (analysis.patternM5 === 'NONE') {
-       return this.createWaitSignal("Menunggu konfirmasi Price Action (Engulfing / Pin Bar) di M5.", sessionInfo.name, 30, []);
+       return this.createWaitSignal("Menunggu konfirmasi Price Action (Engulfing / Pin Bar) di M5.", activeStrategy);
     }
 
     let possibleDirections: ('BUY' | 'SELL')[] = [];
@@ -140,14 +141,15 @@ export class SignalGenerator {
     let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[], warnings: string[] } | null = null;
 
     for (const dir of possibleDirections) {
-      const result = this.calculateScore(dir, analysis, sessionInfo.type, isNewsMode, strategy);
+      const result = this.calculateScore(dir, analysis, sessionInfo.type, isNewsMode, activeStrategy);
       if (!bestTrade || result.score > bestTrade.score) {
         bestTrade = { dir, ...result };
       }
     }
 
-    if (!bestTrade || bestTrade.score < 50) {
-      return this.createWaitSignal("Skor probabilitas terlalu rendah untuk entry.", sessionInfo.name, bestTrade?.score || 30, bestTrade?.warnings || []);
+    const threshold = activeStrategy === 'HYPER_SCALPER' ? 70 : 50;
+    if (!bestTrade || bestTrade.score < threshold) {
+      return this.createWaitSignal(`Skor probabilitas ${bestTrade?.score || 0} terlalu rendah untuk entry (Minimal ${threshold}).`, activeStrategy);
     }
 
     const tradeType = bestTrade.dir;
@@ -165,13 +167,13 @@ export class SignalGenerator {
 
     const riskAbsolute = Math.abs(currentPrice - stopLoss);
     if (riskAbsolute < 0.3) {
-      return this.createWaitSignal("Risiko per pip terlalu sempit (Bahaya Slippage/Spread).", sessionInfo.name, score, []);
+      return this.createWaitSignal("Risiko per pip terlalu sempit (Bahaya Slippage/Spread).", activeStrategy);
     }
 
     let tp1 = 0;
     let tp2 = 0;
     
-    if (strategy === 'HYPER_SCALPER') {
+    if (activeStrategy === 'HYPER_SCALPER') {
       tp1 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 1.5) : currentPrice - (riskAbsolute * 1.5);
       tp2 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 2) : currentPrice - (riskAbsolute * 2);
     } else {
@@ -180,7 +182,7 @@ export class SignalGenerator {
     }
 
     let probabilityLabel = '⭐ Low';
-    if (strategy === 'HYPER_SCALPER') {
+    if (activeStrategy === 'HYPER_SCALPER') {
       if (score >= 95) probabilityLabel = '⭐⭐⭐⭐⭐ Very High';
       else if (score >= 85) probabilityLabel = '⭐⭐⭐⭐ High';
       else if (score >= 70) probabilityLabel = '⭐⭐⭐ Medium';
@@ -197,7 +199,7 @@ export class SignalGenerator {
     let estTpTime = '30-90 Menit';
     let timeStopLoss = undefined;
     
-    if (strategy === 'HYPER_SCALPER') {
+    if (activeStrategy === 'HYPER_SCALPER') {
       validTime = '5-15 Menit';
       estTpTime = '5-30 Menit';
       timeStopLoss = '30-45 Menit';
@@ -224,19 +226,19 @@ export class SignalGenerator {
       estimatedTpTime: estTpTime,
       timeStopLoss,
       timestamp: new Date().toISOString(),
-      reason: reasonString
+      reason: reasonString,
+      strategy: activeStrategy
     };
   }
 
-  private createWaitSignal(cause: string, session: string, score: number, warnings: string[]): Signal {
-    const reasonStr = cause + '\n' + warnings.join('\n');
+  private createWaitSignal(reason: string, strategy: 'SNIPER' | 'HYPER_SCALPER'): Signal {
     return {
       id: `WAIT-${Date.now()}`,
       type: 'WAIT',
       probabilityLabel: 'N/A',
-      confidenceScore: score,
+      confidenceScore: 0,
       marketCondition: 'N/A',
-      session,
+      session: 'N/A',
       entryPrice: 0,
       stopLoss: 0,
       takeProfit1: 0,
@@ -244,7 +246,8 @@ export class SignalGenerator {
       validTime: '-',
       estimatedTpTime: '-',
       timestamp: new Date().toISOString(),
-      reason: reasonStr
+      reason: reason,
+      strategy: strategy
     };
   }
 }

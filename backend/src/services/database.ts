@@ -24,7 +24,8 @@ export async function insertSignal(signal: any) {
       session: signal.session,
       validTime: signal.validTime,
       estTpTime: signal.estimatedTpTime,
-      id: signal.id
+      id: signal.id,
+      strategy: signal.strategy
     }),
     timestamp: signal.timestamp
   };
