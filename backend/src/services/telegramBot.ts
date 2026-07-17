@@ -31,6 +31,7 @@ export class TelegramService {
     const formattedReason = signal.reason.split('\n').map(r => r.startsWith('✔') || r.startsWith('✖') || r.startsWith('🚨') ? r : `* ${r}`).join('\n');
 
     const message = `
+🚨 [${signal.strategy} MODE] 🚨
 ${emoji} **${signal.type} - ${signal.probabilityLabel}**
 Signal ID: \`${signal.id}\`
 Confidence: ${signal.confidenceScore}%

@@ -39,7 +39,8 @@ setInterval(updateSentiment, 60 * 60 * 1000);
 
 let latestTechResult: any = { trendH1: 'NEUTRAL' };
 
-let lastSignalSent: { type: string, timeMs: number, score: number } | null = null;
+let lastSignalSentSniper: { type: string, timeMs: number, score: number } | null = null;
+let lastSignalSentScalper: { type: string, timeMs: number, score: number } | null = null;
 let activeStrategy: 'SNIPER' | 'HYPER_SCALPER' = 'SNIPER';
 
 // 2. Wire Market Data
@@ -49,33 +50,45 @@ marketData.setOnM5Closed((data) => {
   
   if (latestSentiment) {
     const upcomingNews = news.getUpcomingHighImpactNews();
-    const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, data.currentM5.close, latestSentiment.score, upcomingNews, activeStrategy);
-    if (signal) {
-      const score = signal.confidenceScore;
-      
-      const now = Date.now();
-      let shouldSend = true;
-      if (lastSignalSent) {
-        const timeDiffMins = (now - lastSignalSent.timeMs) / (1000 * 60);
-        const currentCooldown = activeStrategy === 'HYPER_SCALPER' ? 5 : 15;
-        if (timeDiffMins < currentCooldown) {
-           if (lastSignalSent.type === signal.type && score <= lastSignalSent.score) {
-              shouldSend = false; // Spam prevention (Cooldown)
-              if (signal.type !== 'WAIT') {
-                 console.log(`[Agent Derry] Ignored duplicate ${signal.type} signal (Score: ${score}%) due to Cooldown.`);
-              }
-           }
+    const strategies: ('SNIPER' | 'HYPER_SCALPER')[] = ['SNIPER', 'HYPER_SCALPER'];
+    
+    for (const strategy of strategies) {
+      const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, data.currentM5.close, latestSentiment.score, upcomingNews, strategy);
+      if (signal) {
+        const score = signal.confidenceScore;
+        const now = Date.now();
+        let shouldSend = true;
+        
+        let lastSignalSent = strategy === 'SNIPER' ? lastSignalSentSniper : lastSignalSentScalper;
+        
+        if (lastSignalSent) {
+          const timeDiffMins = (now - lastSignalSent.timeMs) / (1000 * 60);
+          const currentCooldown = strategy === 'HYPER_SCALPER' ? 5 : 15;
+          if (timeDiffMins < currentCooldown) {
+             if (lastSignalSent.type === signal.type && score <= lastSignalSent.score) {
+                shouldSend = false; // Spam prevention (Cooldown)
+                if (signal.type !== 'WAIT') {
+                   console.log(`[Agent Derry][${strategy}] Ignored duplicate ${signal.type} signal (Score: ${score}%) due to Cooldown.`);
+                }
+             }
+          }
         }
-      }
 
-      if (shouldSend && signal.type !== 'WAIT') {
-        lastSignalSent = { type: signal.type, timeMs: now, score };
-        insertSignal(signal); // Save to Database
-        telegramBot.sendSignal(signal);
-      } else if (shouldSend && signal.type === 'WAIT') {
-        // We can log WAIT signals but we don't spam them to Telegram/DB
-        lastSignalSent = { type: 'WAIT', timeMs: now, score: 0 };
-        console.log(`[Agent Derry] Decision: WAIT. Reason: ${signal.reason.split('\n')[0]}`);
+        if (shouldSend && signal.type !== 'WAIT') {
+          const updatedSignalState = { type: signal.type, timeMs: now, score };
+          if (strategy === 'SNIPER') lastSignalSentSniper = updatedSignalState;
+          else lastSignalSentScalper = updatedSignalState;
+          
+          insertSignal(signal); // Save to Database
+          telegramBot.sendSignal(signal);
+        } else if (shouldSend && signal.type === 'WAIT') {
+          // We can log WAIT signals but we don't spam them to Telegram/DB
+          const updatedSignalState = { type: 'WAIT', timeMs: now, score: 0 };
+          if (strategy === 'SNIPER') lastSignalSentSniper = updatedSignalState;
+          else lastSignalSentScalper = updatedSignalState;
+          
+          console.log(`[Agent Derry][${strategy}] Decision: WAIT. Reason: ${signal.reason.split('\n')[0]}`);
+        }
       }
     }
   }
