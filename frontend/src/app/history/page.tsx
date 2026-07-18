@@ -160,9 +160,10 @@ export default function HistoryPage() {
           
           <div className="overflow-x-auto min-h-[400px]">
             {loading ? (
-               <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-                 <Zap size={32} className="animate-pulse mb-2 text-blue-500/50" />
-                 <p className="text-sm font-medium tracking-widest uppercase">Menganalisis Data...</p>
+               <div className="flex flex-col gap-3 p-6">
+                 {[1,2,3,4,5].map(i => (
+                   <div key={i} className="w-full h-16 bg-gray-800/40 rounded-xl animate-pulse"></div>
+                 ))}
                </div>
             ) : signals.length === 0 ? (
                <div className="flex flex-col items-center justify-center h-64 text-gray-500">
@@ -170,7 +171,8 @@ export default function HistoryPage() {
                  <p className="text-sm font-medium tracking-widest uppercase">Tidak ada sinyal di rentang waktu ini</p>
                </div>
             ) : (
-            <table className="w-full text-left border-collapse">
+            <>
+            <table className="hidden md:table w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-900/50 border-b border-gray-800 text-[10px] uppercase tracking-widest text-gray-500 font-bold">
                   <th className="p-4 pl-6">Signal ID</th>
@@ -194,7 +196,7 @@ export default function HistoryPage() {
                   const isActive = !isHitTP && !isHitSL && !isExpired;
 
                   return (
-                  <tr key={idx} className="hover:bg-gray-800/30 transition-colors group">
+                  <tr key={idx} className="hover:bg-gray-800/40 hover:translate-x-1 transition-all duration-300 group relative border-l-2 border-transparent hover:border-blue-500">
                     <td className="p-4 pl-6 align-top">
                       <div className="font-mono text-xs text-gray-300 font-medium mb-1">{ext.id || '-'}</div>
                       {sig.timestamp && (
@@ -224,13 +226,21 @@ export default function HistoryPage() {
                     </td>
 
                     <td className="p-4 align-top">
-                      <div className="font-mono text-xs text-gray-300 mb-1">
-                        <span className="text-gray-500">E:</span> {ext.entryZone || sig.entryPrice?.toFixed(2)}
-                      </div>
-                      <div className="font-mono text-[10px]">
-                        <span className="text-emerald-400">TP: {sig.takeProfit?.toFixed(2)}</span>
-                        <span className="text-gray-600 mx-1">/</span>
-                        <span className="text-rose-400">SL: {sig.stopLoss?.toFixed(2)}</span>
+                      <div className="flex flex-col gap-1.5">
+                        <div className="inline-flex items-center gap-2 px-2 py-1 rounded bg-gray-800/50 border border-gray-700/50 w-fit">
+                          <span className="text-[9px] font-bold text-gray-500">E</span>
+                          <span className="font-mono text-xs text-gray-300">{ext.entryZone || sig.entryPrice?.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                            <span className="text-[9px] font-bold text-emerald-500/70">TP</span>
+                            <span className="font-mono text-[10px] text-emerald-400">{sig.takeProfit?.toFixed(2)}</span>
+                          </div>
+                          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20">
+                            <span className="text-[9px] font-bold text-rose-500/70">SL</span>
+                            <span className="font-mono text-[10px] text-rose-400">{sig.stopLoss?.toFixed(2)}</span>
+                          </div>
+                        </div>
                       </div>
                     </td>
 
@@ -288,6 +298,116 @@ export default function HistoryPage() {
                 })}
               </tbody>
             </table>
+
+            {/* Mobile View */}
+            <div className="md:hidden flex flex-col divide-y divide-gray-800/50">
+              {signals.map((sig, idx) => {
+                  let ext: any = {};
+                  try { ext = JSON.parse(sig.reason) || {}; } catch(e) {}
+                  
+                  const isBuy = sig.type === 'BUY';
+                  const isHitTP = ext.finalStatus === 'HIT_TP';
+                  const isHitSL = ext.finalStatus === 'HIT_SL';
+                  const isExpired = ext.finalStatus === 'EXPIRED';
+                  const isActive = !isHitTP && !isHitSL && !isExpired;
+
+                  return (
+                    <div key={idx} className="p-4 flex flex-col gap-4 hover:bg-gray-800/30 transition-colors">
+                      {/* Header Row */}
+                      <div className="flex items-center justify-between">
+                         <div>
+                            <div className="font-mono text-xs text-gray-300 font-medium mb-1">{ext.id || '-'}</div>
+                            {sig.timestamp && (
+                              <div className="text-[10px] text-gray-500 flex items-center gap-1">
+                                 <Clock size={10} /> {new Date(sig.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })} WIB
+                              </div>
+                            )}
+                         </div>
+                         <div className="text-right">
+                            <div className="flex items-center justify-end gap-1.5 mb-1 text-gray-200 font-bold text-xs">
+                              {ext.strategy === 'SNIPER' ? <Crosshair size={12} className="text-blue-400" /> : <Zap size={12} className="text-rose-400" />}
+                              {ext.strategy === 'SNIPER' ? 'Sniper' : 'Scalper'}
+                            </div>
+                            <span className="text-[10px] text-gray-500">{ext.session || '-'}</span>
+                         </div>
+                      </div>
+
+                      {/* Main Action & Accuracy Row */}
+                      <div className="flex items-center justify-between bg-gray-900/40 p-3 rounded-lg border border-gray-800/50">
+                         <div className="flex items-center gap-3">
+                            <span className={`inline-flex px-2 py-1 rounded text-[10px] font-bold tracking-widest ${isBuy ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                              {isBuy ? '🟢 BUY' : '🔴 SELL'}
+                            </span>
+                            <div>
+                               <div className="font-bold text-gray-200 text-xs">{ext.confidence || 50}%</div>
+                               <div className="text-[9px] text-gray-500">WIN PROBABILITY</div>
+                            </div>
+                         </div>
+                         <div className="text-right">
+                           {isHitSL ? (
+                              <div>
+                                <span className="text-rose-500 font-bold text-sm">0%</span>
+                                <p className="text-[9px] text-rose-500/50 mt-0.5">FAILED</p>
+                              </div>
+                            ) : isExpired ? (
+                              <div>
+                                <span className="text-gray-500 font-bold text-sm">0%</span>
+                                <p className="text-[9px] text-gray-500 mt-0.5">EXPIRED</p>
+                              </div>
+                            ) : isActive ? (
+                              <div>
+                                <span className="text-gray-400 font-bold text-sm">~50%</span>
+                                <p className="text-[9px] text-gray-500 mt-0.5">IN PROGRESS</p>
+                              </div>
+                            ) : (
+                              <div>
+                                <span className={`font-bold text-sm ${ext.accuracy === 100 ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]' : 'text-emerald-400'}`}>
+                                  {ext.accuracy}%
+                                </span>
+                                {ext.accuracy === 100 ? (
+                                  <p className="text-[9px] text-yellow-500/80 mt-0.5 font-bold uppercase tracking-widest flex items-center justify-end gap-1">
+                                    <Zap size={10} /> Perfect
+                                  </p>
+                                ) : (
+                                  <p className="text-[9px] text-rose-400/80 mt-0.5">
+                                    -{((ext.duration || 0) - 20) * 0.5}% Penalty
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                         </div>
+                      </div>
+
+                      {/* Targets Row */}
+                      <div className="flex flex-col gap-2">
+                        <div className="inline-flex items-center gap-2 px-2 py-1.5 rounded bg-gray-800/50 border border-gray-700/50 w-full justify-between">
+                          <span className="text-[10px] font-bold text-gray-500">ENTRY</span>
+                          <span className="font-mono text-xs text-gray-300">{ext.entryZone || sig.entryPrice?.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 w-full">
+                          <div className="inline-flex items-center justify-between px-2 py-1.5 rounded bg-emerald-500/10 border border-emerald-500/20 flex-1">
+                            <span className="text-[10px] font-bold text-emerald-500/70">TP</span>
+                            <span className="font-mono text-[11px] text-emerald-400">{sig.takeProfit?.toFixed(2)}</span>
+                          </div>
+                          <div className="inline-flex items-center justify-between px-2 py-1.5 rounded bg-rose-500/10 border border-rose-500/20 flex-1">
+                            <span className="text-[10px] font-bold text-rose-500/70">SL</span>
+                            <span className="font-mono text-[11px] text-rose-400">{sig.stopLoss?.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer Row (Time) */}
+                      {!isActive && (
+                        <div className="flex items-center justify-between text-[10px] text-gray-500 mt-1 border-t border-gray-800/50 pt-2">
+                           <div className="flex items-center gap-1"><Clock size={10} /> Hit Time: {ext.hitTime}</div>
+                           <div>Duration: {ext.duration} Mins</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+              })}
+            </div>
+            </>
             )}
           </div>
         </div>
