@@ -107,6 +107,10 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
 
 // 2. Wire Market Data
 marketData.setOnM5Closed((data) => {
+  // Cegah spam sinyal dari data masa lalu saat server baru menyala (restart)
+  // Jika candle ini usianya lebih dari 10 menit yang lalu, abaikan.
+  if (Date.now() - data.currentM5.time > 10 * 60 * 1000) return;
+
   const techResult = technical.analyze(data);
   latestTechResult = techResult;
   
