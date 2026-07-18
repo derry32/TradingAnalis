@@ -63,7 +63,6 @@ export default function HistoryPage() {
   const stats = useMemo(() => {
     let totalWin = 0;
     let totalLoss = 0;
-    let totalPips = 0;
     let perfectTrades = 0;
 
     signals.forEach(sig => {
@@ -76,10 +75,6 @@ export default function HistoryPage() {
       } else if (ext.finalStatus === 'HIT_SL') {
         totalLoss++;
       }
-      
-      if (ext.pips) {
-        totalPips += ext.pips;
-      }
     });
 
     const completed = totalWin + totalLoss;
@@ -87,7 +82,6 @@ export default function HistoryPage() {
 
     return {
       winRate: winRate.toFixed(1),
-      totalPips: totalPips > 0 ? `+${totalPips}` : totalPips.toString(),
       perfectTrades,
       totalSignals: signals.length
     };
@@ -139,20 +133,12 @@ export default function HistoryPage() {
         </header>
 
         {/* Global Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-[#111827]/80 backdrop-blur-md border border-emerald-500/30 rounded-xl p-5 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
               <Target size={12} className="text-emerald-500" /> Overall Win Rate
             </p>
             <p className="text-3xl font-bold text-emerald-400">{stats.winRate}%</p>
-          </div>
-          <div className="bg-[#111827]/80 backdrop-blur-md border border-blue-500/30 rounded-xl p-5 shadow-lg">
-            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
-              <TrendingUp size={12} className="text-blue-500" /> Total Pips Gained
-            </p>
-            <p className={`text-3xl font-bold ${stats.totalPips.startsWith('-') ? 'text-rose-400' : 'text-blue-400'}`}>
-              {stats.totalPips}
-            </p>
           </div>
           <div className="bg-[#111827]/80 backdrop-blur-md border border-gray-800 rounded-xl p-5 shadow-lg">
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
@@ -193,7 +179,6 @@ export default function HistoryPage() {
                   <th className="p-4">Win Probability</th>
                   <th className="p-4">Targets (E / TP / SL)</th>
                   <th className="p-4">Hit Time & Duration</th>
-                  <th className="p-4">Hasil (Pips)</th>
                   <th className="p-4 pr-6 text-right">Trade Accuracy</th>
                 </tr>
               </thead>
@@ -260,33 +245,6 @@ export default function HistoryPage() {
                             ({ext.duration} Mins)
                           </div>
                         </>
-                      )}
-                    </td>
-
-                    <td className="p-4 align-top">
-                      {isHitTP && (
-                        <div>
-                          <span className="font-bold text-emerald-400 text-sm flex items-center gap-1">
-                            📈 +{ext.pips} Pips
-                          </span>
-                          <span className="text-[10px] text-emerald-500/70 uppercase tracking-widest">Target Reached</span>
-                        </div>
-                      )}
-                      {isHitSL && (
-                        <div>
-                          <span className="font-bold text-rose-400 text-sm flex items-center gap-1">
-                            📉 {ext.pips} Pips
-                          </span>
-                          <span className="text-[10px] text-rose-500/70 uppercase tracking-widest">Stop Loss Hit</span>
-                        </div>
-                      )}
-                      {isActive && (
-                        <div>
-                          <span className="font-bold text-yellow-500/90 text-sm flex items-center gap-1">
-                            ⏳ Floating
-                          </span>
-                          <span className="text-[10px] text-yellow-500/60 uppercase tracking-widest">Active Trade</span>
-                        </div>
                       )}
                     </td>
 
