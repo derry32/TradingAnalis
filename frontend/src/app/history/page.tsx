@@ -107,12 +107,15 @@ export default function HistoryPage() {
           </div>
 
           {/* Date Filters */}
-          <div className="flex items-center bg-gray-900/60 p-1.5 rounded-xl border border-gray-800/80 backdrop-blur-md">
+          <div 
+            className="flex items-center bg-gray-900/60 p-1.5 rounded-xl border border-gray-800/80 backdrop-blur-md overflow-x-auto max-w-[calc(100vw-3rem)] md:max-w-full"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             {['TODAY', 'WEEK', 'MONTH', 'ALL', 'CUSTOM'].map((f) => (
               <button 
                 key={f}
                 onClick={() => setFilter(f as any)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${filter === f ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/20 border border-blue-500/50' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${filter === f ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/20 border border-blue-500/50' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 {f === 'ALL' ? <Calendar size={14} /> : <Clock size={14} />} 
                 {f === 'TODAY' ? 'Hari Ini' : f === 'WEEK' ? 'Minggu Ini' : f === 'MONTH' ? 'Bulan Ini' : f === 'CUSTOM' ? 'Custom' : 'Semua'}
