@@ -39,7 +39,7 @@ Confidence: ${signal.confidenceScore}%
 Session: ${signal.session}
 Market Condition: ${signal.marketCondition}
 
-**Entry**: ${signal.entryPrice.toFixed(2)}
+**Entry Zone**: ${signal.entryZone}
 **SL**: ${signal.stopLoss.toFixed(2)}
 **TP1**: ${signal.takeProfit1.toFixed(2)} (RR 1:2)
 **TP2**: ${signal.takeProfit2.toFixed(2)} (RR 1:3)

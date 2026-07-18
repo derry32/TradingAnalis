@@ -225,7 +225,7 @@ export default function HistoryPage() {
 
                     <td className="p-4 align-top">
                       <div className="font-mono text-xs text-gray-300 mb-1">
-                        <span className="text-gray-500">E:</span> {sig.entryPrice?.toFixed(2)}
+                        <span className="text-gray-500">E:</span> {ext.entryZone || sig.entryPrice?.toFixed(2)}
                       </div>
                       <div className="font-mono text-[10px]">
                         <span className="text-emerald-400">TP: {sig.takeProfit?.toFixed(2)}</span>

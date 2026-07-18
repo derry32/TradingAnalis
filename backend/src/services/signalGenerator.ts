@@ -18,6 +18,7 @@ export interface Signal {
   timestamp: string;
   reason: string;
   strategy: 'SNIPER' | 'HYPER_SCALPER';
+  entryZone: string;
 }
 
 export class SignalGenerator {
@@ -275,6 +276,18 @@ export class SignalGenerator {
     const dateStr = new Date().toISOString().slice(0,10).replace(/-/g, '');
     const randId = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
 
+    const atr = analysis.atr_M15 || 1.0;
+    let entryZoneStr = '';
+    if (tradeType === 'BUY') {
+      const zoneMin = (currentPrice - (atr * 0.5)).toFixed(2);
+      const zoneMax = currentPrice.toFixed(2);
+      entryZoneStr = `${zoneMin} - ${zoneMax}`;
+    } else {
+      const zoneMin = currentPrice.toFixed(2);
+      const zoneMax = (currentPrice + (atr * 0.5)).toFixed(2);
+      entryZoneStr = `${zoneMin} - ${zoneMax}`;
+    }
+
     return {
       id: `XAU-${dateStr}-${randId}`,
       type: tradeType,
@@ -291,7 +304,8 @@ export class SignalGenerator {
       timeStopLoss,
       timestamp: new Date().toISOString(),
       reason: reasonString,
-      strategy: activeStrategy
+      strategy: activeStrategy,
+      entryZone: entryZoneStr
     };
   }
 
@@ -311,7 +325,8 @@ export class SignalGenerator {
       estimatedTpTime: '-',
       timestamp: new Date().toISOString(),
       reason: reason,
-      strategy: strategy
+      strategy: strategy,
+      entryZone: '-'
     };
   }
 }
