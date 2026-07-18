@@ -190,7 +190,8 @@ export default function HistoryPage() {
                   const isBuy = sig.type === 'BUY';
                   const isHitTP = ext.finalStatus === 'HIT_TP';
                   const isHitSL = ext.finalStatus === 'HIT_SL';
-                  const isActive = !isHitTP && !isHitSL;
+                  const isExpired = ext.finalStatus === 'EXPIRED';
+                  const isActive = !isHitTP && !isHitSL && !isExpired;
 
                   return (
                   <tr key={idx} className="hover:bg-gray-800/30 transition-colors group">
@@ -253,6 +254,11 @@ export default function HistoryPage() {
                         <div>
                           <span className="text-rose-500 font-bold text-lg">0%</span>
                           <p className="text-[9px] text-rose-500/50 mt-0.5">FAILED</p>
+                        </div>
+                      ) : isExpired ? (
+                        <div>
+                          <span className="text-gray-500 font-bold text-lg">0%</span>
+                          <p className="text-[9px] text-gray-500 mt-0.5">EXPIRED</p>
                         </div>
                       ) : isActive ? (
                         <div>

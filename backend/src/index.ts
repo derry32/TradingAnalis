@@ -77,7 +77,7 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
 
   if (trade.status !== 'ACTIVE') {
       console.log(`[Agent Derry][${strategy}] Trade ${trade.id} Closed: ${trade.status}`);
-      if (trade.dbId && (trade.status === 'HIT_TP' || trade.status === 'HIT_SL')) {
+      if (trade.dbId) {
           const hitTimeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) + ' WIB';
           const durationMins = Math.floor((Date.now() - trade.timeMs) / (60 * 1000));
           
@@ -94,6 +94,8 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
               }
               pips = trade.type === 'BUY' ? trade.takeProfit1 - trade.entryPrice : trade.entryPrice - trade.takeProfit1;
               pips = Math.round(pips * 10);
+          } else if (trade.status === 'EXPIRED') {
+              accuracy = 0;
           }
           
           updateSignalStatus(trade.dbId, trade.status, hitTimeStr, durationMins, accuracy, pips);
