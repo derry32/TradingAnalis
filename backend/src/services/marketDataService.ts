@@ -120,14 +120,16 @@ export class MarketDataService {
     }
   }
 
+  private simulationInterval: NodeJS.Timeout | null = null;
+
   private connectTwelveData() {
     this.ws = new WebSocket(`wss://ws.twelvedata.com/v1/quotes/price?apikey=${config.TWELVEDATA_API_KEY}`);
     
-    const fallbackTimeout = setTimeout(() => {
-      console.warn('[MarketData] No ticks received from TwelveData within 5s. Falling back to Simulation Mode.');
-      if (this.ws) this.ws.close();
+    let fallbackTimeout: NodeJS.Timeout | null = setTimeout(() => {
+      console.warn('[MarketData] No ticks received from TwelveData within 20s. Falling back to Simulation Mode.');
       this.startSimulation();
-    }, 5000);
+      fallbackTimeout = null;
+    }, 20000);
 
     this.ws.on('open', () => {
       console.log('[MarketData] Connected to TwelveData WebSocket.');
@@ -151,7 +153,15 @@ export class MarketDataService {
 
         // Handle price events
         if (parsed.event === 'price' && parsed.price) {
-          clearTimeout(fallbackTimeout); // We got data, clear fallback
+          if (fallbackTimeout) {
+            clearTimeout(fallbackTimeout);
+            fallbackTimeout = null;
+          }
+          if (this.simulationInterval) {
+             clearInterval(this.simulationInterval);
+             this.simulationInterval = null;
+             console.log('[MarketData] Real tick received. Stopping simulation mode.');
+          }
           
           if (!this.isBootstrapped) {
             this.isBootstrapped = true;
@@ -257,16 +267,18 @@ export class MarketDataService {
   }
 
   private startSimulation() {
-    let basePrice = 2450.00;
+    let basePrice = 4010.00;
     this.generateFallbackCandles(basePrice);
     // Fast simulation: 1 tick every 50ms, mimicking 1 minute of real time per tick (for fast forward)
     const tickIntervalMs = 60000; // 1 virtual minute per tick
     let virtualTime = Date.now();
     
-    setInterval(() => {
+    if (this.simulationInterval) clearInterval(this.simulationInterval);
+    
+    this.simulationInterval = setInterval(() => {
       virtualTime += tickIntervalMs;
-      // Mean reversion towards 2450.00 to prevent crazy drift to 4000+
-      const mean = 2450.00;
+      // Mean reversion towards 4010.00 to prevent crazy drift
+      const mean = 4010.00;
       const pull = (mean - basePrice) * 0.05;
       const change = (Math.random() - 0.5) * 5 + pull; 
       basePrice += change;
