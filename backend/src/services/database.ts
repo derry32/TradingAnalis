@@ -122,3 +122,68 @@ export async function fetchSignalsByDate(startDate: string, endDate: string) {
     timestamp: row.timestamp
   }));
 }
+
+export async function fetchMonthlyStats(year: number, month: number) {
+  if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return null;
+
+  // Build date range for the month
+  const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0)).toISOString();
+  const end = new Date(Date.UTC(year, month, 1, 0, 0, 0)).toISOString();
+
+  const { data, error } = await supabase
+    .from('signals')
+    .select('*')
+    .gte('timestamp', start)
+    .lt('timestamp', end)
+    .order('timestamp', { ascending: true });
+
+  if (error || !data) return null;
+
+  let totalSignals = 0, hitTP = 0, hitSL = 0, totalPips = 0;
+  let maxStreak = 0, currentStreak = 0;
+  let durations: number[] = [];
+
+  for (const row of data) {
+    let ext: any = {};
+    try { ext = JSON.parse(row.reason); } catch (_) {}
+
+    if (!ext.finalStatus) continue; // Skip sinyal yang masih aktif/belum selesai
+    totalSignals++;
+
+    const pips = ext.pips || 0;
+    const dur = ext.duration || 0;
+    totalPips += pips;
+    if (dur > 0) durations.push(dur);
+
+    if (ext.finalStatus === 'HIT_TP') {
+      hitTP++;
+      currentStreak = 0;
+    } else if (ext.finalStatus === 'HIT_SL') {
+      hitSL++;
+      currentStreak++;
+      if (currentStreak > maxStreak) maxStreak = currentStreak;
+    }
+  }
+
+  const winRate = totalSignals > 0 ? Math.round((hitTP / totalSignals) * 100) : 0;
+  const avgWinPips = hitTP > 0 ? totalPips / hitTP : 0;
+  const avgLossPips = hitSL > 0 ? Math.abs(totalPips - (avgWinPips * hitTP)) / hitSL : 0;
+  const expectancy = hitTP > 0 || hitSL > 0
+    ? (winRate / 100 * Math.abs(avgWinPips)) - ((1 - winRate / 100) * Math.abs(avgLossPips))
+    : 0;
+  const avgDuration = durations.length > 0
+    ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+    : 0;
+
+  return {
+    year, month,
+    totalSignals,
+    hitTP,
+    hitSL,
+    totalPips: Math.round(totalPips),
+    winRate,
+    maxDrawdownStreak: maxStreak,
+    expectancy: Math.round(expectancy * 10) / 10,
+    avgDurationMins: avgDuration
+  };
+}

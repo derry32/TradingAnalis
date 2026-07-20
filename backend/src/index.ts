@@ -7,7 +7,7 @@ import { NewsService } from './services/newsService';
 import { SentimentAnalysis, SentimentResult } from './services/sentimentAnalysis';
 import { SignalGenerator, Signal } from './services/signalGenerator';
 import { TelegramService } from './services/telegramBot';
-import { insertSignal, fetchRecentSignals, updateSignalStatus, fetchSignalsByDate } from './services/database';
+import { insertSignal, fetchRecentSignals, updateSignalStatus, fetchSignalsByDate, fetchMonthlyStats } from './services/database';
 
 const app = express();
 app.use(cors());
@@ -55,6 +55,37 @@ let latestTechResult: any = { trendH1: 'NEUTRAL' };
 let activeTradeSniper: TradeState | null = null;
 let activeTradeScalper: TradeState | null = null;
 let activeStrategy: 'SNIPER' | 'HYPER_SCALPER' = 'SNIPER';
+
+// === S5-A: Drawdown Guard ===
+let dailySLCount = 0;
+let drawdownGuardActive = false;
+let lastSLDateWIB = '';
+
+function getTodayWIB(): string {
+  return new Date().toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' });
+}
+
+function checkAndResetDailyDrawdown() {
+  const today = getTodayWIB();
+  if (lastSLDateWIB !== today) {
+    dailySLCount = 0;
+    drawdownGuardActive = false;
+    lastSLDateWIB = today;
+    console.log('[DrawdownGuard] Hari baru terdeteksi. Counter direset.');
+  }
+}
+
+// === S5-B: Capital Risk Engine ===
+let accountBalance = 0;
+let riskPercent = 1;
+
+function calculateLotSize(balance: number, riskPct: number, slPips: number): number {
+  if (balance <= 0 || slPips <= 0) return 0;
+  const riskAmount = balance * (riskPct / 100);
+  // XAU/USD: 1 pip ≈ $1 per 0.01 lot. Pip value = slPips * 1 per 0.01 lot
+  const lot = riskAmount / (slPips * 1);
+  return Math.round(lot * 100) / 100; // Round to 2 decimal places
+}
 
 function updateTradeState(trade: TradeState | null, currentM5: any, strategy: string): TradeState | null {
   if (!trade || trade.status !== 'ACTIVE') {
@@ -115,6 +146,19 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
           console.log(`[Agent Derry][${strategy}] dbId belum ada saat close, menyimpan sebagai pending...`);
           trade.pendingClose = { status: trade.status, hitTime: hitTimeStr, durationMins, accuracy, pips };
       }
+
+      // S5-A: Increment drawdown counter jika HIT_SL
+      if (trade.status === 'HIT_SL') {
+        checkAndResetDailyDrawdown();
+        dailySLCount++;
+        lastSLDateWIB = getTodayWIB();
+        if (dailySLCount >= 2) {
+          drawdownGuardActive = true;
+          console.log(`[DrawdownGuard] ⛔ AKTIF! ${dailySLCount} SL hari ini. Semua sinyal diblokir hingga besok.`);
+        } else {
+          console.log(`[DrawdownGuard] SL ke-${dailySLCount} hari ini. Batas: 2.`);
+        }
+      }
   }
 
   return trade;
@@ -159,6 +203,13 @@ marketData.setOnM5Closed((data) => {
            }
         }
 
+        // S5-A: Blokir semua sinyal jika Drawdown Guard aktif
+        checkAndResetDailyDrawdown();
+        if (drawdownGuardActive && signal.type !== 'WAIT') {
+          console.log(`[DrawdownGuard] ⛔ Sinyal ${signal.type} diblokir. Drawdown Guard aktif (${dailySLCount}/2 SL hari ini).`);
+          continue;
+        }
+
         if (shouldSend && signal.type !== 'WAIT') {
           const newTradeState: TradeState = { 
             id: signal.id, type: signal.type as 'BUY' | 'SELL', 
@@ -200,7 +251,41 @@ function getCurrentSession() {
   return 'CLOSING';
 }
 
-news.start(); // Start fetching news
+news.start();
+
+// === S5-A: Drawdown Guard Endpoints ===
+app.get('/api/risk/drawdown-status', (req, res) => {
+  checkAndResetDailyDrawdown();
+  res.json({
+    active: drawdownGuardActive,
+    dailySLCount,
+    maxDailySL: 2,
+    resetDate: lastSLDateWIB || getTodayWIB()
+  });
+});
+
+app.post('/api/risk/reset-drawdown', (req, res) => {
+  dailySLCount = 0;
+  drawdownGuardActive = false;
+  console.log('[DrawdownGuard] ✅ Guard direset secara manual oleh user.');
+  res.json({ success: true, message: 'Drawdown Guard berhasil direset.' });
+});
+
+// === S5-B: Capital Risk Engine Endpoints ===
+app.get('/api/risk/capital', (req, res) => {
+  const slPips = config.STOP_LOSS_PIPS;
+  const suggestedLot = calculateLotSize(accountBalance, riskPercent, slPips);
+  res.json({ balance: accountBalance, riskPercent, suggestedLot, slPips });
+});
+
+app.post('/api/risk/capital', (req, res) => {
+  const { balance, riskPercent: rp } = req.body;
+  if (typeof balance === 'number' && balance >= 0) accountBalance = balance;
+  if (typeof rp === 'number' && rp >= 0.1 && rp <= 10) riskPercent = rp;
+  const suggestedLot = calculateLotSize(accountBalance, riskPercent, config.STOP_LOSS_PIPS);
+  console.log(`[CapitalRisk] Modal diupdate: $${accountBalance}, Risk: ${riskPercent}%, Lot: ${suggestedLot}`);
+  res.json({ success: true, balance: accountBalance, riskPercent, suggestedLot });
+});
 
 app.get('/api/settings/strategy', (req, res) => {
   res.json({ strategy: activeStrategy });
@@ -294,7 +379,7 @@ app.get('/api/signals', async (req, res) => {
 
 app.get('/api/candles', (req, res) => {
   const candles = marketData.getCandles().map(c => ({
-    time: Math.floor(c.time / 1000), // convert to seconds for lightweight-charts
+    time: Math.floor(c.time / 1000),
     open: c.open,
     high: c.high,
     low: c.low,
@@ -302,6 +387,20 @@ app.get('/api/candles', (req, res) => {
     volume: c.volume
   }));
   res.json(candles);
+});
+
+// === S5-C: Performance Endpoint ===
+app.get('/api/performance', async (req, res) => {
+  const now = new Date();
+  const year = parseInt(req.query.year as string) || now.getUTCFullYear();
+  const month = parseInt(req.query.month as string) || (now.getUTCMonth() + 1);
+  try {
+    const stats = await fetchMonthlyStats(year, month);
+    if (!stats) return res.status(500).json({ error: 'Gagal mengambil data performa.' });
+    res.json(stats);
+  } catch (e) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 app.listen(config.PORT, () => {
