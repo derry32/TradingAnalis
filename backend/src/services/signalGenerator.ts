@@ -75,6 +75,10 @@ export class SignalGenerator {
                     (direction === 'SELL' && (analysis.patternM5 === 'BEARISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'MARUBOZU_BEAR' || analysis.patternM5 === 'THREE_BLACK_CROWS'));
     if (paMatch) { score += wPA; reasons.push(`✔ Price Action M5 (${analysis.patternM5.replace('_', ' ')}) Terkonfirmasi`); }
     
+    const fibMatch = (direction === 'BUY' && analysis.fibonacciZoneM15 === 'GOLDEN_BULL') || 
+                     (direction === 'SELL' && analysis.fibonacciZoneM15 === 'GOLDEN_BEAR');
+    if (fibMatch) { score += 30; reasons.push(`✔ Harga memantul di Golden Ratio Fibonacci (0.5 - 0.618)`); }
+    
     const emaMatch = (direction === 'BUY' && analysis.ema20_M5 > analysis.ema50_M5) || 
                      (direction === 'SELL' && analysis.ema20_M5 < analysis.ema50_M5);
     if (emaMatch) { score += wEMA; reasons.push(`✔ EMA 20 & 50 Mendukung`); }
@@ -108,8 +112,8 @@ export class SignalGenerator {
 
   private evaluateSidewaysMode(analysis: AnalysisResult, currentPrice: number, sessionType: string, isNewsMode: boolean, activeStrategy: 'SNIPER' | 'HYPER_SCALPER') {
     let possibleDirections: ('BUY' | 'SELL')[] = [];
-    if (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BULL') || analysis.patternM5 === 'THREE_WHITE_SOLDIERS') possibleDirections.push('BUY');
-    if (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'THREE_BLACK_CROWS') possibleDirections.push('SELL');
+    if (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BULL') || analysis.patternM5 === 'THREE_WHITE_SOLDIERS' || analysis.fibonacciZoneM15 === 'GOLDEN_BULL') possibleDirections.push('BUY');
+    if (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'THREE_BLACK_CROWS' || analysis.fibonacciZoneM15 === 'GOLDEN_BEAR') possibleDirections.push('SELL');
 
     let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[], warnings: string[] } | null = null;
     for (const dir of possibleDirections) {
@@ -127,6 +131,12 @@ export class SignalGenerator {
          score += 30; reasons.push(`✔ Price Action M5 (${analysis.patternM5.replace('_', ' ')}) Terkonfirmasi di Support`);
       } else if (dir === 'SELL' && (analysis.patternM5 === 'BEARISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'MARUBOZU_BEAR' || analysis.patternM5 === 'THREE_BLACK_CROWS')) {
          score += 30; reasons.push(`✔ Price Action M5 (${analysis.patternM5.replace('_', ' ')}) Terkonfirmasi di Resistance`);
+      }
+
+      if (dir === 'BUY' && analysis.fibonacciZoneM15 === 'GOLDEN_BULL') {
+         score += 30; reasons.push(`✔ Harga memantul di Golden Ratio Fibonacci`);
+      } else if (dir === 'SELL' && analysis.fibonacciZoneM15 === 'GOLDEN_BEAR') {
+         score += 30; reasons.push(`✔ Harga memantul di Golden Ratio Fibonacci`);
       }
 
       if (dir === 'BUY' && analysis.marketStructureM15 === 'FAKE_BREAKOUT_BEAR') {
@@ -152,8 +162,8 @@ export class SignalGenerator {
 
   private evaluateTrendingMode(analysis: AnalysisResult, currentPrice: number, sessionType: string, isNewsMode: boolean, activeStrategy: 'SNIPER' | 'HYPER_SCALPER') {
     let possibleDirections: ('BUY' | 'SELL')[] = [];
-    if (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BULL') || analysis.patternM5 === 'THREE_WHITE_SOLDIERS') possibleDirections.push('BUY');
-    if (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'THREE_BLACK_CROWS') possibleDirections.push('SELL');
+    if (analysis.patternM5.includes('BULLISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BULL') || analysis.patternM5 === 'THREE_WHITE_SOLDIERS' || analysis.fibonacciZoneM15 === 'GOLDEN_BULL') possibleDirections.push('BUY');
+    if (analysis.patternM5.includes('BEARISH') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'THREE_BLACK_CROWS' || analysis.fibonacciZoneM15 === 'GOLDEN_BEAR') possibleDirections.push('SELL');
 
     let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[], warnings: string[] } | null = null;
     for (const dir of possibleDirections) {
@@ -193,8 +203,8 @@ export class SignalGenerator {
       }
     }
 
-    if (analysis.patternM5 === 'NONE') {
-       return this.createWaitSignal("Menunggu konfirmasi Price Action (Engulfing / Pin Bar) di M5.", activeStrategy);
+    if (analysis.patternM5 === 'NONE' && analysis.fibonacciZoneM15 === 'NONE') {
+       return this.createWaitSignal("Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.", activeStrategy);
     }
 
     let bestTrade;

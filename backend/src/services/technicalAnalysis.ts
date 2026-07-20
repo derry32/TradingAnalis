@@ -20,6 +20,7 @@ export interface AnalysisResult {
   ema50_M5: number;
   atr_M15: number;
   volumeSpikeM5: boolean;
+  fibonacciZoneM15: 'GOLDEN_BULL' | 'GOLDEN_BEAR' | 'NONE';
 }
 
 export class TechnicalAnalysis {
@@ -188,6 +189,46 @@ export class TechnicalAnalysis {
     return last.volume > avgVol * 1.5; // Spike if 50% larger than 5-candle average
   }
 
+  private detectFibonacciRetracement(currentPrice: number, swings: SwingPoint[], trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL', atr: number): AnalysisResult['fibonacciZoneM15'] {
+    if (trend === 'NEUTRAL' || swings.length < 2) return 'NONE';
+    
+    // Get latest high and low
+    const highs = swings.filter(s => s.type === 'HIGH');
+    const lows = swings.filter(s => s.type === 'LOW');
+    if (highs.length === 0 || lows.length === 0) return 'NONE';
+    
+    const lastHigh = highs[highs.length - 1].price;
+    const lastLow = lows[lows.length - 1].price;
+    
+    // Range must be somewhat significant (at least 2x ATR)
+    const range = Math.abs(lastHigh - lastLow);
+    if (range < atr * 2) return 'NONE';
+
+    // Tolerance to be considered "in the zone" is proportional to ATR
+    const tolerance = Math.max(1.0, atr * 0.5);
+
+    if (trend === 'BULLISH') {
+      // Swing Low to Swing High -> Pullback down to 0.5 - 0.618
+      const fib50 = lastLow + (range * 0.5);
+      const fib618 = lastLow + (range * 0.382); // 1 - 0.618 = 0.382 from bottom
+      
+      // If current price is near the golden zone
+      if ((currentPrice <= fib50 + tolerance && currentPrice >= fib618 - tolerance)) {
+        return 'GOLDEN_BULL';
+      }
+    } else if (trend === 'BEARISH') {
+      // Swing High to Swing Low -> Pullback up to 0.5 - 0.618
+      const fib50 = lastHigh - (range * 0.5);
+      const fib618 = lastHigh - (range * 0.382); // 1 - 0.618 = 0.382 from top
+      
+      if ((currentPrice >= fib50 - tolerance && currentPrice <= fib618 + tolerance)) {
+        return 'GOLDEN_BEAR';
+      }
+    }
+
+    return 'NONE';
+  }
+
   public analyze(data: MultiTimeframeData): AnalysisResult {
     const swingsH1 = this.findSwingPoints(data.h1, 3, 3);
     const trendH1 = this.detectTrend(swingsH1);
@@ -217,6 +258,8 @@ export class TechnicalAnalysis {
     const lastM5Low = swingsM5.filter(s => s.type === 'LOW').pop()?.price || data.currentM5.low - 3;
     const lastM5High = swingsM5.filter(s => s.type === 'HIGH').pop()?.price || data.currentM5.high + 3;
 
+    const fibonacciZoneM15 = this.detectFibonacciRetracement(data.currentM15.close, swingsM15, trendH1, atr_M15);
+
     return {
       trendH1,
       marketCondition,
@@ -228,7 +271,8 @@ export class TechnicalAnalysis {
       ema20_M5: this.calculateEMA(data.m5, 20),
       ema50_M5: this.calculateEMA(data.m5, 50),
       atr_M15,
-      volumeSpikeM5
+      volumeSpikeM5,
+      fibonacciZoneM15
     };
   }
 }
