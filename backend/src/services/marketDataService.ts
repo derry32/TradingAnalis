@@ -122,6 +122,13 @@ export class MarketDataService {
 
   private connectFinnhub() {
     this.ws = new WebSocket(`wss://ws.finnhub.io?token=${config.FINNHUB_API_KEY}`);
+    
+    const fallbackTimeout = setTimeout(() => {
+      console.warn('[MarketData] No ticks received from Finnhub within 5s. Falling back to Simulation Mode (Free tier might restrict XAU_USD).');
+      if (this.ws) this.ws.close();
+      this.startSimulation();
+    }, 5000);
+
     this.ws.on('open', () => {
       console.log('[MarketData] Connected to Finnhub WebSocket.');
       this.ws?.send(JSON.stringify({ 'type': 'subscribe', 'symbol': 'OANDA:XAU_USD' }));
@@ -131,6 +138,7 @@ export class MarketDataService {
       try {
         const parsed = JSON.parse(data.toString());
         if (parsed.type === 'trade') {
+          clearTimeout(fallbackTimeout); // We got data, clear fallback
           parsed.data.forEach((trade: any) => {
             if (!this.isBootstrapped) {
               this.isBootstrapped = true;
@@ -241,7 +249,10 @@ export class MarketDataService {
     
     setInterval(() => {
       virtualTime += tickIntervalMs;
-      const change = (Math.random() - 0.5) * 5; 
+      // Mean reversion towards 2450.00 to prevent crazy drift to 4000+
+      const mean = 2450.00;
+      const pull = (mean - basePrice) * 0.05;
+      const change = (Math.random() - 0.5) * 5 + pull; 
       basePrice += change;
       this.m1.processTick(basePrice, 10, virtualTime);
     }, 50); // Emit tick very fast to test engine quickly
