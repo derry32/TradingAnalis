@@ -1,6 +1,23 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { 
+  ArrowLeft, 
+  TrendingUp, 
+  Target, 
+  Activity, 
+  DollarSign, 
+  BarChart2, 
+  Clock, 
+  ShieldAlert, 
+  ShieldCheck, 
+  Wallet, 
+  Package,
+  ChevronLeft,
+  ChevronRight,
+  Calculator
+} from 'lucide-react';
+import Link from 'next/link';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002';
 const MONTH_NAMES = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -21,10 +38,10 @@ interface DrawdownStatus {
 }
 
 function getBadge(winRate: number, totalSignals: number) {
-  if (totalSignals === 0) return { label: 'Belum Ada Data', color: '#6b7280', bg: '#1f2937' };
-  if (winRate >= 60) return { label: '🟢 Konsisten', color: '#10b981', bg: '#052e16' };
-  if (winRate >= 40) return { label: '🟡 Perlu Perbaikan', color: '#f59e0b', bg: '#1c1400' };
-  return { label: '🔴 Under Control', color: '#ef4444', bg: '#1c0404' };
+  if (totalSignals === 0) return { label: 'Belum Ada Data', color: 'text-gray-400', bg: 'bg-gray-800', border: 'border-gray-700' };
+  if (winRate >= 60) return { label: 'Konsisten', color: 'text-emerald-400', bg: 'bg-emerald-900/30', border: 'border-emerald-500/30' };
+  if (winRate >= 40) return { label: 'Perlu Perbaikan', color: 'text-amber-400', bg: 'bg-amber-900/30', border: 'border-amber-500/30' };
+  return { label: 'Under Control', color: 'text-red-400', bg: 'bg-red-900/30', border: 'border-red-500/30' };
 }
 
 export default function PerformancePage() {
@@ -92,7 +109,7 @@ export default function PerformancePage() {
 
   const resetDrawdown = async () => {
     await fetch(`${BACKEND_URL}/api/risk/reset-drawdown`, { method: 'POST' });
-    setResetMsg('✅ Drawdown Guard berhasil direset!');
+    setResetMsg('Drawdown Guard berhasil direset!');
     await fetchAll();
     setTimeout(() => setResetMsg(''), 3000);
   };
@@ -106,99 +123,170 @@ export default function PerformancePage() {
     : '0.00') : '0.00';
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0a0a0f 0%, #0d1117 50%, #0a0f0a 100%)', color: '#e5e7eb', fontFamily: "'Inter', sans-serif", padding: '24px 16px' }}>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
-      {/* Header */}
-      <div style={{ maxWidth: 900, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-          <a href="/" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 14 }}>← Dashboard</a>
+    <div className="min-h-screen bg-[#0B0F19] text-gray-200 font-sans p-4 md:p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 via-[#0B0F19] to-[#05080f]">
+      
+      {/* Header Container */}
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center gap-2 mb-4">
+          <Link href="/" className="flex items-center text-sm font-medium text-gray-400 hover:text-white transition-colors">
+            <ArrowLeft size={16} className="mr-1" /> Dashboard
+          </Link>
         </div>
-        <h1 style={{ fontSize: 28, fontWeight: 700, color: '#f9fafb', margin: '0 0 4px' }}>📊 Performance Tracker</h1>
-        <p style={{ color: '#6b7280', margin: 0, fontSize: 14 }}>Pantau konsistensi AI sesuai standar Tangga 4: Scale Up Mode</p>
+        
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+            <Activity className="text-blue-500" size={28} />
+            Performance Tracker
+          </h1>
+          <p className="text-gray-400 text-sm">
+            Pantau konsistensi AI sesuai standar Tangga 4: Scale Up Mode
+          </p>
+        </div>
 
         {/* Month Navigator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 20, marginBottom: 24 }}>
-          <button onClick={prevMonth} style={{ background: '#1f2937', border: '1px solid #374151', borderRadius: 8, color: '#9ca3af', padding: '8px 16px', cursor: 'pointer', fontSize: 16 }}>‹</button>
-          <span style={{ fontSize: 20, fontWeight: 600, color: '#f9fafb', minWidth: 180, textAlign: 'center' }}>{MONTH_NAMES[month - 1]} {year}</span>
-          <button onClick={nextMonth} style={{ background: '#1f2937', border: '1px solid #374151', borderRadius: 8, color: '#9ca3af', padding: '8px 16px', cursor: 'pointer', fontSize: 16 }}>›</button>
-          {badge && (
-            <span style={{ marginLeft: 'auto', padding: '6px 16px', borderRadius: 20, background: badge.bg, color: badge.color, fontWeight: 600, fontSize: 14, border: `1px solid ${badge.color}40` }}>
-              {badge.label}
+        <div className="flex items-center justify-between bg-gray-900/40 border border-gray-800/60 backdrop-blur-md rounded-2xl p-4 mb-8">
+          <div className="flex items-center gap-4">
+            <button onClick={prevMonth} className="p-2 rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-all">
+              <ChevronLeft size={20} />
+            </button>
+            <span className="text-xl font-bold text-white min-w-[140px] text-center">
+              {MONTH_NAMES[month - 1]} {year}
             </span>
+            <button onClick={nextMonth} className="p-2 rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-all">
+              <ChevronRight size={20} />
+            </button>
+          </div>
+          
+          {badge && (
+            <div className={`px-4 py-1.5 rounded-full text-xs font-bold border ${badge.bg} ${badge.color} ${badge.border} flex items-center gap-1.5`}>
+              <span className={`w-2 h-2 rounded-full ${badge.color.replace('text', 'bg')}`}></span>
+              {badge.label}
+            </div>
           )}
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 60, color: '#6b7280' }}>Memuat data...</div>
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
         ) : (
-          <>
-            {/* 6 Metric Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
+          <div className="space-y-6">
+            
+            {/* Metric Cards Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { icon: '📈', label: 'Total Profit Pips', value: stats ? (stats.totalPips > 0 ? '+' + stats.totalPips : stats.totalPips) : '—', color: (stats?.totalPips ?? 0) >= 0 ? '#10b981' : '#ef4444' },
-                { icon: '🎯', label: 'Win Rate', value: stats ? stats.winRate + '%' : '—', color: (stats?.winRate ?? 0) >= 60 ? '#10b981' : (stats?.winRate ?? 0) >= 40 ? '#f59e0b' : '#ef4444' },
-                { icon: '📉', label: 'Max Drawdown Streak', value: stats ? stats.maxDrawdownStreak + 'x SL berturut' : '—', color: (stats?.maxDrawdownStreak ?? 0) <= 2 ? '#10b981' : '#ef4444' },
-                { icon: '💰', label: 'Expectancy', value: stats ? (stats.expectancy > 0 ? '+' + stats.expectancy : stats.expectancy) + ' pips' : '—', color: (stats?.expectancy ?? 0) > 0 ? '#10b981' : '#ef4444' },
-                { icon: '📊', label: 'Total Sinyal', value: stats ? stats.hitTP + 'TP / ' + stats.hitSL + 'SL / ' + stats.totalSignals + ' total' : '—', color: '#60a5fa' },
-                { icon: '⏳', label: 'Rata-rata Durasi', value: stats ? stats.avgDurationMins + ' menit' : '—', color: '#a78bfa' },
+                { icon: <TrendingUp size={22} className={(stats?.totalPips ?? 0) >= 0 ? "text-emerald-500" : "text-red-500"} />, label: 'Total Profit Pips', value: stats ? (stats.totalPips > 0 ? '+' + stats.totalPips : stats.totalPips) : '—', color: (stats?.totalPips ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400' },
+                { icon: <Target size={22} className="text-blue-500" />, label: 'Win Rate', value: stats ? stats.winRate + '%' : '—', color: (stats?.winRate ?? 0) >= 60 ? 'text-emerald-400' : (stats?.winRate ?? 0) >= 40 ? 'text-amber-400' : 'text-red-400' },
+                { icon: <Activity size={22} className="text-purple-500" />, label: 'Max Drawdown', value: stats ? stats.maxDrawdownStreak + 'x SL Streak' : '—', color: (stats?.maxDrawdownStreak ?? 0) <= 2 ? 'text-emerald-400' : 'text-red-400' },
+                { icon: <DollarSign size={22} className="text-amber-500" />, label: 'Expectancy', value: stats ? (stats.expectancy > 0 ? '+' + stats.expectancy : stats.expectancy) + ' pips' : '—', color: (stats?.expectancy ?? 0) > 0 ? 'text-emerald-400' : 'text-red-400' },
+                { icon: <BarChart2 size={22} className="text-cyan-500" />, label: 'Total Sinyal', value: stats ? stats.hitTP + 'TP / ' + stats.hitSL + 'SL' : '—', color: 'text-white' },
+                { icon: <Clock size={22} className="text-indigo-500" />, label: 'Rata-rata Durasi', value: stats ? stats.avgDurationMins + ' menit' : '—', color: 'text-white' },
               ].map((m, i) => (
-                <div key={i} style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 12, padding: '16px 20px' }}>
-                  <div style={{ fontSize: 22, marginBottom: 6 }}>{m.icon}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>{m.label}</div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: m.color }}>{m.value}</div>
+                <div key={i} className="bg-gray-900/50 border border-gray-800/80 rounded-2xl p-5 hover:bg-gray-800/60 hover:scale-[1.02] hover:border-gray-700/80 transition-all duration-300">
+                  <div className="mb-3 p-2 bg-gray-800/50 w-fit rounded-lg">{m.icon}</div>
+                  <div className="text-xs text-gray-500 font-medium mb-1 uppercase tracking-wider">{m.label}</div>
+                  <div className={`text-xl font-bold ${m.color}`}>{m.value}</div>
                 </div>
               ))}
             </div>
 
             {/* Drawdown Guard Widget */}
-            <div style={{ background: '#111827', border: `1px solid ${drawdown?.active ? '#ef444440' : '#1f2937'}`, borderRadius: 12, padding: '20px 24px', marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            <div className={`relative overflow-hidden rounded-2xl border p-6 transition-colors duration-500 ${drawdown?.active ? 'bg-red-950/20 border-red-900/50' : 'bg-gray-900/50 border-gray-800/80'}`}>
+              
+              {/* Background Glow */}
+              {drawdown?.active && (
+                <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 blur-3xl rounded-full -mr-20 -mt-20 pointer-events-none"></div>
+              )}
+
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: '#f9fafb', marginBottom: 4 }}>
-                    🛡️ Drawdown Guard {drawdown?.active ? '— ⛔ AKTIF' : '— ✅ AMAN'}
+                  <div className="flex items-center gap-2 text-lg font-bold text-white mb-1">
+                    {drawdown?.active ? <ShieldAlert className="text-red-500" size={24} /> : <ShieldCheck className="text-emerald-500" size={24} />}
+                    Drawdown Guard
+                    <span className={`text-xs px-2 py-0.5 rounded-full ml-2 ${drawdown?.active ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                      {drawdown?.active ? 'AKTIF' : 'AMAN'}
+                    </span>
                   </div>
-                  <div style={{ fontSize: 13, color: '#6b7280' }}>
-                    {drawdown ? `${drawdown.dailySLCount} / ${drawdown.maxDailySL} SL hari ini` : '—'}
-                    {drawdown?.active && <span style={{ color: '#ef4444', marginLeft: 8 }}>Sinyal diblokir hingga besok atau reset manual.</span>}
-                  </div>
-                  {resetMsg && <div style={{ color: '#10b981', fontSize: 13, marginTop: 4 }}>{resetMsg}</div>}
+                  <p className="text-sm text-gray-400">
+                    {drawdown ? `${drawdown.dailySLCount} / ${drawdown.maxDailySL} Stop Loss harian tersentuh.` : 'Memuat data...'}
+                    {drawdown?.active && <span className="text-red-400 block mt-1">Sinyal diblokir hingga besok untuk melindungi modal.</span>}
+                  </p>
+                  {resetMsg && <div className="text-emerald-400 text-sm mt-2 flex items-center gap-1"><ShieldCheck size={14}/> {resetMsg}</div>}
                 </div>
+                
                 {drawdown?.active && (
-                  <button onClick={resetDrawdown} style={{ background: '#ef4444', border: 'none', borderRadius: 8, color: 'white', padding: '8px 18px', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
-                    Reset Manual
+                  <button 
+                    onClick={resetDrawdown} 
+                    className="whitespace-nowrap px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-red-900/20 focus:ring-2 focus:ring-red-500/50 outline-none"
+                  >
+                    Reset Manual (Bypass)
                   </button>
                 )}
               </div>
-              {/* Progress bar */}
-              <div style={{ marginTop: 12, background: '#1f2937', borderRadius: 4, height: 6, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${drawdown ? (drawdown.dailySLCount / drawdown.maxDailySL) * 100 : 0}%`, background: drawdown?.active ? '#ef4444' : '#f59e0b', borderRadius: 4, transition: 'width 0.4s ease' }} />
+
+              {/* Progress Bar */}
+              <div className="mt-5 bg-gray-800/80 rounded-full h-2 w-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-700 ease-out rounded-full ${drawdown?.active ? 'bg-red-500' : 'bg-amber-500'}`}
+                  style={{ width: `${drawdown ? (drawdown.dailySLCount / drawdown.maxDailySL) * 100 : 0}%` }}
+                />
               </div>
             </div>
 
             {/* Capital Risk Engine */}
-            <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 12, padding: '20px 24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <div style={{ fontSize: 16, fontWeight: 600, color: '#f9fafb' }}>💰 Capital Risk Engine</div>
-                <label style={{ fontSize: 13, color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={useConverter} onChange={e => setUseConverter(e.target.checked)} />
+            <div className="bg-gray-900/50 border border-gray-800/80 rounded-2xl p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3 text-lg font-bold text-white">
+                  <div className="p-2 bg-blue-900/30 rounded-lg">
+                    <Wallet className="text-blue-400" size={24} />
+                  </div>
+                  Capital Risk Engine
+                </div>
+                
+                <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-gray-300 transition-colors group">
+                  <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${useConverter ? 'bg-blue-600 border-blue-500' : 'bg-gray-800 border-gray-700 group-hover:border-gray-600'}`}>
+                    {useConverter && <ShieldCheck size={14} className="text-white" />}
+                  </div>
+                  <input type="checkbox" className="hidden" checked={useConverter} onChange={e => setUseConverter(e.target.checked)} />
                   Gunakan Konverter Rupiah
                 </label>
               </div>
 
+              {/* Converter Panel */}
               {useConverter && (
-                <div style={{ background: '#1f2937', padding: 16, borderRadius: 8, marginBottom: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                <div className="bg-gray-800/40 border border-gray-700/50 rounded-xl p-5 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label style={{ fontSize: 12, color: '#9ca3af', display: 'block', marginBottom: 4 }}>Modal (Rupiah)</label>
-                    <input type="number" value={idrInput} onChange={e => setIdrInput(e.target.value)} placeholder="Misal: 15000000" style={{ width: '100%', background: '#111827', border: '1px solid #374151', borderRadius: 6, color: '#f9fafb', padding: '8px 12px', fontSize: 14 }} />
+                    <label className="block text-xs font-medium text-gray-400 mb-2">Modal Deposit (Rupiah)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Rp</span>
+                      <input 
+                        type="number" 
+                        value={idrInput} 
+                        onChange={e => setIdrInput(e.target.value)} 
+                        placeholder="15000000" 
+                        className="w-full bg-gray-900/80 border border-gray-700 rounded-lg text-white pl-9 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all placeholder-gray-600"
+                      />
+                    </div>
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, color: '#9ca3af', display: 'block', marginBottom: 4 }}>Kurs (IDR/USD)</label>
-                    <input type="number" value={exchangeRate} onChange={e => setExchangeRate(e.target.value)} style={{ width: '100%', background: '#111827', border: '1px solid #374151', borderRadius: 6, color: '#f9fafb', padding: '8px 12px', fontSize: 14 }} />
+                    <label className="block text-xs font-medium text-gray-400 mb-2">Kurs Broker (IDR/USD)</label>
+                    <div className="relative">
+                      <Calculator className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                      <input 
+                        type="number" 
+                        value={exchangeRate} 
+                        onChange={e => setExchangeRate(e.target.value)} 
+                        className="w-full bg-gray-900/80 border border-gray-700 rounded-lg text-white pl-9 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all"
+                      />
+                    </div>
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, color: '#9ca3af', display: 'block', marginBottom: 4 }}>Tipe Akun</label>
-                    <select value={accountType} onChange={e => setAccountType(e.target.value as 'STANDARD' | 'CENT')} style={{ width: '100%', background: '#111827', border: '1px solid #374151', borderRadius: 6, color: '#f9fafb', padding: '8px 12px', fontSize: 14 }}>
+                    <label className="block text-xs font-medium text-gray-400 mb-2">Tipe Akun Trading</label>
+                    <select 
+                      value={accountType} 
+                      onChange={e => setAccountType(e.target.value as 'STANDARD' | 'CENT')} 
+                      className="w-full bg-gray-900/80 border border-gray-700 rounded-lg text-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer"
+                    >
                       <option value="STANDARD">Standard (USD)</option>
                       <option value="CENT">Micro/Cent (USC)</option>
                     </select>
@@ -206,35 +294,72 @@ export default function PerformancePage() {
                 </div>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+              {/* Risk Settings */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>
-                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Saldo Modal {useConverter && accountType === 'CENT' ? '(USC Cent)' : '(USD)'}</label>
-                  <input
-                    type="number" value={balanceInput} onChange={e => { setBalanceInput(e.target.value); setUseConverter(false); }}
-                    placeholder="Contoh: 1000"
-                    style={{ width: '100%', background: '#1f2937', border: '1px solid #374151', borderRadius: 8, color: '#f9fafb', padding: '10px 12px', fontSize: 15, boxSizing: 'border-box' }}
-                  />
+                  <label className="block text-xs font-medium text-gray-400 mb-2">
+                    Saldo Aktif {useConverter && accountType === 'CENT' ? '(USC Cent)' : '(USD)'}
+                  </label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                    <input
+                      type="number" 
+                      value={balanceInput} 
+                      onChange={e => { setBalanceInput(e.target.value); setUseConverter(false); }}
+                      placeholder="1000"
+                      className="w-full bg-gray-800/80 border border-gray-700 rounded-xl text-white pl-9 pr-4 py-3 text-lg font-medium focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all placeholder-gray-600"
+                    />
+                  </div>
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Risk per Trade: <b style={{ color: '#f9fafb' }}>{riskInput}%</b></label>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-xs font-medium text-gray-400">Risk per Trade</label>
+                    <span className="text-sm font-bold text-blue-400 bg-blue-900/20 px-2 py-0.5 rounded-md">{riskInput}%</span>
+                  </div>
                   <input
-                    type="range" min="0.1" max="3" step="0.1" value={riskInput} onChange={e => setRiskInput(e.target.value)}
-                    style={{ width: '100%', marginTop: 10 }}
+                    type="range" min="0.1" max="3" step="0.1" 
+                    value={riskInput} 
+                    onChange={e => setRiskInput(e.target.value)}
+                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500 mt-4"
                   />
+                  <div className="flex justify-between text-[10px] text-gray-500 mt-2 font-medium">
+                    <span>0.1% (Safe)</span>
+                    <span>1.5% (Normal)</span>
+                    <span>3% (Aggressive)</span>
+                  </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                <div style={{ background: '#0d2818', border: '1px solid #10b98130', borderRadius: 8, padding: '10px 20px' }}>
-                  <span style={{ color: '#6b7280', fontSize: 13 }}>📦 Lot Disarankan: </span>
-                  <span style={{ color: '#10b981', fontWeight: 700, fontSize: 18 }}>{suggestedLot}</span>
-                  <span style={{ color: '#6b7280', fontSize: 12, marginLeft: 6 }}>lot {useConverter && accountType === 'CENT' ? '(Cent)' : ''}</span>
+
+              {/* Action Bar */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-800/50">
+                <div className="flex items-center gap-4 bg-emerald-900/10 border border-emerald-900/30 px-5 py-3 rounded-xl w-full sm:w-auto">
+                  <div className="p-2 bg-emerald-900/40 rounded-lg">
+                    <Package className="text-emerald-400" size={20} />
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-emerald-500/70 font-semibold uppercase tracking-wider mb-0.5">Lot Disarankan</div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-bold text-emerald-400">{suggestedLot}</span>
+                      <span className="text-xs font-medium text-emerald-500/70">lot {useConverter && accountType === 'CENT' ? '(Cent)' : ''}</span>
+                    </div>
+                  </div>
                 </div>
-                <button onClick={saveCapital} disabled={saving} style={{ background: '#2563eb', border: 'none', borderRadius: 8, color: 'white', padding: '10px 24px', cursor: 'pointer', fontWeight: 600, fontSize: 14, opacity: saving ? 0.7 : 1 }}>
-                  {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+                
+                <button 
+                  onClick={saveCapital} 
+                  disabled={saving} 
+                  className="w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-900/20 focus:ring-2 focus:ring-blue-500/50 outline-none disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {saving ? (
+                    <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> Menyimpan...</>
+                  ) : (
+                    'Simpan Pengaturan'
+                  )}
                 </button>
               </div>
             </div>
-          </>
+
+          </div>
         )}
       </div>
     </div>
