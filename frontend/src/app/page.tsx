@@ -65,13 +65,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-gray-100 p-6 font-sans selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-cyber-bg text-gray-100 p-6 font-sans selection:bg-cyber-neon/30 scanlines">
       
       {/* Top Header & Strategy Toggle */}
       <header className="max-w-[1400px] mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-blue-500/20 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10">
-            <Target size={20} className="text-emerald-400" />
+          <div className="w-10 h-10 rounded-xl bg-cyber-panel border border-cyber-border flex items-center justify-center shadow-lg shadow-cyber-neon/10">
+            <Target size={20} className="text-cyber-neon drop-shadow-[0_0_8px_rgba(0,255,157,0.8)]" />
           </div>
           <div>
             <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-100 to-gray-400">
@@ -81,23 +81,23 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex items-center bg-gray-900/60 p-1.5 rounded-xl border border-gray-800/80 backdrop-blur-md">
-          <Link href="/history" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-all mr-1">
+        <div className="flex items-center bg-cyber-panel/80 p-1.5 rounded-xl border border-cyber-border backdrop-blur-md relative z-10">
+          <Link href="/history" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">
             <Activity size={14} /> Tracker
           </Link>
-          <Link href="/performance" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-all mr-1">
+          <Link href="/performance" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">
             <BarChart2 size={14} /> Performa
           </Link>
-          <div className="w-[1px] h-6 bg-gray-700/50 mr-1"></div>
+          <div className="w-[1px] h-6 bg-cyber-border mr-1"></div>
           <button 
             onClick={() => toggleStrategy('SNIPER')}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'SNIPER' ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/20 border border-blue-500/50' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'SNIPER' ? 'bg-cyber-purple/90 text-white shadow-lg shadow-cyber-purple/30 border border-cyber-purple/50 drop-shadow-[0_0_5px_rgba(139,92,246,0.8)]' : 'text-gray-500 hover:text-gray-300'}`}
           >
             <Crosshair size={14} /> Sniper (M15)
           </button>
           <button 
             onClick={() => toggleStrategy('HYPER_SCALPER')}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'HYPER_SCALPER' ? 'bg-rose-600/90 text-white shadow-lg shadow-rose-500/20 border border-rose-500/50' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'HYPER_SCALPER' ? 'bg-cyber-amber/90 text-white shadow-lg shadow-cyber-amber/30 border border-cyber-amber/50 drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]' : 'text-gray-500 hover:text-gray-300'}`}
           >
             <Zap size={14} /> Scalper (M5)
           </button>
@@ -107,7 +107,7 @@ export default function Home() {
       <main className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Side: Chart */}
         <section className="lg:col-span-3 space-y-6">
-          <div className="bg-[#111827]/80 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-1 shadow-2xl relative overflow-hidden">
+          <div className="bg-cyber-panel backdrop-blur-xl border border-cyber-border rounded-2xl p-1 shadow-2xl relative overflow-hidden">
              {/* Subtle Glow */}
              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent"></div>
             <Chart />
@@ -118,13 +118,13 @@ export default function Home() {
         <section className="space-y-4 flex flex-col">
           {/* Status Pills */}
           <div className="grid grid-cols-2 gap-4 w-full">
-            <div className="bg-[#111827]/80 backdrop-blur-md border border-gray-800/50 rounded-xl p-4 shadow-lg group hover:border-gray-700 transition-all duration-300">
+            <div className="bg-cyber-panel backdrop-blur-md border border-cyber-border rounded-xl p-4 shadow-lg group hover:border-gray-700 transition-all duration-300">
               <div className="flex flex-wrap justify-between items-start gap-1 mb-1">
                 <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest flex items-center gap-1">
                   <Activity size={12} /> Sentiment
                 </p>
                 {status?.sentimentStatus?.score && (
-                   <span className="text-[9px] bg-gray-800/80 px-2 py-1 rounded border border-gray-700/50 text-gray-300 font-medium whitespace-nowrap">
+                   <span className="text-[9px] bg-cyber-bg px-2 py-1 rounded border border-cyber-border text-gray-300 font-medium whitespace-nowrap">
                      Skor: {status.sentimentStatus.score}
                    </span>
                 )}
@@ -136,7 +136,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="bg-[#111827]/80 backdrop-blur-md border border-gray-800/50 rounded-xl p-4 shadow-lg group hover:border-gray-700 transition-all duration-300">
+            <div className="bg-cyber-panel backdrop-blur-md border border-cyber-border rounded-xl p-4 shadow-lg group hover:border-gray-700 transition-all duration-300">
               <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest flex items-center gap-1 mb-2">
                 <BarChart2 size={12} /> Technical
               </p>
@@ -146,7 +146,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-[#111827]/80 backdrop-blur-md border border-gray-800/50 rounded-xl p-4 shadow-lg flex justify-between items-center w-full group hover:border-yellow-500/20 transition-all duration-300">
+          <div className="bg-cyber-panel backdrop-blur-md border border-cyber-border rounded-xl p-4 shadow-lg flex justify-between items-center w-full group hover:border-yellow-500/20 transition-all duration-300">
             <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest flex items-center gap-1">
               <Clock size={12} /> Active Session
             </p>
@@ -156,8 +156,8 @@ export default function Home() {
           </div>
 
           {status?.upcomingNews && (
-            <div className="bg-gradient-to-br from-orange-950/40 to-[#111827]/80 border border-orange-500/30 rounded-xl p-4 shadow-lg w-full relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-bl-full group-hover:scale-110 transition-transform duration-500"></div>
+            <div className="bg-cyber-panel border border-cyber-border rounded-xl p-5 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-cyber-purple/5 rounded-full blur-2xl -mr-10 -mt-10 transition-all group-hover:bg-cyber-purple/10"></div>
               <p className="text-[10px] text-orange-400/80 uppercase font-bold tracking-widest mb-3 flex items-center gap-2">
                 <ShieldAlert size={14} className="text-orange-500" />
                 High Impact News Radar
@@ -167,7 +167,7 @@ export default function Home() {
               </p>
               <div className="flex justify-between items-end mt-4">
                 <div>
-                  <p className="text-[10px] font-medium text-gray-400 bg-gray-900/50 px-2 py-1 rounded">
+                  <p className="text-[10px] font-medium text-gray-400 bg-cyber-bg px-2 py-1 rounded">
                     {new Date(status.upcomingNews.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
@@ -181,22 +181,22 @@ export default function Home() {
             </div>
           )}
 
-          <div className="bg-[#111827]/90 backdrop-blur-xl border border-gray-800/50 rounded-2xl shadow-xl flex flex-col h-[530px] relative overflow-hidden">
+          <div className="bg-cyber-panel backdrop-blur-xl border border-cyber-border rounded-2xl shadow-xl flex flex-col h-[530px] relative overflow-hidden">
             {/* Top Glow Edge */}
             <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
             
-            <div className="p-4 border-b border-gray-800/50 flex justify-between items-center bg-[#111827]">
+            <div className="p-4 border-b border-cyber-border flex justify-between items-center bg-cyber-panel">
               <h2 className="text-sm font-bold flex items-center gap-2 text-gray-100">
                 <RadioTower size={16} className="text-emerald-400" />
                 Live Signals
               </h2>
-              <span className="bg-gray-800 text-gray-300 border border-gray-700 px-2 py-1 rounded text-[10px] font-bold tracking-widest uppercase">
+              <span className="bg-cyber-bg text-gray-300 border border-cyber-border px-2 py-1 rounded text-[10px] font-bold tracking-widest uppercase">
                 XAU/USD
               </span>
             </div>
             
             {status?.analysisDetail && (
-              <div className="bg-blue-950/10 border-b border-gray-800/50 p-4 flex items-start gap-3 relative overflow-hidden">
+              <div className="bg-blue-950/10 border-b border-cyber-border p-4 flex items-start gap-3 relative overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500/50"></div>
                 <Zap size={14} className="text-blue-400 mt-0.5 animate-pulse" />
                 <div>

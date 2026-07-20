@@ -88,13 +88,13 @@ export default function HistoryPage() {
   }, [signals]);
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-gray-100 p-6 font-sans selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-cyber-bg text-gray-100 p-6 font-sans selection:bg-cyber-neon/30 scanlines">
       <div className="max-w-[1400px] mx-auto">
         
         {/* Header & Filter */}
         <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div className="flex items-center gap-4">
-            <Link href="/" className="p-2 bg-gray-900 border border-gray-800 rounded-lg hover:bg-gray-800 transition-colors">
+            <Link href="/" className="p-2 bg-cyber-panel border border-cyber-border rounded-lg hover:bg-cyber-bg transition-colors">
               <ArrowLeft size={20} className="text-gray-400" />
             </Link>
             <div>
@@ -108,14 +108,14 @@ export default function HistoryPage() {
 
           {/* Date Filters */}
           <div 
-            className="flex items-center bg-gray-900/60 p-1.5 rounded-xl border border-gray-800/80 backdrop-blur-md overflow-x-auto max-w-[calc(100vw-3rem)] md:max-w-full"
+            className="flex items-center bg-cyber-panel/60 p-1.5 rounded-xl border border-cyber-border backdrop-blur-md overflow-x-auto max-w-[calc(100vw-3rem)] md:max-w-full relative z-10"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {['TODAY', 'WEEK', 'MONTH', 'ALL', 'CUSTOM'].map((f) => (
               <button 
                 key={f}
                 onClick={() => setFilter(f as any)}
-                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${filter === f ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/20 border border-blue-500/50' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${filter === f ? 'bg-cyber-purple/90 text-white shadow-lg shadow-cyber-purple/20 border border-cyber-purple/50 drop-shadow-[0_0_5px_rgba(139,92,246,0.8)]' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 {f === 'ALL' ? <Calendar size={14} /> : <Clock size={14} />} 
                 {f === 'TODAY' ? 'Hari Ini' : f === 'WEEK' ? 'Minggu Ini' : f === 'MONTH' ? 'Bulan Ini' : f === 'CUSTOM' ? 'Custom' : 'Semua'}
@@ -124,7 +124,7 @@ export default function HistoryPage() {
           </div>
           
           {filter === 'CUSTOM' && (
-             <div className="flex items-center bg-gray-900/60 p-1.5 rounded-xl border border-gray-800/80 backdrop-blur-md">
+             <div className="flex items-center bg-cyber-panel/60 p-1.5 rounded-xl border border-cyber-border backdrop-blur-md relative z-10">
                 <input 
                   type="date"
                   value={customDate}
@@ -137,19 +137,19 @@ export default function HistoryPage() {
 
         {/* Global Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-[#111827]/80 backdrop-blur-md border border-emerald-500/30 rounded-xl p-5 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+          <div className="bg-cyber-panel/80 backdrop-blur-md border border-cyber-neon/30 rounded-xl p-5 shadow-[0_0_15px_rgba(0,255,157,0.1)] relative z-10">
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
-              <Target size={12} className="text-emerald-500" /> Overall Win Rate
+              <Target size={12} className="text-cyber-neon drop-shadow-[0_0_5px_rgba(0,255,157,0.8)]" /> Overall Win Rate
             </p>
-            <p className="text-3xl font-bold text-emerald-400">{stats.winRate}%</p>
+            <p className="text-3xl font-bold text-cyber-neon drop-shadow-[0_0_5px_rgba(0,255,157,0.8)]">{stats.winRate}%</p>
           </div>
-          <div className="bg-[#111827]/80 backdrop-blur-md border border-gray-800 rounded-xl p-5 shadow-lg">
+          <div className="bg-cyber-panel/80 backdrop-blur-md border border-cyber-border rounded-xl p-5 shadow-lg relative z-10">
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
               <CheckCircle2 size={12} className="text-gray-400" /> Perfect Trades (100%)
             </p>
             <p className="text-3xl font-bold text-gray-200">{stats.perfectTrades}</p>
           </div>
-          <div className="bg-[#111827]/80 backdrop-blur-md border border-gray-800 rounded-xl p-5 shadow-lg">
+          <div className="bg-cyber-panel/80 backdrop-blur-md border border-cyber-border rounded-xl p-5 shadow-lg relative z-10">
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
               <BarChart2 size={12} className="text-gray-400" /> Total Signals
             </p>
@@ -158,8 +158,8 @@ export default function HistoryPage() {
         </div>
 
         {/* Data Table */}
-        <div className="bg-[#111827]/90 backdrop-blur-xl border border-gray-800/50 rounded-2xl shadow-2xl overflow-hidden relative">
-          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
+        <div className="bg-cyber-panel/90 backdrop-blur-xl border border-cyber-border rounded-2xl shadow-2xl overflow-hidden relative z-10">
+          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-cyber-purple/20 to-transparent"></div>
           
           <div className="overflow-x-auto min-h-[400px]">
             {loading ? (
@@ -175,9 +175,9 @@ export default function HistoryPage() {
                </div>
             ) : (
             <>
-            <table className="hidden md:table w-full text-left border-collapse">
+            <table className="hidden md:table w-full text-left border-collapse relative z-10">
               <thead>
-                <tr className="bg-gray-900/50 border-b border-gray-800 text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                <tr className="bg-cyber-panel/50 border-b border-cyber-border text-[10px] uppercase tracking-widest text-gray-500 font-bold">
                   <th className="p-4 pl-6">Signal ID</th>
                   <th className="p-4">Strategy & Zone</th>
                   <th className="p-4">Action</th>

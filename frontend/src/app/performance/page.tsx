@@ -123,7 +123,7 @@ export default function PerformancePage() {
     : '0.00') : '0.00';
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-gray-200 font-sans p-4 md:p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 via-[#0B0F19] to-[#05080f]">
+    <div className="min-h-screen bg-cyber-bg text-gray-200 font-sans p-4 md:p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyber-panel via-cyber-bg to-[#05080f] scanlines">
       
       {/* Header Container */}
       <div className="max-w-4xl mx-auto">
@@ -144,9 +144,9 @@ export default function PerformancePage() {
         </div>
 
         {/* Month Navigator */}
-        <div className="flex items-center justify-between bg-gray-900/40 border border-gray-800/60 backdrop-blur-md rounded-2xl p-4 mb-8">
+        <div className="flex items-center justify-between bg-cyber-panel/60 border border-cyber-border backdrop-blur-md rounded-2xl p-4 mb-8 relative z-10">
           <div className="flex items-center gap-4">
-            <button onClick={prevMonth} className="p-2 rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-all">
+            <button onClick={prevMonth} className="p-2 rounded-lg bg-cyber-bg text-gray-400 hover:bg-cyber-border hover:text-white transition-all">
               <ChevronLeft size={20} />
             </button>
             <span className="text-xl font-bold text-white min-w-[140px] text-center">
@@ -183,7 +183,7 @@ export default function PerformancePage() {
                 { icon: <Clock size={22} className="text-indigo-500" />, label: 'Rata-rata Durasi', value: stats ? stats.avgDurationMins + ' menit' : '—', color: 'text-white' },
               ].map((m, i) => (
                 <div key={i} className="bg-gray-900/50 border border-gray-800/80 rounded-2xl p-5 hover:bg-gray-800/60 hover:scale-[1.02] hover:border-gray-700/80 transition-all duration-300">
-                  <div className="mb-3 p-2 bg-gray-800/50 w-fit rounded-lg">{m.icon}</div>
+                  <div className="mb-3 p-2 bg-cyber-bg w-fit rounded-lg">{m.icon}</div>
                   <div className="text-xs text-gray-500 font-medium mb-1 uppercase tracking-wider">{m.label}</div>
                   <div className={`text-xl font-bold ${m.color}`}>{m.value}</div>
                 </div>
@@ -234,7 +234,7 @@ export default function PerformancePage() {
             </div>
 
             {/* Capital Risk Engine */}
-            <div className="bg-gray-900/50 border border-gray-800/80 rounded-2xl p-6">
+            <div className="bg-cyber-panel border border-cyber-border rounded-2xl p-6 relative z-10">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3 text-lg font-bold text-white">
                   <div className="p-2 bg-blue-900/30 rounded-lg">
