@@ -81,23 +81,26 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex items-center bg-cyber-panel/80 p-1.5 rounded-xl border border-cyber-border backdrop-blur-md relative z-10">
-          <Link href="/history" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">
+        <div 
+          className="flex items-center bg-cyber-panel/80 p-1.5 rounded-xl border border-cyber-border backdrop-blur-md relative z-10 overflow-x-auto w-full md:w-auto max-w-[calc(100vw-3rem)] md:max-w-none"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          <Link href="/history" className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">
             <Activity size={14} /> Tracker
           </Link>
-          <Link href="/performance" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">
+          <Link href="/performance" className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">
             <BarChart2 size={14} /> Performa
           </Link>
-          <div className="w-[1px] h-6 bg-cyber-border mr-1"></div>
+          <div className="flex-shrink-0 w-[1px] h-6 bg-cyber-border mr-1"></div>
           <button 
             onClick={() => toggleStrategy('SNIPER')}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'SNIPER' ? 'bg-cyber-purple/90 text-white shadow-lg shadow-cyber-purple/30 border border-cyber-purple/50 drop-shadow-[0_0_5px_rgba(139,92,246,0.8)]' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`flex-shrink-0 flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'SNIPER' ? 'bg-cyber-purple/90 text-white shadow-lg shadow-cyber-purple/30 border border-cyber-purple/50 drop-shadow-[0_0_5px_rgba(139,92,246,0.8)]' : 'text-gray-500 hover:text-gray-300'}`}
           >
             <Crosshair size={14} /> Sniper (M15)
           </button>
           <button 
             onClick={() => toggleStrategy('HYPER_SCALPER')}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'HYPER_SCALPER' ? 'bg-cyber-amber/90 text-white shadow-lg shadow-cyber-amber/30 border border-cyber-amber/50 drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]' : 'text-gray-500 hover:text-gray-300'}`}
+            className={`flex-shrink-0 flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'HYPER_SCALPER' ? 'bg-cyber-amber/90 text-white shadow-lg shadow-cyber-amber/30 border border-cyber-amber/50 drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]' : 'text-gray-500 hover:text-gray-300'}`}
           >
             <Zap size={14} /> Scalper (M5)
           </button>
