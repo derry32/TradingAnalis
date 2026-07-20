@@ -118,12 +118,12 @@ export default function PerformancePage() {
             {/* 6 Metric Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
               {[
-                { icon: '📈', label: 'Total Profit Pips', value: stats ? `${stats.totalPips > 0 ? '+' : ''}${stats.totalPips}`, color: (stats?.totalPips ?? 0) >= 0 ? '#10b981' : '#ef4444' },
-                { icon: '🎯', label: 'Win Rate', value: stats ? `${stats.winRate}%` : '—', color: (stats?.winRate ?? 0) >= 60 ? '#10b981' : (stats?.winRate ?? 0) >= 40 ? '#f59e0b' : '#ef4444' },
-                { icon: '📉', label: 'Max Drawdown Streak', value: stats ? `${stats.maxDrawdownStreak}x SL berturut` : '—', color: (stats?.maxDrawdownStreak ?? 0) <= 2 ? '#10b981' : '#ef4444' },
-                { icon: '💰', label: 'Expectancy', value: stats ? `${stats.expectancy > 0 ? '+' : ''}${stats.expectancy} pips` : '—', color: (stats?.expectancy ?? 0) > 0 ? '#10b981' : '#ef4444' },
-                { icon: '📊', label: 'Total Sinyal', value: stats ? `${stats.hitTP}TP / ${stats.hitSL}SL / ${stats.totalSignals} total` : '—', color: '#60a5fa' },
-                { icon: '⏳', label: 'Rata-rata Durasi', value: stats ? `${stats.avgDurationMins} menit` : '—', color: '#a78bfa' },
+                { icon: '📈', label: 'Total Profit Pips', value: stats ? (stats.totalPips > 0 ? '+' + stats.totalPips : stats.totalPips) : '—', color: (stats?.totalPips ?? 0) >= 0 ? '#10b981' : '#ef4444' },
+                { icon: '🎯', label: 'Win Rate', value: stats ? stats.winRate + '%' : '—', color: (stats?.winRate ?? 0) >= 60 ? '#10b981' : (stats?.winRate ?? 0) >= 40 ? '#f59e0b' : '#ef4444' },
+                { icon: '📉', label: 'Max Drawdown Streak', value: stats ? stats.maxDrawdownStreak + 'x SL berturut' : '—', color: (stats?.maxDrawdownStreak ?? 0) <= 2 ? '#10b981' : '#ef4444' },
+                { icon: '💰', label: 'Expectancy', value: stats ? (stats.expectancy > 0 ? '+' + stats.expectancy : stats.expectancy) + ' pips' : '—', color: (stats?.expectancy ?? 0) > 0 ? '#10b981' : '#ef4444' },
+                { icon: '📊', label: 'Total Sinyal', value: stats ? stats.hitTP + 'TP / ' + stats.hitSL + 'SL / ' + stats.totalSignals + ' total' : '—', color: '#60a5fa' },
+                { icon: '⏳', label: 'Rata-rata Durasi', value: stats ? stats.avgDurationMins + ' menit' : '—', color: '#a78bfa' },
               ].map((m, i) => (
                 <div key={i} style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 12, padding: '16px 20px' }}>
                   <div style={{ fontSize: 22, marginBottom: 6 }}>{m.icon}</div>
