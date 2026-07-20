@@ -59,12 +59,14 @@
 
 ---
 
-## 🚀 Mendatang: SPRINT 5 (Production Ready)
+## 🚀 Mendatang: SPRINT 5 (Production Ready & Strategy Tweaks)
 **Status:** Backlog (Belum Dimulai)
 
 ### Product Backlog (Prioritas Tinggi - Menengah)
 | ID | Tipe | Judul | Deskripsi Singkat | Prioritas |
 |----|------|-------|-------------------|-----------|
+| B-01A| Core | AI Strategy: Momentum Based Entry | Longgarkan syarat Price Action (M5) agar AI bisa masuk murni berdasarkan momentum EMA & Volume (Brainstorm Opsi 1). | Tinggi |
+| B-01B| Core | AI Strategy: Lower Threshold | Turunkan standar minimal skor AI (Sniper 70, Scalper 60) untuk meningkatkan frekuensi sinyal (Brainstorm Opsi 2). | Tinggi |
 | B-02 | Integration | Real API: Marketaux / News | Menghubungkan API Berita Finansial asli untuk mendapatkan *feed* berita harian. | Tinggi |
 | B-04 | Feature | Telegram User Registration | Mengizinkan *user* mendaftarkan Chat ID secara dinamis via bot Telegram (tidak di-*hardcode* di `.env`). | Menengah |
 | B-05 | Feature | Advanced Risk Settings | UI di Dashboard untuk mengatur Risk:Reward Ratio (misal 1:3) dan Max SL Pips secara dinamis. | Menengah |

@@ -188,8 +188,8 @@ export class SignalGenerator {
     const currentHourWIB = (currentHourUTC + 7) % 24;
     const sessionInfo = this.getSession(currentHourWIB);
     
-    if (activeStrategy === 'HYPER_SCALPER' && (sessionInfo.type === 'SYDNEY' || sessionInfo.type === 'TOKYO' || sessionInfo.type === 'OFF')) {
-        return this.createWaitSignal("Sesi tidak valid untuk Hyper Scalper. Harap tunggu sesi London atau New York.", activeStrategy);
+    if (activeStrategy === 'HYPER_SCALPER' && sessionInfo.type === 'OFF') {
+        return this.createWaitSignal("Sesi market tutup (Off-hours).", activeStrategy);
     }
     
     let isNewsMode = false;
