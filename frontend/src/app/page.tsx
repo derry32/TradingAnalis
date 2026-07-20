@@ -70,7 +70,7 @@ export default function Home() {
       {/* Top Header & Strategy Toggle */}
       <header className="max-w-[1400px] mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-cyber-panel border border-cyber-border flex items-center justify-center shadow-lg shadow-cyber-neon/10">
+          <div className="w-10 h-10 rounded-xl cyber-card-glow flex items-center justify-center shadow-lg shadow-cyber-neon/10">
             <Target size={20} className="text-cyber-neon drop-shadow-[0_0_8px_rgba(0,255,157,0.8)]" />
           </div>
           <div>
@@ -82,7 +82,7 @@ export default function Home() {
         </div>
 
         <div 
-          className="flex items-center bg-cyber-panel/80 p-1.5 rounded-xl border border-cyber-border backdrop-blur-md relative z-10 overflow-x-auto w-full md:w-auto max-w-[calc(100vw-3rem)] md:max-w-none"
+          className="flex items-center cyber-card-glow p-1.5 rounded-xl backdrop-blur-md relative z-10 overflow-x-auto w-full md:w-auto max-w-[calc(100vw-3rem)] md:max-w-none"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           <Link href="/history" className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">
@@ -110,7 +110,7 @@ export default function Home() {
       <main className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Side: Chart */}
         <section className="lg:col-span-3 space-y-6">
-          <div className="bg-cyber-panel backdrop-blur-xl border border-cyber-border rounded-2xl p-1 shadow-2xl relative overflow-hidden">
+          <div className="cyber-card-glow backdrop-blur-xl rounded-2xl p-1 shadow-2xl relative overflow-hidden">
              {/* Subtle Glow */}
              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent"></div>
             <Chart />
@@ -121,7 +121,7 @@ export default function Home() {
         <section className="space-y-4 flex flex-col">
           {/* Status Pills */}
           <div className="grid grid-cols-2 gap-4 w-full">
-            <div className="bg-cyber-panel backdrop-blur-md border border-cyber-border rounded-xl p-4 shadow-lg group hover:border-gray-700 transition-all duration-300">
+            <div className="cyber-card-glow backdrop-blur-md rounded-xl p-4 shadow-lg group hover:border-gray-700 transition-all duration-300">
               <div className="flex flex-wrap justify-between items-start gap-1 mb-1">
                 <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest flex items-center gap-1">
                   <Activity size={12} /> Sentiment
@@ -139,7 +139,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="bg-cyber-panel backdrop-blur-md border border-cyber-border rounded-xl p-4 shadow-lg group hover:border-gray-700 transition-all duration-300">
+            <div className="cyber-card-glow backdrop-blur-md rounded-xl p-4 shadow-lg group hover:border-gray-700 transition-all duration-300">
               <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest flex items-center gap-1 mb-2">
                 <BarChart2 size={12} /> Technical
               </p>
@@ -149,7 +149,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-cyber-panel backdrop-blur-md border border-cyber-border rounded-xl p-4 shadow-lg flex justify-between items-center w-full group hover:border-yellow-500/20 transition-all duration-300">
+          <div className="cyber-card-glow backdrop-blur-md rounded-xl p-4 shadow-lg flex justify-between items-center w-full group hover:border-yellow-500/20 transition-all duration-300">
             <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest flex items-center gap-1">
               <Clock size={12} /> Active Session
             </p>
@@ -159,7 +159,7 @@ export default function Home() {
           </div>
 
           {status?.upcomingNews && (
-            <div className="bg-cyber-panel border border-cyber-border rounded-xl p-5 relative overflow-hidden group">
+            <div className="cyber-card-glow rounded-xl p-5 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-cyber-purple/5 rounded-full blur-2xl -mr-10 -mt-10 transition-all group-hover:bg-cyber-purple/10"></div>
               <p className="text-[10px] text-orange-400/80 uppercase font-bold tracking-widest mb-3 flex items-center gap-2">
                 <ShieldAlert size={14} className="text-orange-500" />
@@ -184,7 +184,7 @@ export default function Home() {
             </div>
           )}
 
-          <div className="bg-cyber-panel backdrop-blur-xl border border-cyber-border rounded-2xl shadow-xl flex flex-col h-[530px] relative overflow-hidden">
+          <div className="cyber-card-glow backdrop-blur-xl rounded-2xl shadow-xl flex flex-col h-[530px] relative overflow-hidden">
             {/* Top Glow Edge */}
             <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
             

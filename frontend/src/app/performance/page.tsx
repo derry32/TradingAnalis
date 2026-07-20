@@ -144,9 +144,9 @@ export default function PerformancePage() {
         </div>
 
         {/* Month Navigator */}
-        <div className="flex items-center justify-between bg-cyber-panel/60 border border-cyber-border backdrop-blur-md rounded-2xl p-4 mb-8 relative z-10">
+        <div className="flex items-center justify-between cyber-card-glow backdrop-blur-md rounded-2xl p-4 mb-8 relative z-10">
           <div className="flex items-center gap-4">
-            <button onClick={prevMonth} className="p-2 rounded-lg bg-cyber-bg text-gray-400 hover:bg-cyber-border hover:text-white transition-all">
+            <button onClick={prevMonth} className="p-2 rounded-lg bg-cyber-bg text-gray-400 hover:text-white transition-all">
               <ChevronLeft size={20} />
             </button>
             <span className="text-xl font-bold text-white min-w-[140px] text-center">
@@ -234,7 +234,7 @@ export default function PerformancePage() {
             </div>
 
             {/* Capital Risk Engine */}
-            <div className="bg-cyber-panel border border-cyber-border rounded-2xl p-6 relative z-10">
+            <div className="cyber-card-glow rounded-2xl p-6 relative z-10">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3 text-lg font-bold text-white">
                   <div className="p-2 bg-blue-900/30 rounded-lg">

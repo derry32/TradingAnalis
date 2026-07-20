@@ -94,7 +94,7 @@ export default function HistoryPage() {
         {/* Header & Filter */}
         <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div className="flex items-center gap-4">
-            <Link href="/" className="p-2 bg-cyber-panel border border-cyber-border rounded-lg hover:bg-cyber-bg transition-colors">
+            <Link href="/" className="p-2 cyber-card-glow rounded-lg hover:bg-cyber-bg transition-colors">
               <ArrowLeft size={20} className="text-gray-400" />
             </Link>
             <div>
@@ -108,7 +108,7 @@ export default function HistoryPage() {
 
           {/* Date Filters */}
           <div 
-            className="flex items-center bg-cyber-panel/60 p-1.5 rounded-xl border border-cyber-border backdrop-blur-md overflow-x-auto max-w-[calc(100vw-3rem)] md:max-w-full relative z-10"
+            className="flex items-center cyber-card-glow p-1.5 rounded-xl backdrop-blur-md overflow-x-auto max-w-[calc(100vw-3rem)] md:max-w-full relative z-10"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {['TODAY', 'WEEK', 'MONTH', 'ALL', 'CUSTOM'].map((f) => (
@@ -124,7 +124,7 @@ export default function HistoryPage() {
           </div>
           
           {filter === 'CUSTOM' && (
-             <div className="flex items-center bg-cyber-panel/60 p-1.5 rounded-xl border border-cyber-border backdrop-blur-md relative z-10">
+             <div className="flex items-center cyber-card-glow p-1.5 rounded-xl backdrop-blur-md relative z-10">
                 <input 
                   type="date"
                   value={customDate}
@@ -137,19 +137,19 @@ export default function HistoryPage() {
 
         {/* Global Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-cyber-panel/80 backdrop-blur-md border border-cyber-neon/30 rounded-xl p-5 shadow-[0_0_15px_rgba(0,255,157,0.1)] relative z-10">
+          <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-[0_0_15px_rgba(0,255,157,0.1)] relative z-10">
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
               <Target size={12} className="text-cyber-neon drop-shadow-[0_0_5px_rgba(0,255,157,0.8)]" /> Overall Win Rate
             </p>
             <p className="text-3xl font-bold text-cyber-neon drop-shadow-[0_0_5px_rgba(0,255,157,0.8)]">{stats.winRate}%</p>
           </div>
-          <div className="bg-cyber-panel/80 backdrop-blur-md border border-cyber-border rounded-xl p-5 shadow-lg relative z-10">
+          <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-lg relative z-10">
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
               <CheckCircle2 size={12} className="text-gray-400" /> Perfect Trades (100%)
             </p>
             <p className="text-3xl font-bold text-gray-200">{stats.perfectTrades}</p>
           </div>
-          <div className="bg-cyber-panel/80 backdrop-blur-md border border-cyber-border rounded-xl p-5 shadow-lg relative z-10">
+          <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-lg relative z-10">
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
               <BarChart2 size={12} className="text-gray-400" /> Total Signals
             </p>
@@ -158,7 +158,7 @@ export default function HistoryPage() {
         </div>
 
         {/* Data Table */}
-        <div className="bg-cyber-panel/90 backdrop-blur-xl border border-cyber-border rounded-2xl shadow-2xl overflow-hidden relative z-10">
+        <div className="cyber-card-glow backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden relative z-10">
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-cyber-purple/20 to-transparent"></div>
           
           <div className="overflow-x-auto min-h-[400px]">

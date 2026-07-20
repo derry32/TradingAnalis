@@ -6,32 +6,39 @@
 }
 
 @theme inline {
-  --color-cyber-bg: #090A0F;
-  --color-cyber-panel: #11131C;
-  --color-cyber-amber: #F59E0B;
-  --color-cyber-purple: #8B5CF6;
-  --color-cyber-neon: #00FF9D;
-  --color-cyber-red: #FF2E63;
-  --color-cyber-border: #1E2233;
+  --color-cyber-bg: #030406;
+  --color-cyber-panel: #050a12;
+  --color-cyber-amber: #ffaa00;
+  --color-cyber-purple: #f000ff;
+  --color-cyber-neon: #00ffcc;
+  --color-cyber-red: #ff003c;
+  --color-cyber-border: #00ffcc;
+  --font-mono: var(--font-share-tech);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #090A0F;
-    --foreground: #ededed;
+    --background: #030406;
+    --foreground: #e0ffff;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-share-tech), monospace;
+}
+
+.cyber-card-glow {
+  box-shadow: 0 0 10px rgba(0, 255, 204, 0.2), inset 0 0 15px rgba(0, 255, 204, 0.1);
+  border: 1px solid rgba(0, 255, 204, 0.5);
+  background: rgba(5, 10, 18, 0.8);
 }
 
 .scanlines {
   position: relative;
 }
-.scanlines::before {
+.scanlines::after {
   content: " ";
   display: block;
   position: absolute;
@@ -43,5 +50,6 @@ body {
   z-index: 50;
   background-size: 100% 4px, 6px 100%;
   pointer-events: none;
+  box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
 }
 
