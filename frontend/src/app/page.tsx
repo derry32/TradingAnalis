@@ -86,7 +86,7 @@ export default function Home() {
             <Activity size={14} /> Tracker
           </Link>
           <Link href="/performance" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-all mr-1">
-            📊 Performa
+            <BarChart2 size={14} /> Performa
           </Link>
           <div className="w-[1px] h-6 bg-gray-700/50 mr-1"></div>
           <button 
