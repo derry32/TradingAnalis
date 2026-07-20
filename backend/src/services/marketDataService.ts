@@ -112,41 +112,57 @@ export class MarketDataService {
   private isBootstrapped = false;
 
   public async start() {
-    if (config.FINNHUB_API_KEY) {
-      this.connectFinnhub();
+    if (config.TWELVEDATA_API_KEY) {
+      this.connectTwelveData();
     } else {
       console.warn('[MarketData] No API Key found, starting Simulation Mode.');
       this.startSimulation();
     }
   }
 
-  private connectFinnhub() {
-    this.ws = new WebSocket(`wss://ws.finnhub.io?token=${config.FINNHUB_API_KEY}`);
+  private connectTwelveData() {
+    this.ws = new WebSocket(`wss://ws.twelvedata.com/v1/quotes/price?apikey=${config.TWELVEDATA_API_KEY}`);
     
     const fallbackTimeout = setTimeout(() => {
-      console.warn('[MarketData] No ticks received from Finnhub within 5s. Falling back to Simulation Mode (Free tier might restrict XAU_USD).');
+      console.warn('[MarketData] No ticks received from TwelveData within 5s. Falling back to Simulation Mode.');
       if (this.ws) this.ws.close();
       this.startSimulation();
     }, 5000);
 
     this.ws.on('open', () => {
-      console.log('[MarketData] Connected to Finnhub WebSocket.');
-      this.ws?.send(JSON.stringify({ 'type': 'subscribe', 'symbol': 'OANDA:XAU_USD' }));
+      console.log('[MarketData] Connected to TwelveData WebSocket.');
+      this.ws?.send(JSON.stringify({
+        "action": "subscribe",
+        "params": {
+          "symbols": "XAU/USD"
+        }
+      }));
     });
 
     this.ws.on('message', (data: WebSocket.Data) => {
       try {
         const parsed = JSON.parse(data.toString());
-        if (parsed.type === 'trade') {
+        
+        // Handle subscription status or errors
+        if (parsed.status === 'error') {
+          console.error('[MarketData] TwelveData Error:', parsed.message);
+          return;
+        }
+
+        // Handle price events
+        if (parsed.event === 'price' && parsed.price) {
           clearTimeout(fallbackTimeout); // We got data, clear fallback
-          parsed.data.forEach((trade: any) => {
-            if (!this.isBootstrapped) {
-              this.isBootstrapped = true;
-              console.log(`[MarketData] First tick received: ${trade.p}. Bootstrapping history...`);
-              this.generateFallbackCandles(trade.p);
-            }
-            this.m1.processTick(trade.p, trade.v, trade.t);
-          });
+          
+          if (!this.isBootstrapped) {
+            this.isBootstrapped = true;
+            console.log(`[MarketData] First tick received: ${parsed.price}. Bootstrapping history...`);
+            this.generateFallbackCandles(parsed.price);
+          }
+          
+          // TwelveData format: price, day_volume (optional), timestamp (unix seconds)
+          const volume = parsed.day_volume ? parsed.day_volume / 1000 : 10; // dummy volume if zero
+          const timestampMs = parsed.timestamp * 1000;
+          this.m1.processTick(parsed.price, volume, timestampMs);
         }
       } catch (e) {
         console.error('[MarketData] WebSocket Parse Error', e);
