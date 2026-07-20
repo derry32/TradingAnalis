@@ -9,7 +9,7 @@ const shareTech = Share_Tech_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CYBEREX_TERMINAL // GRID_STATUS: ACTIVE",
+  title: "Trading Analis",
   description: "AI-Powered XAU/USD Price Action Trading Platform",
 };
 
