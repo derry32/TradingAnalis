@@ -47,6 +47,7 @@ export interface TradeState {
   status: 'ACTIVE' | 'HIT_TP' | 'HIT_SL' | 'EXPIRED';
   score: number;
   dbId?: string | number;
+  pendingClose?: { status: string; hitTime: string; durationMins: number; accuracy: number; pips: number };
 }
 
 let latestTechResult: any = { trendH1: 'NEUTRAL' };
@@ -56,7 +57,15 @@ let activeTradeScalper: TradeState | null = null;
 let activeStrategy: 'SNIPER' | 'HYPER_SCALPER' = 'SNIPER';
 
 function updateTradeState(trade: TradeState | null, currentM5: any, strategy: string): TradeState | null {
-  if (!trade || trade.status !== 'ACTIVE') return trade;
+  if (!trade || trade.status !== 'ACTIVE') {
+    // Flush pending close jika dbId baru tersedia
+    if (trade && trade.pendingClose && trade.dbId) {
+      const p = trade.pendingClose;
+      updateSignalStatus(trade.dbId, p.status, p.hitTime, p.durationMins, p.accuracy, p.pips);
+      trade.pendingClose = undefined;
+    }
+    return trade;
+  }
   
   const high = currentM5.high;
   const low = currentM5.low;
@@ -77,28 +86,34 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
 
   if (trade.status !== 'ACTIVE') {
       console.log(`[Agent Derry][${strategy}] Trade ${trade.id} Closed: ${trade.status}`);
-      if (trade.dbId) {
-          const hitTimeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) + ' WIB';
-          const durationMins = Math.floor((Date.now() - trade.timeMs) / (60 * 1000));
-          
-          let accuracy = 0;
-          let pips = 0;
-          if (trade.status === 'HIT_SL') {
-              accuracy = 0;
-              pips = trade.type === 'BUY' ? trade.stopLoss - trade.entryPrice : trade.entryPrice - trade.stopLoss;
-              pips = Math.round(pips * 10);
-          } else if (trade.status === 'HIT_TP') {
-              accuracy = 100;
-              if (durationMins > 20) {
-                  accuracy = Math.max(0, 100 - ((durationMins - 20) * 0.5));
-              }
-              pips = trade.type === 'BUY' ? trade.takeProfit1 - trade.entryPrice : trade.entryPrice - trade.takeProfit1;
-              pips = Math.round(pips * 10);
-          } else if (trade.status === 'EXPIRED') {
-              accuracy = 0;
+      const hitTimeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) + ' WIB';
+      const durationMins = Math.floor((Date.now() - trade.timeMs) / (60 * 1000));
+      
+      let accuracy = 0;
+      let pips = 0;
+      if (trade.status === 'HIT_SL') {
+          accuracy = 0;
+          // SL pips selalu negatif (kerugian)
+          pips = trade.type === 'BUY' 
+            ? Math.round((trade.stopLoss - trade.entryPrice) * 10)  // negatif
+            : Math.round((trade.entryPrice - trade.stopLoss) * 10); // negatif
+      } else if (trade.status === 'HIT_TP') {
+          accuracy = 100;
+          if (durationMins > 20) {
+              accuracy = Math.max(0, 100 - ((durationMins - 20) * 0.5));
           }
-          
+          pips = trade.type === 'BUY' 
+            ? Math.round((trade.takeProfit1 - trade.entryPrice) * 10)
+            : Math.round((trade.entryPrice - trade.takeProfit1) * 10);
+      }
+      
+      if (trade.dbId) {
+          // dbId sudah ada, langsung update
           updateSignalStatus(trade.dbId, trade.status, hitTimeStr, durationMins, accuracy, pips);
+      } else {
+          // dbId belum tersedia (race condition), simpan sebagai pending
+          console.log(`[Agent Derry][${strategy}] dbId belum ada saat close, menyimpan sebagai pending...`);
+          trade.pendingClose = { status: trade.status, hitTime: hitTimeStr, durationMins, accuracy, pips };
       }
   }
 

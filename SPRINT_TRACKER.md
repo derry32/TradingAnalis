@@ -47,7 +47,7 @@
 | C-04 | UI | Advanced TV Widget | Mengganti *lightweight-charts* dengan *Advanced TradingView Widget* (lengkap dengan Countdown & Volume). | ✅ Selesai |
 
 ## 🚀 SPRINT 4 (AI Trading Engine V2.0)
-**Status:** Sedang Berjalan (In Progress)
+**Status:** ✅ Selesai (Completed)
 **Fokus:** Perombakan arsitektur kecerdasan buatan menjadi *Decision Tree* untuk menyesuaikan kondisi pasar secara dinamis.
 
 ### Backlog Sprint 4 (V2.0 Blueprint)
@@ -56,30 +56,41 @@
 | V2-1 | Core | Phase 1: Decision Tree & Dynamics | Pemisahan strategi Trending/Sideways, Dynamic Confidence, dan Session Aggressiveness. | ✅ Selesai |
 | V2-2 | Core | Phase 2: Advanced Price Action | Deteksi Momentum Candle (Marubozu), Breakout Confirmation (Vol+ATR), dan Liquidity Grab. | ✅ Selesai |
 | V2-3 | Core | Phase 3: State & Opportunity Mode | Cooldown berbasis siklus trade (TP/SL/Expired) dan fitur sinyal kuning (Opportunity Mode). | ✅ Selesai |
+| V2-4 | Core | Fibonacci Retracement Golden Zone | Deteksi otomatis level 50% & 61.8% (Golden Ratio) di M15 sebagai konfirmator & bypass PA NONE. Skor +30 jika valid. | ✅ Selesai |
+| V2-5 | Core | Hyper Scalper 24H (Buka Sesi Asia) | Membuka sesi Sydney & Tokyo untuk mode Hyper Scalper agar AI bisa berburu peluang sepanjang hari. | ✅ Selesai |
 
 ---
 
-## 🚀 Mendatang: SPRINT 5 (Production Ready & Strategy Tweaks)
+## 🚀 Mendatang: SPRINT 5 (Scale Up Mode — Risk & Money Management)
 **Status:** Backlog (Belum Dimulai)
+**Fokus:** Menerapkan filosofi *Tangga 4: Scale Up Mode* (Sekolah Trading) ke dalam mesin AI. Tujuan utama adalah stabilitas & konsistensi, bukan profit besar sesaat.
 
-### Product Backlog (Prioritas Tinggi - Menengah)
+### Product Backlog (Prioritas Utama — Scale Up Philosophy)
 | ID | Tipe | Judul | Deskripsi Singkat | Prioritas |
 |----|------|-------|-------------------|-----------|
-| B-01A| Core | AI Strategy: Momentum Based Entry | Longgarkan syarat Price Action (M5) agar AI bisa masuk murni berdasarkan momentum EMA & Volume (Brainstorm Opsi 1). | Tinggi |
-| B-01B| Core | AI Strategy: Lower Threshold | Turunkan standar minimal skor AI (Sniper 70, Scalper 60) untuk meningkatkan frekuensi sinyal (Brainstorm Opsi 2). | Tinggi |
-| B-02 | Integration | Real API: Marketaux / News | Menghubungkan API Berita Finansial asli untuk mendapatkan *feed* berita harian. | Tinggi |
-| B-04 | Feature | Telegram User Registration | Mengizinkan *user* mendaftarkan Chat ID secara dinamis via bot Telegram (tidak di-*hardcode* di `.env`). | Menengah |
-| B-05 | Feature | Advanced Risk Settings | UI di Dashboard untuk mengatur Risk:Reward Ratio (misal 1:3) dan Max SL Pips secara dinamis. | Menengah |
-| B-06 | Testing | Unit & Integration Test | Menambahkan Jest untuk *unit testing* logika Signal Generator dan Technical Analysis. | Menengah |
-| B-07 | DevOps | Dockerization | Membuat `Dockerfile` dan `docker-compose.yml` untuk mempermudah *deployment* Backend, Frontend, dan Database. | Menengah |
+| S5-A | Core | Drawdown Guard (Circuit Breaker) | AI otomatis *pause* mengirim sinyal jika dalam 1 hari sudah hit SL lebih dari 2x. Prinsip: "Jangan hancurkan akun karena ego kecil". | 🔴 Sangat Tinggi |
+| S5-B | Feature | Capital-Based Risk Engine | User memasukkan saldo modal di Dashboard. AI menghitung otomatis ukuran risiko per trade agar tidak melebihi 1-2% dari total modal. *Professional Risk Management*. | 🔴 Sangat Tinggi |
+| S5-C | UI | Monthly Performance Tracker | Halaman baru di website menampilkan: total profit bulan ini, total pips, win-rate, drawdown terbesar, dan *expectancy*. Memudahkan evaluasi apakah AI sudah konsisten di standar 5-10% per bulan. | 🟠 Tinggi |
+
+### Product Backlog (Prioritas Menengah — Strategy Tweaks)
+| ID | Tipe | Judul | Deskripsi Singkat | Prioritas |
+|----|------|-------|-------------------|-----------|
+| B-01A| Core | AI Strategy: Momentum Based Entry | Longgarkan syarat Price Action (M5) agar AI bisa masuk murni berdasarkan momentum EMA & Volume. | 🟠 Tinggi |
+| B-01B| Core | AI Strategy: Lower Threshold | Turunkan standar minimal skor AI (Sniper 70, Scalper 60) untuk meningkatkan frekuensi sinyal. | 🟠 Tinggi |
+| B-02 | Integration | Real API: Marketaux / News | Menghubungkan API Berita Finansial asli untuk mendapatkan *feed* berita harian. | 🟠 Tinggi |
+| B-04 | Feature | Telegram User Registration | Mengizinkan *user* mendaftarkan Chat ID secara dinamis via bot Telegram. | 🟡 Menengah |
+| B-05 | Feature | Advanced Risk Settings | UI di Dashboard untuk mengatur Risk:Reward Ratio dan Max SL Pips secara dinamis. | 🟡 Menengah |
+| B-06 | Testing | Unit & Integration Test | Menambahkan Jest untuk *unit testing* logika Signal Generator dan Technical Analysis. | 🟡 Menengah |
+| B-07 | DevOps | Dockerization | Membuat `Dockerfile` dan `docker-compose.yml` untuk mempermudah *deployment*. | 🟡 Menengah |
 
 ---
 
-## 💡 Masa Depan: SPRINT 6 (Fase 2 - Monetisasi & Otomatisasi Eksekusi)
+## 💡 Masa Depan: SPRINT 6 (Fase 2 — Strategi Lanjutan & Monetisasi)
 **Status:** Perencanaan Panjang (Icebox)
 
 | ID | Tipe | Judul | Deskripsi Singkat |
 |----|------|-------|-------------------|
+| I-00 | Core | Mode Zikk Sniper (MTF Top-Down) | Tambah mode strategi ke-3 berbasis SOP Zikk: 4 anak tangga analisis (D1→H4→H1→M5). *High win-rate, low frequency.* Butuh data TF D1 & H4. |
 | I-01 | Feature | MetaTrader EA Integration | Membuat *Expert Advisor* (EA) yang otomatis mengeksekusi *Buy/Sell* langsung ke MT4/MT5 berdasarkan sinyal. |
 | I-02 | Feature | Payment Gateway | Integrasi Midtrans / Stripe untuk sistem berlangganan (Subscription) sinyal VIP. |
 | I-03 | Feature | Multi-Pair Support | Mengembangkan analisis untuk mata uang lain (EUR/USD, GBP/USD, dll). |
