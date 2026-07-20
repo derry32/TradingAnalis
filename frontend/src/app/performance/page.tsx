@@ -39,6 +39,24 @@ export default function PerformancePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resetMsg, setResetMsg] = useState('');
+  
+  // Converter States
+  const [useConverter, setUseConverter] = useState(false);
+  const [idrInput, setIdrInput] = useState('');
+  const [exchangeRate, setExchangeRate] = useState('16000');
+  const [accountType, setAccountType] = useState<'STANDARD' | 'CENT'>('STANDARD');
+
+  useEffect(() => {
+    if (useConverter && idrInput && exchangeRate) {
+      const idr = parseFloat(idrInput);
+      const rate = parseFloat(exchangeRate);
+      if (idr > 0 && rate > 0) {
+        const usd = idr / rate;
+        const balance = accountType === 'CENT' ? usd * 100 : usd;
+        setBalanceInput(balance.toFixed(2));
+      }
+    }
+  }, [idrInput, exchangeRate, accountType, useConverter]);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -160,12 +178,39 @@ export default function PerformancePage() {
 
             {/* Capital Risk Engine */}
             <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 12, padding: '20px 24px' }}>
-              <div style={{ fontSize: 16, fontWeight: 600, color: '#f9fafb', marginBottom: 16 }}>💰 Capital Risk Engine</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, color: '#f9fafb' }}>💰 Capital Risk Engine</div>
+                <label style={{ fontSize: 13, color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={useConverter} onChange={e => setUseConverter(e.target.checked)} />
+                  Gunakan Konverter Rupiah
+                </label>
+              </div>
+
+              {useConverter && (
+                <div style={{ background: '#1f2937', padding: 16, borderRadius: 8, marginBottom: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 12, color: '#9ca3af', display: 'block', marginBottom: 4 }}>Modal (Rupiah)</label>
+                    <input type="number" value={idrInput} onChange={e => setIdrInput(e.target.value)} placeholder="Misal: 15000000" style={{ width: '100%', background: '#111827', border: '1px solid #374151', borderRadius: 6, color: '#f9fafb', padding: '8px 12px', fontSize: 14 }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, color: '#9ca3af', display: 'block', marginBottom: 4 }}>Kurs (IDR/USD)</label>
+                    <input type="number" value={exchangeRate} onChange={e => setExchangeRate(e.target.value)} style={{ width: '100%', background: '#111827', border: '1px solid #374151', borderRadius: 6, color: '#f9fafb', padding: '8px 12px', fontSize: 14 }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, color: '#9ca3af', display: 'block', marginBottom: 4 }}>Tipe Akun</label>
+                    <select value={accountType} onChange={e => setAccountType(e.target.value as 'STANDARD' | 'CENT')} style={{ width: '100%', background: '#111827', border: '1px solid #374151', borderRadius: 6, color: '#f9fafb', padding: '8px 12px', fontSize: 14 }}>
+                      <option value="STANDARD">Standard (USD)</option>
+                      <option value="CENT">Micro/Cent (USC)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
                 <div>
-                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Saldo Modal (USD)</label>
+                  <label style={{ fontSize: 12, color: '#6b7280', display: 'block', marginBottom: 4 }}>Saldo Modal {useConverter && accountType === 'CENT' ? '(USC Cent)' : '(USD)'}</label>
                   <input
-                    type="number" value={balanceInput} onChange={e => setBalanceInput(e.target.value)}
+                    type="number" value={balanceInput} onChange={e => { setBalanceInput(e.target.value); setUseConverter(false); }}
                     placeholder="Contoh: 1000"
                     style={{ width: '100%', background: '#1f2937', border: '1px solid #374151', borderRadius: 8, color: '#f9fafb', padding: '10px 12px', fontSize: 15, boxSizing: 'border-box' }}
                   />
@@ -182,7 +227,7 @@ export default function PerformancePage() {
                 <div style={{ background: '#0d2818', border: '1px solid #10b98130', borderRadius: 8, padding: '10px 20px' }}>
                   <span style={{ color: '#6b7280', fontSize: 13 }}>📦 Lot Disarankan: </span>
                   <span style={{ color: '#10b981', fontWeight: 700, fontSize: 18 }}>{suggestedLot}</span>
-                  <span style={{ color: '#6b7280', fontSize: 12, marginLeft: 6 }}>lot</span>
+                  <span style={{ color: '#6b7280', fontSize: 12, marginLeft: 6 }}>lot {useConverter && accountType === 'CENT' ? '(Cent)' : ''}</span>
                 </div>
                 <button onClick={saveCapital} disabled={saving} style={{ background: '#2563eb', border: 'none', borderRadius: 8, color: 'white', padding: '10px 24px', cursor: 'pointer', fontWeight: 600, fontSize: 14, opacity: saving ? 0.7 : 1 }}>
                   {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
