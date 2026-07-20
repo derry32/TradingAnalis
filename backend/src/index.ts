@@ -7,7 +7,7 @@ import { NewsService } from './services/newsService';
 import { SentimentAnalysis, SentimentResult } from './services/sentimentAnalysis';
 import { SignalGenerator, Signal } from './services/signalGenerator';
 import { TelegramService } from './services/telegramBot';
-import { insertSignal, fetchRecentSignals, updateSignalStatus, fetchSignalsByDate, fetchMonthlyStats } from './services/database';
+import { insertSignal, fetchRecentSignals, updateSignalStatus, fetchSignalsByDate, fetchMonthlyStats, fetchActiveSignals } from './services/database';
 
 const app = express();
 app.use(cors());
@@ -55,6 +55,46 @@ let latestTechResult: any = { trendH1: 'NEUTRAL' };
 let activeTradeSniper: TradeState | null = null;
 let activeTradeScalper: TradeState | null = null;
 let activeStrategy: 'SNIPER' | 'HYPER_SCALPER' = 'SNIPER';
+
+async function resumeActiveTrades() {
+  try {
+    const activeSignals = await fetchActiveSignals();
+    if (!activeSignals || activeSignals.length === 0) return;
+
+    console.log(`[Main] Found ${activeSignals.length} active signal(s) to resume.`);
+    
+    for (const sig of activeSignals) {
+      const state: TradeState = {
+        id: sig.reason?.id || `RESUMED-${sig.id}`,
+        type: sig.type as 'BUY' | 'SELL',
+        entryPrice: sig.entryPrice,
+        stopLoss: sig.stopLoss,
+        takeProfit1: sig.takeProfit1,
+        timeMs: new Date(sig.timestamp).getTime(),
+        status: 'ACTIVE',
+        score: sig.reason?.confidence || 50,
+        dbId: sig.id
+      };
+
+      const strategy = sig.reason?.strategy;
+      if (strategy === 'SNIPER') {
+        if (!activeTradeSniper) {
+           activeTradeSniper = state;
+           console.log(`[Main] Resumed active SNIPER trade ${state.id}`);
+        }
+      } else if (strategy === 'HYPER_SCALPER' || strategy === 'SCALPER') {
+        if (!activeTradeScalper) {
+           activeTradeScalper = state;
+           console.log(`[Main] Resumed active SCALPER trade ${state.id}`);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[Main] Failed to resume active trades', e);
+  }
+}
+
+resumeActiveTrades();
 
 // === S5-A: Drawdown Guard ===
 let dailySLCount = 0;

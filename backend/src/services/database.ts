@@ -187,3 +187,40 @@ export async function fetchMonthlyStats(year: number, month: number) {
     avgDurationMins: avgDuration
   };
 }
+
+export async function fetchActiveSignals() {
+  if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return [];
+
+  // Ambil sinyal dalam 24 jam terakhir
+  const now = new Date();
+  const past24h = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+
+  const { data, error } = await supabase
+    .from('signals')
+    .select('*')
+    .gte('timestamp', past24h)
+    .order('timestamp', { ascending: false });
+
+  if (error || !data) return [];
+
+  const activeSignals = [];
+  for (const row of data) {
+    let ext: any = {};
+    try { ext = JSON.parse(row.reason); } catch (_) {}
+
+    // Jika finalStatus kosong/null, berarti masih IN PROGRESS
+    if (!ext.finalStatus) {
+      activeSignals.push({
+        id: row.id,
+        type: row.type,
+        entryPrice: Number(row.entry_price),
+        stopLoss: Number(row.stop_loss),
+        takeProfit1: Number(row.take_profit),
+        reason: ext,
+        timestamp: row.timestamp
+      });
+    }
+  }
+
+  return activeSignals;
+}
