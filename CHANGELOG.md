@@ -2,6 +2,16 @@
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
 
+## [1.3.0] - Sprint 5 (Scale Up Mode — Risk & Money Management)
+### Ditambahkan
+- **Drawdown Guard (Circuit Breaker):** AI kini dilengkapi dengan sistem pengaman psikologi. Jika dalam 1 hari sudah menyentuh Stop Loss (SL) sebanyak 2 kali, AI akan otomatis masuk ke mode PAUSE dan memblokir semua sinyal baru. Hal ini mencegah *revenge trading* dan melindungi *equity* secara ketat.
+- **Capital-Based Risk Engine:** Integrasi sistem manajemen risiko kelas profesional. Pengguna kini dapat memasukkan total saldo modal dan persentase risiko (misal: 1%). AI akan secara otomatis menghitung dan menyarankan *Lot Size* yang tepat setiap kali ada sinyal, berdasarkan perhitungan jarak SL aktual.
+- **Monthly Performance Tracker:** Halaman dasbor baru (`/performance`) yang khusus melacak stabilitas bulanan AI. Meliputi 6 metrik utama (Total Pips, Win Rate, Max Drawdown Streak, Expectancy, Total Sinyal, Avg Durasi) yang dihitung langsung dari basis data Supabase untuk evaluasi standar konsistensi 5-10% per bulan.
+### Diperbaiki
+- **Bug Fix Race Condition Database:** Memperbaiki insiden di mana sinyal yang langsung mengenai SL sesaat setelah diterbitkan gagal terekam di riwayat karena *ID database* belum di-*fetch* (asynchronous lag).
+- **Bug Fix Perhitungan Pips SL:** Memperbaiki kalkulasi pips saat status `HIT_SL` pada posisi BUY yang sebelumnya sering terbalik/positif. Kini kerugian (SL) selalu bernilai negatif dengan presisi matematika yang benar.
+
+
 ## [1.2.0] - Sprint 4 (Institutional Grade AI Upgrade & UI Pro Max)
 ### Ditambahkan
 - **Dynamic Session Weighting:** Mengubah mesin AI menjadi sistem skoring dinamis (*Dynamic Score*) yang mampu membaca karakter tiap sesi pasar (Sydney, Tokyo, London, New York, dan Golden Overlap). AI akan memprioritaskan pantulan S/R di Asia, dan agresif memburu *Breakout* saat volatilitas tinggi (London/NY).

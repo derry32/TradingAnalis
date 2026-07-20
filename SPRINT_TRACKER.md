@@ -61,16 +61,16 @@
 
 ---
 
-## 🚀 Mendatang: SPRINT 5 (Scale Up Mode — Risk & Money Management)
-**Status:** Backlog (Belum Dimulai)
+## 🚀 SPRINT 5 (Scale Up Mode — Risk & Money Management)
+**Status:** ✅ Selesai (Completed)
 **Fokus:** Menerapkan filosofi *Tangga 4: Scale Up Mode* (Sekolah Trading) ke dalam mesin AI. Tujuan utama adalah stabilitas & konsistensi, bukan profit besar sesaat.
 
 ### Product Backlog (Prioritas Utama — Scale Up Philosophy)
 | ID | Tipe | Judul | Deskripsi Singkat | Prioritas |
 |----|------|-------|-------------------|-----------|
-| S5-A | Core | Drawdown Guard (Circuit Breaker) | AI otomatis *pause* mengirim sinyal jika dalam 1 hari sudah hit SL lebih dari 2x. Prinsip: "Jangan hancurkan akun karena ego kecil". | 🔴 Sangat Tinggi |
-| S5-B | Feature | Capital-Based Risk Engine | User memasukkan saldo modal di Dashboard. AI menghitung otomatis ukuran risiko per trade agar tidak melebihi 1-2% dari total modal. *Professional Risk Management*. | 🔴 Sangat Tinggi |
-| S5-C | UI | Monthly Performance Tracker | Halaman baru di website menampilkan: total profit bulan ini, total pips, win-rate, drawdown terbesar, dan *expectancy*. Memudahkan evaluasi apakah AI sudah konsisten di standar 5-10% per bulan. | 🟠 Tinggi |
+| S5-A | Core | Drawdown Guard (Circuit Breaker) | AI otomatis *pause* mengirim sinyal jika dalam 1 hari sudah hit SL lebih dari 2x. Prinsip: "Jangan hancurkan akun karena ego kecil". | ✅ Selesai |
+| S5-B | Feature | Capital-Based Risk Engine | User memasukkan saldo modal di Dashboard. AI menghitung otomatis ukuran risiko per trade agar tidak melebihi 1-2% dari total modal. *Professional Risk Management*. | ✅ Selesai |
+| S5-C | UI | Monthly Performance Tracker | Halaman baru di website menampilkan: total profit bulan ini, total pips, win-rate, drawdown terbesar, dan *expectancy*. Memudahkan evaluasi apakah AI sudah konsisten di standar 5-10% per bulan. | ✅ Selesai |
 
 ### Product Backlog (Prioritas Menengah — Strategy Tweaks)
 | ID | Tipe | Judul | Deskripsi Singkat | Prioritas |
