@@ -245,8 +245,12 @@ marketData.setOnM5Closed((data) => {
 
         // S5-A: Blokir semua sinyal jika Drawdown Guard aktif
         checkAndResetDailyDrawdown();
-        if (drawdownGuardActive && signal.type !== 'WAIT') {
-          console.log(`[DrawdownGuard] ⛔ Sinyal ${signal.type} diblokir. Drawdown Guard aktif (${dailySLCount}/2 SL hari ini).`);
+        // Since we changed the limit to 10, we check dailySLCount here instead of relying solely on the old boolean
+        const DRAWDOWN_LIMIT = 10;
+        const isGuardActive = dailySLCount >= DRAWDOWN_LIMIT;
+        
+        if (isGuardActive && signal.type !== 'WAIT') {
+          console.log(`[DrawdownGuard] ⛔ Sinyal ${signal.type} diblokir. Drawdown Guard aktif (${dailySLCount}/${DRAWDOWN_LIMIT} SL hari ini).`);
           continue;
         }
 
