@@ -2,7 +2,9 @@ import { createClient } from '@supabase/supabase-js';
 import { config } from '../config';
 
 // Inisialisasi klien Supabase
-export const supabase = createClient(config.SUPABASE_URL, config.SUPABASE_KEY);
+const supabaseUrl = config.SUPABASE_URL ? config.SUPABASE_URL.replace('/rest/v1/', '') : '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || config.SUPABASE_KEY;
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function insertSignal(signal: any) {
   if (!config.SUPABASE_URL || !config.SUPABASE_KEY) {
