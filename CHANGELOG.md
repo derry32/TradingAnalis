@@ -2,6 +2,17 @@
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
 
+## [1.3.1] - Hotfix & Historical Data Upgrade
+### Ditambahkan
+- **Instant Historical Bootstrap:** Integrasi dengan Twelve Data `/time_series` REST API. Server kini mampu menyedot 5000 *candle* historis (setara 17 hari masa lalu) secara instan dalam 1 kali tarikan API gratis saat server menyala. Hal ini sepenuhnya melenyapkan kebutuhan pembuatan data *dummy* sehingga mesin AI (seperti EMA 50) 100% menggunakan data *real market* sejak detik pertama.
+- **Extended Memory Capacity:** Kapasitas memori lokal `market_history.json` ditingkatkan drastis dari 500 menjadi 6000 *candle* M5. Sistem kini menggunakan algoritma FIFO (*Sliding Window*) untuk menampung riwayat 20 hari secara abadi dan mandiri, menghemat kuota API eksternal.
+
+### Diperbaiki
+- **Bug Fix Stuck Status "IN PROGRESS":** Memperbaiki anomali di mana *Trade Signal* tertahan dengan status "IN PROGRESS" meskipun sudah kadaluarsa atau menyentuh SL/TP. Masalah ini diakibatkan oleh sistem Row Level Security (RLS) Supabase yang diam-diam memblokir operasi UPDATE. Solusi diterapkan dengan menanamkan *Service Role Key* (hak akses dewa) ke dalam sistem *backend*.
+- **Bug Fix Zona Waktu (Signal ID):** Penamaan *Signal ID* (contoh: `XAU-20260720...`) kini murni menggunakan zona waktu Jakarta (WIB), tidak lagi menggunakan format UTC yang menyebabkan tanggal berganti lebih lambat dari waktu lokal.
+- **Bug Fix Bulk Signal Spam:** Menonaktifkan (*mute*) callback `onM5Closed` selama proses *bootstrap* (memuat ribuan *candle* riwayat), sehingga mencegah mesin AI mengirim puluhan sinyal kedaluwarsa secara membabi-buta setiap kali server di-*restart*.
+- **Hapus Peringatan Sesi Kaku:** Menghapus tampilan *hardcoded* "Sesi Tidak Valid" untuk sesi Tokyo di halaman depan, sehingga antarmuka UI kini bisa menampilkan analisis aktual dari AI untuk *Scalper* di sesi Asia.
+
 ## [1.3.0] - Sprint 5 (Scale Up Mode — Risk & Money Management)
 ### Ditambahkan
 - **Drawdown Guard (Circuit Breaker):** AI kini dilengkapi dengan sistem pengaman psikologi. Jika dalam 1 hari sudah menyentuh Stop Loss (SL) sebanyak 2 kali, AI akan otomatis masuk ke mode PAUSE dan memblokir semua sinyal baru. Hal ini mencegah *revenge trading* dan melindungi *equity* secara ketat.
