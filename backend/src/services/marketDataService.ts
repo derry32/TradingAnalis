@@ -89,16 +89,16 @@ export class MarketDataService {
 
   constructor() {
     this.m1.onCandleClosed = (c) => this.m5.processCandle(c);
-    this.m5.onCandleClosed = (c) => {
-      this.m15.processCandle(c);
+    this.m5.onCandleClosed = (closedM5) => {
+      this.m15.processCandle(closedM5);
       this.saveHistory(); // Save real candles to disk whenever M5 closes
       
-      if (this.onM5Closed && this.m5.currentCandle && this.m15.currentCandle && this.h1.currentCandle) {
+      if (this.onM5Closed && this.m15.currentCandle && this.h1.currentCandle) {
         this.onM5Closed({
           m5: this.m5.allCandles,
           m15: this.m15.allCandles,
           h1: this.h1.allCandles,
-          currentM5: this.m5.currentCandle,
+          currentM5: closedM5,          // <-- gunakan candle yang BARU DITUTUP, bukan yang sedang terbuka
           currentM15: this.m15.currentCandle,
           currentH1: this.h1.currentCandle
         });
