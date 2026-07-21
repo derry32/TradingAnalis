@@ -266,10 +266,33 @@ export class MarketDataService {
     console.log(`[MarketData] Bootstrap done. Loaded ${numSaved} real candles. H1 candles: ${this.h1.allCandles.length}, M15: ${this.m15.allCandles.length}. Final price: ${currentPrice.toFixed(2)}`);
   }
 
-  private startSimulation() {
+  private async startSimulation() {
     let basePrice = 4010.00;
+    let mean = 4010.00;
+    
+    // Fetch initial real price from REST API so we don't start at a fake 4010
+    const syncRealPrice = async () => {
+      try {
+        if (!config.TWELVEDATA_API_KEY) return;
+        const res = await fetch(`https://api.twelvedata.com/price?symbol=XAU/USD&apikey=${config.TWELVEDATA_API_KEY}`);
+        const json = await res.json();
+        if (json.price) {
+           mean = parseFloat(json.price);
+           console.log(`[MarketData] Synced Simulation Anchor to Real Price: ${mean}`);
+        }
+      } catch (e) {
+        console.error('[MarketData] Failed to sync real price', e);
+      }
+    };
+    
+    await syncRealPrice();
+    basePrice = mean; // start at the real price
+    
+    // Keep syncing the mean every 5 minutes to track real market movements
+    setInterval(syncRealPrice, 5 * 60 * 1000);
+
     this.generateFallbackCandles(basePrice);
-    // Fast simulation: 1 tick every 50ms, mimicking 1 minute of real time per tick (for fast forward)
+    // Fast simulation: 1 tick every 600ms (100x faster than real-time if we want fast forward, but let's mimic 1 minute per tick)
     const tickIntervalMs = 60000; // 1 virtual minute per tick
     let virtualTime = Date.now();
     
@@ -277,8 +300,7 @@ export class MarketDataService {
     
     this.simulationInterval = setInterval(() => {
       virtualTime += tickIntervalMs;
-      // Mean reversion towards 4010.00 to prevent crazy drift
-      const mean = 4010.00;
+      // Mean reversion towards the real REST API price
       const pull = (mean - basePrice) * 0.05;
       const change = (Math.random() - 0.5) * 5 + pull; 
       basePrice += change;
