@@ -283,7 +283,9 @@ export class SignalGenerator {
       else if (sessionInfo.type === 'LONDON' || sessionInfo.type === 'NY') estTpTime = '20-60 Menit';
     }
 
-    const dateStr = new Date().toISOString().slice(0,10).replace(/-/g, '');
+    // Format ID menggunakan tanggal Jakarta (WIB) agar tidak beda hari saat jam 00:00 - 07:00 WIB
+    const wibDate = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }); // YYYY-MM-DD
+    const dateStr = wibDate.slice(0, 10).replace(/-/g, '');
     const randId = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
 
     const atr = analysis.atr_M15 || 1.0;
