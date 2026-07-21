@@ -18,9 +18,11 @@ export class CandleBuilder {
   public allCandles: OHLCV[] = [];
   public currentCandle: OHLCV | null = null;
   public onCandleClosed: ((candle: OHLCV) => void) | null = null;
+  public maxCandles: number;
 
-  constructor(periodMinutes: number) {
+  constructor(periodMinutes: number, maxCandles: number = 500) {
     this.periodMs = periodMinutes * 60 * 1000;
+    this.maxCandles = maxCandles;
   }
 
   public processTick(price: number, volume: number, timestamp: number, isDummy = false) {
@@ -55,7 +57,7 @@ export class CandleBuilder {
         }
       }
 
-      if (this.allCandles.length > 500) this.allCandles.shift();
+      if (this.allCandles.length > this.maxCandles) this.allCandles.shift();
       if (this.onCandleClosed) this.onCandleClosed(closedCandle);
 
       this.currentCandle = { time: periodStart, open, high, low, close, volume, isDummy };
@@ -81,7 +83,7 @@ export class MarketDataService {
   private onM5Closed: ((data: MultiTimeframeData) => void) | null = null;
 
   public m1 = new CandleBuilder(1);
-  public m5 = new CandleBuilder(5);
+  public m5 = new CandleBuilder(5, 6000); // 6000 M5 candles = 500 hours (enough for 500 H1 candles)
   public m15 = new CandleBuilder(15);
   public h1 = new CandleBuilder(60);
 
