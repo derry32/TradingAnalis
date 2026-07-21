@@ -219,7 +219,7 @@ export class MarketDataService {
     return [];
   }
 
-  private async generateFallbackCandles(anchorPrice: number = 2400.00) {
+  private async generateFallbackCandles(anchorPrice: number = 2400.00): Promise<number> {
     console.log('[MarketData] Bootstrapping historical candles...');
     // Mute the M5 callback during bootstrap to prevent bulk signal spam on restart
     const savedCallback = this.onM5Closed;
@@ -230,7 +230,7 @@ export class MarketDataService {
     if (savedRealCandles.length < 5000 && config.TWELVEDATA_API_KEY) {
        console.log(`[MarketData] Local history only has ${savedRealCandles.length} candles. Fetching 5000 historical candles from TwelveData API to skip waiting 20 days!`);
        try {
-         const res = await fetch(`https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=5min&outputsize=5000&apikey=${config.TWELVEDATA_API_KEY}`);
+         const res = await fetch(`https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=5min&outputsize=5000&timezone=UTC&apikey=${config.TWELVEDATA_API_KEY}`);
          const json = await res.json();
          if (json.values && json.values.length > 0) {
             // TwelveData returns newest first. We need oldest first.
@@ -269,6 +269,7 @@ export class MarketDataService {
     // Restore the callback after bootstrap completes
     this.onM5Closed = savedCallback;
     console.log(`[MarketData] Bootstrap done. Loaded ${numSaved} real candles. H1 candles: ${this.h1.allCandles.length}, M15: ${this.m15.allCandles.length}. Final price: ${currentPrice.toFixed(2)}`);
+    return currentPrice;
   }
 
   private async startSimulation() {
@@ -296,7 +297,14 @@ export class MarketDataService {
     // Keep syncing the mean every 5 minutes to track real market movements
     setInterval(syncRealPrice, 5 * 60 * 1000);
 
-    await this.generateFallbackCandles(basePrice);
+    const finalBasePrice = await this.generateFallbackCandles(basePrice);
+    if (mean === 4010.00) {
+      // If REST API failed due to rate limits, fallback to the last historical candle price instead of 4010
+      basePrice = finalBasePrice;
+      mean = finalBasePrice;
+      console.log(`[MarketData] /price API likely failed. Falling back basePrice to last historical price: ${basePrice}`);
+    }
+
     // Fast simulation: 1 tick every 600ms (100x faster than real-time if we want fast forward, but let's mimic 1 minute per tick)
     const tickIntervalMs = 60000; // 1 virtual minute per tick
     let virtualTime = Date.now();
