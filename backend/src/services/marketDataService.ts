@@ -166,7 +166,7 @@ export class MarketDataService {
           if (!this.isBootstrapped) {
             this.isBootstrapped = true;
             console.log(`[MarketData] First tick received: ${parsed.price}. Bootstrapping history...`);
-            this.generateFallbackCandles(parsed.price);
+            this.generateFallbackCandles(parsed.price); // callback is muted inside here
           }
           
           // TwelveData format: price, day_volume (optional), timestamp (unix seconds)
@@ -219,6 +219,9 @@ export class MarketDataService {
 
   private generateFallbackCandles(anchorPrice: number = 2400.00) {
     console.log('[MarketData] Generating dummy historical candles for all timeframes...');
+    // Mute the M5 callback during bootstrap to prevent bulk signal spam on restart
+    const savedCallback = this.onM5Closed;
+    this.onM5Closed = null;
     const now = Date.now();
     const savedRealCandles = this.loadHistory();
     const numSaved = savedRealCandles.length;
@@ -263,6 +266,8 @@ export class MarketDataService {
       currentPrice = c.close; // update current price to the last real candle
     }
 
+    // Restore the callback after bootstrap completes
+    this.onM5Closed = savedCallback;
     console.log(`[MarketData] Bootstrap done. Loaded ${numSaved} real candles. H1 candles: ${this.h1.allCandles.length}, M15: ${this.m15.allCandles.length}. Final price: ${currentPrice.toFixed(2)}`);
   }
 
