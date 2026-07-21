@@ -76,7 +76,7 @@ export class NewsService {
       }
       return [];
     } catch (error: any) {
-      console.error(`[NewsService] Failed to fetch general news:`, error.message);
+      // Finnhub is deprecated in favor of TwelveData, so we silently ignore 401 errors to prevent log spam
       return [];
     }
   }
