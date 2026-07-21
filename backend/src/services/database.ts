@@ -11,6 +11,11 @@ export async function insertSignal(signal: any) {
     console.warn('[DB] Supabase not configured. Skipping DB insert.');
     return null;
   }
+
+  if (!config.TWELVEDATA_API_KEY) {
+    console.warn('[DB] Running in Simulation Mode (No TwelveData API Key). Skipping DB insert to prevent saving fake signals.');
+    return null;
+  }
   
   const payload = {
     type: signal.type,

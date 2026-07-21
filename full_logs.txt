@@ -1,0 +1,2002 @@
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 sudo docker logs --tail 2000 ai-backend
+ubuntu@43.156.79.235's password: 
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 45 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 37 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 45 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 37 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 60 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 60 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 52 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 60 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 52 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 45 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 37 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 60 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 60 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 60 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 52 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 60 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 45 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 37 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 45 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 37 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal BUY diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BULLISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 90).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 50 terlalu rendah untuk mode SIDEWAYS (Minimal 70).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 55 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 47 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[DrawdownGuard] ⛔ Sinyal SELL diblokir. Drawdown Guard aktif (10/10 SL hari ini).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 35 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 27 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Skor probabilitas 65 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 85).
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Skor probabilitas 57 terlalu rendah untuk mode TRENDING_BEARISH (Minimal 75).
+[MarketData] Saved 6000 real M5 candles to disk.
+[Agent Derry][SNIPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.
+[Agent Derry][HYPER_SCALPER] Decision: WAIT. Reason: Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.

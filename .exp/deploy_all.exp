@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 300
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "cd ~/TradingAnalis && git reset --hard HEAD && git pull && sudo docker build -t ai-trading-backend ./backend && sudo docker rm -f ai-backend && sudo docker run -d --name ai-backend --restart always -p 3002:3002 -v \$(pwd)/backend/data:/app/data --env-file ./backend/.env ai-trading-backend && sudo docker build -t ai-trading-frontend ./frontend && sudo docker rm -f ai-frontend && sudo docker run -d --name ai-frontend --restart always -p 3000:3000 --env-file ./frontend/.env.local ai-trading-frontend"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}
