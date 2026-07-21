@@ -275,6 +275,7 @@ export class MarketDataService {
   private async startSimulation() {
     let basePrice = 4010.00;
     let mean = 4010.00;
+    let isApiFailed = false;
     
     // Fetch initial real price from REST API so we don't start at a fake 4010
     const syncRealPrice = async () => {
@@ -284,9 +285,13 @@ export class MarketDataService {
         const json = await res.json();
         if (json.price) {
            mean = parseFloat(json.price);
+           isApiFailed = false; // success
            console.log(`[MarketData] Synced Simulation Anchor to Real Price: ${mean}`);
+        } else {
+           isApiFailed = true; // TwelveData returned error/rate limit
         }
       } catch (e) {
+        isApiFailed = true;
         console.error('[MarketData] Failed to sync real price', e);
       }
     };
@@ -298,11 +303,11 @@ export class MarketDataService {
     setInterval(syncRealPrice, 5 * 60 * 1000);
 
     const finalBasePrice = await this.generateFallbackCandles(basePrice);
-    if (mean === 4010.00) {
-      // If REST API failed due to rate limits, fallback to the last historical candle price instead of 4010
+    if (isApiFailed) {
+      // If REST API failed due to rate limits, fallback to the last historical candle price
       basePrice = finalBasePrice;
       mean = finalBasePrice;
-      console.log(`[MarketData] /price API likely failed. Falling back basePrice to last historical price: ${basePrice}`);
+      console.log(`[MarketData] /price API failed. Falling back basePrice to last historical price: ${basePrice}`);
     }
 
     // Fast simulation: 1 tick every 600ms (100x faster than real-time if we want fast forward, but let's mimic 1 minute per tick)
