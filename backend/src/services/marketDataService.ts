@@ -226,9 +226,17 @@ export class MarketDataService {
     this.onM5Closed = null;
     let savedRealCandles = this.loadHistory();
 
-    // If we have fewer than 5000 candles, try to fetch from API
-    if (savedRealCandles.length < 5000 && config.TWELVEDATA_API_KEY) {
-       console.log(`[MarketData] Local history only has ${savedRealCandles.length} candles. Fetching 5000 historical candles from TwelveData API to skip waiting 20 days!`);
+    // If we have fewer than 5000 candles OR the last cached candle is older than 24 hours, fetch fresh data
+    const lastCandleTime = savedRealCandles.length > 0 ? savedRealCandles[savedRealCandles.length - 1].time : 0;
+    const cacheIsStale = (Date.now() - lastCandleTime) > 24 * 60 * 60 * 1000;
+    const needsFetch = savedRealCandles.length < 5000 || cacheIsStale;
+    
+    if (needsFetch && config.TWELVEDATA_API_KEY) {
+       if (cacheIsStale && savedRealCandles.length >= 5000) {
+         console.log(`[MarketData] Local cache is STALE (last candle was ${Math.round((Date.now() - lastCandleTime) / 3600000)}h ago). Force re-fetching fresh data!`);
+       } else {
+         console.log(`[MarketData] Local history only has ${savedRealCandles.length} candles. Fetching 5000 historical candles from TwelveData API to skip waiting 20 days!`);
+       }
        try {
          const res = await fetch(`https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=5min&outputsize=5000&timezone=UTC&apikey=${config.TWELVEDATA_API_KEY}`);
          const json = await res.json();
@@ -236,7 +244,7 @@ export class MarketDataService {
             // TwelveData returns newest first. We need oldest first.
             const reversed = json.values.reverse();
             const fetchedCandles: OHLCV[] = reversed.map((c: any) => ({
-               time: new Date(c.datetime + 'Z').getTime(), // approximate, or use local if timezone is implied
+               time: new Date(c.datetime + 'Z').getTime(),
                open: parseFloat(c.open),
                high: parseFloat(c.high),
                low: parseFloat(c.low),
@@ -252,6 +260,8 @@ export class MarketDataService {
        } catch(e) {
          console.error('[MarketData] Failed to fetch historical from API:', e);
        }
+    } else {
+      console.log(`[MarketData] Cache is fresh (last candle: ${new Date(lastCandleTime).toISOString()}). Using ${savedRealCandles.length} cached candles.`);
     }
 
     const numSaved = savedRealCandles.length;
