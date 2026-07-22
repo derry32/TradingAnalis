@@ -296,13 +296,13 @@ export class SignalGenerator {
     let entryZoneStr = '';
     if (tradeType === 'BUY') {
       let zoneMinNum = currentPrice - (atr * 0.5);
-      if (zoneMinNum <= stopLoss) zoneMinNum = stopLoss + 0.5; // Jarak minimal 0.5 dari SL
+      if (zoneMinNum <= stopLoss) zoneMinNum = stopLoss + 1.0; // Jarak minimal 1.0 dari SL
       const zoneMin = zoneMinNum.toFixed(2);
       const zoneMax = currentPrice.toFixed(2);
       entryZoneStr = `${zoneMin} - ${zoneMax}`;
     } else {
       let zoneMaxNum = currentPrice + (atr * 0.5);
-      if (zoneMaxNum >= stopLoss) zoneMaxNum = stopLoss - 0.5; // Jarak minimal 0.5 dari SL
+      if (zoneMaxNum >= stopLoss) zoneMaxNum = stopLoss - 1.0; // Jarak minimal 1.0 dari SL
       const zoneMin = currentPrice.toFixed(2);
       const zoneMax = zoneMaxNum.toFixed(2);
       entryZoneStr = `${zoneMin} - ${zoneMax}`;
