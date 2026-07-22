@@ -26,6 +26,7 @@ export class TelegramService {
     }
 
     const emoji = signal.type === 'BUY' ? '🟢' : '🔴';
+    const formattedTime = new Date(signal.timestamp).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }) + ' WIB';
     
     // Convert reason string into a readable format, handling checklists
     const formattedReason = signal.reason.split('\n').map(r => r.startsWith('✔') || r.startsWith('✖') || r.startsWith('🚨') ? r : `* ${r}`).join('\n');
@@ -34,6 +35,7 @@ export class TelegramService {
 🚨 [${signal.strategy} MODE] 🚨
 ${emoji} **${signal.type} - ${signal.probabilityLabel}**
 Signal ID: \`${signal.id}\`
+Time: ${formattedTime}
 Confidence: ${signal.confidenceScore}%
 
 Session: ${signal.session}
