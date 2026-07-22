@@ -270,7 +270,7 @@ export default function Home() {
                         <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
                           <Crosshair size={10} /> Entry
                         </p>
-                        <p className="font-mono text-xs text-gray-200">{sig.entryPrice?.toFixed(2) || '-'}</p>
+                        <p className="font-mono text-[10px] text-gray-200">{ext.entryZone || sig.entryPrice?.toFixed(2) || '-'}</p>
                       </div>
                       <div>
                         <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1">SL</p>
