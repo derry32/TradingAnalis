@@ -80,7 +80,7 @@
 | B-01A| Core | AI Strategy: Momentum Based Entry | Longgarkan syarat Price Action (M5) agar AI bisa masuk murni berdasarkan momentum EMA & Volume. | 🟠 Tinggi |
 | B-01B| Core | AI Strategy: Lower Threshold | Turunkan standar minimal skor AI (Sniper 70, Scalper 60) untuk meningkatkan frekuensi sinyal. | 🟠 Tinggi |
 | B-02 | Integration | Real API: Marketaux / News | Menghubungkan API Berita Finansial asli untuk mendapatkan *feed* berita harian. | 🟠 Tinggi |
-| B-04 | Feature | Telegram User Registration | Mengizinkan *user* mendaftarkan Chat ID secara dinamis via bot Telegram. | 🟡 Menengah |
+| B-04 | Feature | Telegram Channel Broadcast | Sinyal AI kini otomatis disiarkan (*broadcast*) ke Telegram Channel (-1003949398310). | ✅ Selesai |
 | B-05 | Feature | Advanced Risk Settings | UI di Dashboard untuk mengatur Risk:Reward Ratio dan Max SL Pips secara dinamis. | 🟡 Menengah |
 | B-06 | Testing | Unit & Integration Test | Menambahkan Jest untuk *unit testing* logika Signal Generator dan Technical Analysis. | 🟡 Menengah |
 | B-07 | DevOps | Dockerization | Membuat `Dockerfile` dan `docker-compose.yml` untuk mempermudah *deployment*. | 🟡 Menengah |
