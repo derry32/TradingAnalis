@@ -71,6 +71,8 @@
 | S5-A | Core | Drawdown Guard (Circuit Breaker) | AI otomatis *pause* mengirim sinyal jika dalam 1 hari sudah hit SL lebih dari 2x. Prinsip: "Jangan hancurkan akun karena ego kecil". | ✅ Selesai |
 | S5-B | Feature | Capital-Based Risk Engine | User memasukkan saldo modal di Dashboard. AI menghitung otomatis ukuran risiko per trade agar tidak melebihi 1-2% dari total modal. *Professional Risk Management*. | ✅ Selesai |
 | S5-C | UI | Monthly Performance Tracker | Halaman baru di website menampilkan: total profit bulan ini, total pips, win-rate, drawdown terbesar, dan *expectancy*. Memudahkan evaluasi apakah AI sudah konsisten di standar 5-10% per bulan. | ✅ Selesai |
+| S5-D | System | System Health Dashboard | Integrasi UI Widget dan notifikasi Toasts untuk memantau error kritis (*API down, Drawdown, dll*) secara *real-time* lewat WebSocket Supabase. | ✅ Selesai |
+| S5-E | System | Frontend Internal Proxy | Konfigurasi Next.js Rewrites untuk mem-bypass error CORS dan pemblokiran Firewall saat browser memanggil `/api/status`. | ✅ Selesai |
 
 ### Product Backlog (Prioritas Menengah — Strategy Tweaks)
 | ID | Tipe | Judul | Deskripsi Singkat | Prioritas |

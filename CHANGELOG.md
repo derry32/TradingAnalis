@@ -2,6 +2,15 @@
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
 
+## [1.3.2] - System Health & UI Proxy Hotfix
+### Ditambahkan
+- **System Health Dashboard:** Penambahan widget status lampu indikator (*Healthy/Warning/Critical*) dan notifikasi melayang (*Toasts* bergaya *Cyberpunk*) pada Frontend untuk memberitahukan error kritis secara instan.
+- **Real-time Logging (WebSockets):** Backend kini menyimpan log sistem ke tabel `system_logs` di Supabase. Frontend menggunakan fitur Realtime Supabase (WebSocket) untuk menarik *log* ini secara *live* tanpa perlu memuat ulang halaman.
+- **Halaman Log Dedikasi:** Menambahkan rute halaman khusus `/logs` untuk memeriksa riwayat log sistem secara detail.
+### Diperbaiki
+- **UI Next.js Internal Proxy:** Memperbaiki insiden di mana tombol UI "Sniper" & "Scalper" membeku dan data hilang akibat pemblokiran CORS / Firewall dari *browser* ketika pengguna mengakses server. Konfigurasi `rewrites()` di `next.config.ts` diterapkan agar seluruh pemanggilan `/api` diproksi langsung di level internal Next.js.
+- **Perbaikan RLS Database:** Memperbarui parameter `Row Level Security` (RLS) di Supabase untuk mengizinkan Backend menulis ke tabel `system_logs`.
+
 ## [1.3.1] - Hotfix & Historical Data Upgrade
 ### Ditambahkan
 - **Instant Historical Bootstrap:** Integrasi dengan Twelve Data `/time_series` REST API. Server kini mampu menyedot 5000 *candle* historis (setara 17 hari masa lalu) secara instan dalam 1 kali tarikan API gratis saat server menyala. Hal ini sepenuhnya melenyapkan kebutuhan pembuatan data *dummy* sehingga mesin AI (seperti EMA 50) 100% menggunakan data *real market* sejak detik pertama.
