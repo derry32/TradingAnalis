@@ -265,8 +265,8 @@ export default function Home() {
                     </div>
 
                     {/* Price Targets Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm bg-[#0B0F19]/50 rounded-lg p-3 border border-gray-800/50">
-                      <div className="sm:col-span-2">
+                    <div className="grid grid-cols-2 gap-3 text-sm bg-[#0B0F19]/50 rounded-lg p-3 border border-gray-800/50">
+                      <div>
                         <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
                           <Crosshair size={10} /> Entry
                         </p>
