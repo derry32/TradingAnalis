@@ -70,22 +70,29 @@ export default function Home() {
       
       {/* Top Header & Strategy Toggle */}
       <header className="max-w-[1400px] mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl cyber-card-glow flex items-center justify-center shadow-lg shadow-cyber-neon/10">
-            <Target size={20} className="text-cyber-neon drop-shadow-[0_0_8px_rgba(0,255,157,0.8)]" />
+        <div className="flex justify-between items-center w-full sm:w-auto">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl cyber-card-glow flex items-center justify-center shadow-lg shadow-cyber-neon/10">
+              <Target size={20} className="text-cyber-neon drop-shadow-[0_0_8px_rgba(0,255,157,0.8)]" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-100 to-gray-400">
+                Institutional AI
+              </h1>
+              <p className="text-[10px] text-emerald-400/70 font-medium tracking-widest uppercase">Trading Analyst Engine</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-100 to-gray-400">
-              Institutional AI
-            </h1>
-            <p className="text-[10px] text-emerald-400/70 font-medium tracking-widest uppercase">Trading Analyst Engine</p>
+          <div className="sm:hidden">
+            <SystemHealthWidget />
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <SystemHealthWidget />
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="hidden sm:block">
+            <SystemHealthWidget />
+          </div>
           <div 
-            className="flex items-center cyber-card-glow p-1.5 rounded-xl backdrop-blur-md relative z-10 overflow-x-auto w-full md:w-auto max-w-[calc(100vw-3rem)] md:max-w-none"
+            className="flex items-center cyber-card-glow p-1.5 rounded-xl backdrop-blur-md relative z-10 overflow-x-auto w-full max-w-full sm:max-w-none"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
           <Link href="/history" className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">
