@@ -230,12 +230,16 @@ export class SignalGenerator {
 
     let stopLoss = 0;
     const minDistance = 2.0; 
+    const maxRisk = config.STOP_LOSS_PIPS / 10; // 3.0 points = 30 pips for Gold
+
     if (tradeType === 'BUY') {
       stopLoss = analysis.closestSwingLowM5 - 0.5;
       if (stopLoss >= currentPrice - minDistance) stopLoss = currentPrice - minDistance;
+      if (currentPrice - stopLoss > maxRisk) stopLoss = currentPrice - maxRisk;
     } else {
       stopLoss = analysis.closestSwingHighM5 + 0.5;
       if (stopLoss <= currentPrice + minDistance) stopLoss = currentPrice + minDistance;
+      if (stopLoss - currentPrice > maxRisk) stopLoss = currentPrice + maxRisk;
     }
 
     const riskAbsolute = Math.abs(currentPrice - stopLoss);
