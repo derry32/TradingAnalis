@@ -265,12 +265,12 @@ export default function Home() {
                     </div>
 
                     {/* Price Targets Grid */}
-                    <div className="grid grid-cols-4 gap-2 text-sm bg-[#0B0F19]/50 rounded-lg p-3 border border-gray-800/50">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm bg-[#0B0F19]/50 rounded-lg p-3 border border-gray-800/50">
                       <div>
                         <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
                           <Crosshair size={10} /> Entry
                         </p>
-                        <p className="font-mono text-[10px] text-gray-200">{ext.entryZone || sig.entryPrice?.toFixed(2) || '-'}</p>
+                        <p className="font-mono text-xs text-gray-200">{ext.entryZone || sig.entryPrice?.toFixed(2) || '-'}</p>
                       </div>
                       <div>
                         <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1">SL</p>
