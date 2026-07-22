@@ -295,12 +295,16 @@ export class SignalGenerator {
     const atr = analysis.atr_M15 || 1.0;
     let entryZoneStr = '';
     if (tradeType === 'BUY') {
-      const zoneMin = (currentPrice - (atr * 0.5)).toFixed(2);
+      let zoneMinNum = currentPrice - (atr * 0.5);
+      if (zoneMinNum <= stopLoss) zoneMinNum = stopLoss + 0.5; // Jarak minimal 0.5 dari SL
+      const zoneMin = zoneMinNum.toFixed(2);
       const zoneMax = currentPrice.toFixed(2);
       entryZoneStr = `${zoneMin} - ${zoneMax}`;
     } else {
+      let zoneMaxNum = currentPrice + (atr * 0.5);
+      if (zoneMaxNum >= stopLoss) zoneMaxNum = stopLoss - 0.5; // Jarak minimal 0.5 dari SL
       const zoneMin = currentPrice.toFixed(2);
-      const zoneMax = (currentPrice + (atr * 0.5)).toFixed(2);
+      const zoneMax = zoneMaxNum.toFixed(2);
       entryZoneStr = `${zoneMin} - ${zoneMax}`;
     }
 
