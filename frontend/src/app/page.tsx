@@ -10,6 +10,7 @@ import {
   Crosshair, ShieldAlert, RadioTower, BarChart2
 } from 'lucide-react';
 import Link from 'next/link';
+import { SystemHealthWidget } from '../components/SystemHealthWidget';
 
 const Chart = dynamic(() => import('@/components/Chart'), { ssr: false });
 
@@ -81,10 +82,12 @@ export default function Home() {
           </div>
         </div>
 
-        <div 
-          className="flex items-center cyber-card-glow p-1.5 rounded-xl backdrop-blur-md relative z-10 overflow-x-auto w-full md:w-auto max-w-[calc(100vw-3rem)] md:max-w-none"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
+        <div className="flex items-center gap-4">
+          <SystemHealthWidget />
+          <div 
+            className="flex items-center cyber-card-glow p-1.5 rounded-xl backdrop-blur-md relative z-10 overflow-x-auto w-full md:w-auto max-w-[calc(100vw-3rem)] md:max-w-none"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
           <Link href="/history" className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">
             <Activity size={14} /> Tracker
           </Link>
@@ -104,6 +107,7 @@ export default function Home() {
           >
             <Zap size={14} /> Scalper (M5)
           </button>
+        </div>
         </div>
       </header>
 

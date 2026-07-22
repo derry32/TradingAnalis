@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: "AI-Powered XAU/USD Price Action Trading Platform",
 };
 
+import { SystemHealthProvider } from "../components/SystemHealthProvider";
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,7 +26,12 @@ export default function RootLayout({
       lang="en"
       className={`${shareTech.variable} h-full antialiased font-mono`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SystemHealthProvider>
+          {children}
+          <Toaster position="bottom-right" theme="dark" />
+        </SystemHealthProvider>
+      </body>
     </html>
   );
 }

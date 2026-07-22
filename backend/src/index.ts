@@ -7,7 +7,7 @@ import { NewsService } from './services/newsService';
 import { SentimentAnalysis, SentimentResult } from './services/sentimentAnalysis';
 import { SignalGenerator, Signal } from './services/signalGenerator';
 import { TelegramService } from './services/telegramBot';
-import { insertSignal, fetchRecentSignals, updateSignalStatus, fetchSignalsByDate, fetchMonthlyStats, fetchActiveSignals } from './services/database';
+import { insertSignal, fetchRecentSignals, updateSignalStatus, fetchSignalsByDate, fetchMonthlyStats, fetchActiveSignals, insertSystemLog } from './services/database';
 
 const app = express();
 app.use(cors());
@@ -194,7 +194,9 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
         lastSLDateWIB = getTodayWIB();
         if (dailySLCount >= 2) {
           drawdownGuardActive = true;
-          console.log(`[DrawdownGuard] ⛔ AKTIF! ${dailySLCount} SL hari ini. Semua sinyal diblokir hingga besok.`);
+          const msg = `[DrawdownGuard] ⛔ AKTIF! ${dailySLCount} SL hari ini. Semua sinyal diblokir hingga besok.`;
+          console.log(msg);
+          insertSystemLog('WARN', 'DrawdownGuard', msg, { count: dailySLCount });
         } else {
           console.log(`[DrawdownGuard] SL ke-${dailySLCount} hari ini. Batas: 2.`);
         }
@@ -266,6 +268,7 @@ marketData.setOnM5Closed((data) => {
           
           insertSignal(signal).then(dbId => {
               if (dbId) {
+                  insertSystemLog('INFO', 'AI_Agent', `Sinyal baru: ${signal.type} di ${signal.entryPrice}`, { id: signal.id, strategy: signal.strategy });
                   if (strategy === 'SNIPER' && activeTradeSniper && activeTradeSniper.id === signal.id) {
                       activeTradeSniper.dbId = dbId;
                   } else if (strategy === 'HYPER_SCALPER' && activeTradeScalper && activeTradeScalper.id === signal.id) {

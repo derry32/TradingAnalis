@@ -6,6 +6,21 @@ const supabaseUrl = config.SUPABASE_URL ? config.SUPABASE_URL.replace('/rest/v1/
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || config.SUPABASE_KEY;
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
+export async function insertSystemLog(level: 'INFO' | 'WARN' | 'ERROR' | 'CRITICAL', source: string, message: string, metadata: any = {}) {
+  if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return;
+  try {
+    const { error } = await supabase.from('system_logs').insert([{
+      level,
+      source,
+      message,
+      metadata
+    }]);
+    if (error) console.error('[DB] Failed to insert system log:', error.message);
+  } catch (err: any) {
+    console.error('[DB] Error inserting system log:', err.message);
+  }
+}
+
 export async function insertSignal(signal: any) {
   if (!config.SUPABASE_URL || !config.SUPABASE_KEY) {
     console.warn('[DB] Supabase not configured. Skipping DB insert.');

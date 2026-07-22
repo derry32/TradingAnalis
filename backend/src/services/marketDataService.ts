@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import { config } from '../config';
+import { insertSystemLog } from './database';
 import fs from 'fs';
 import path from 'path';
 
@@ -117,7 +118,9 @@ export class MarketDataService {
     if (config.TWELVEDATA_API_KEY) {
       this.connectTwelveData();
     } else {
-      console.warn('[MarketData] No API Key found, starting Simulation Mode.');
+      const msg = '[MarketData] No API Key found, starting Simulation Mode.';
+      console.warn(msg);
+      insertSystemLog('WARN', 'MarketData', msg);
       this.startSimulation();
     }
   }
@@ -128,7 +131,9 @@ export class MarketDataService {
     this.ws = new WebSocket(`wss://ws.twelvedata.com/v1/quotes/price?apikey=${config.TWELVEDATA_API_KEY}`);
     
     let fallbackTimeout: NodeJS.Timeout | null = setTimeout(() => {
-      console.warn('[MarketData] No ticks received from TwelveData within 20s. Falling back to Simulation Mode.');
+      const msg = '[MarketData] No ticks received from TwelveData within 20s. Falling back to Simulation Mode.';
+      console.warn(msg);
+      insertSystemLog('CRITICAL', 'MarketData', msg);
       this.startSimulation();
       fallbackTimeout = null;
     }, 20000);
