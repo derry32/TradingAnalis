@@ -90,7 +90,9 @@ export default function LogsPage() {
       </header>
 
       <main className="max-w-[1000px] mx-auto">
-        {drawdown && (
+        <div className="text-xs text-gray-500 mb-2 font-mono opacity-50">API TARGET: {BACKEND_URL}</div>
+        
+        {drawdown ? (
           <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6 shadow-2xl flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className={`p-3 rounded-xl border ${drawdown.active ? 'bg-red-500/10 border-red-500/30' : 'bg-emerald-500/10 border-emerald-500/30'}`}>
@@ -122,6 +124,11 @@ export default function LogsPage() {
               <RefreshCw size={16} className={resetting ? 'animate-spin' : ''} />
               Force Reset
             </button>
+          </div>
+        ) : (
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6 mb-6 shadow-2xl flex items-center justify-center text-gray-500 gap-3">
+             <Activity className="w-5 h-5 animate-pulse text-gray-500" />
+             <span>Loading Drawdown Guard status...</span>
           </div>
         )}
 
