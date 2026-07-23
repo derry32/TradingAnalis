@@ -54,7 +54,7 @@ export class SignalGenerator {
         if (sessionType === 'SYDNEY') { wTrendH1=20; wM15=10; wSR=20; wPA=20; wEMA=10; wVol=5; wRR=5; wNews=3; wATR=5; wSession=2; }
         else if (sessionType === 'TOKYO') { wTrendH1=20; wM15=15; wSR=15; wPA=15; wEMA=10; wVol=5; wRR=5; wNews=5; wATR=5; wSession=5; }
         else if (sessionType === 'LONDON') { wTrendH1=25; wM15=20; wSR=15; wPA=15; wEMA=8; wVol=5; wRR=5; wNews=3; wATR=2; wSession=2; }
-        else if (sessionType === 'OVERLAP') { wTrendH1=20; wM15=20; wSR=10; wPA=15; wEMA=10; wVol=10; wRR=5; wNews=5; wATR=3; wSession=2; }
+        else if (sessionType === 'OVERLAP') { wTrendH1=20; wM15=20; wSR=10; wPA=15; wEMA=10; wVol=10; wRR=5; wNews=5; wATR=3; wSession=10; }
         else if (sessionType === 'NY') { wTrendH1=20; wM15=20; wSR=15; wPA=15; wEMA=10; wVol=5; wRR=5; wNews=5; wATR=3; wSession=2; }
     }
 
@@ -107,6 +107,7 @@ export class SignalGenerator {
     }
     if (sessionType === 'SYDNEY') base += 10;
     else if (sessionType === 'TOKYO') base += 5;
+    else if (sessionType === 'OVERLAP') base -= 5;
     return base;
   }
 
@@ -145,7 +146,11 @@ export class SignalGenerator {
          score += 50; reasons.push(`✔ Setup Liquidity Grab (Stop Hunt) Valid di Resistance`);
       }
 
-      if (analysis.volumeSpikeM5) { score += 10; reasons.push(`✔ Volume Spike mendukung False Breakout/Rejection`); }
+      if (analysis.volumeSpikeM5) { 
+          const volBonus = sessionType === 'OVERLAP' ? 25 : 10;
+          score += volBonus; 
+          reasons.push(`✔ Volume Spike mendukung False Breakout/Rejection (+${volBonus} Poin)`); 
+      }
       if (analysis.atr_M15 > 1.0) { score += 10; reasons.push(`✔ ATR Volatilitas Cukup`); }
       score += 10; reasons.push(`✔ Risk:Reward Valid`); 
 
