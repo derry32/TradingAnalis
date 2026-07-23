@@ -3,12 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { SystemLog } from '../../components/SystemHealthProvider';
-import { Activity, ShieldAlert, CheckCircle, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Activity, ShieldAlert, CheckCircle, AlertTriangle, ArrowLeft, RefreshCw, Shield } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LogsPage() {
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [drawdown, setDrawdown] = useState<{active: boolean, dailySLCount: number, maxDailySL: number} | null>(null);
+  const [resetting, setResetting] = useState(false);
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002';
 
   useEffect(() => {
     async function fetchAllLogs() {
@@ -21,8 +24,43 @@ export default function LogsPage() {
       if (data) setLogs(data);
       setLoading(false);
     }
+    
+    async function fetchDrawdown() {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/risk/drawdown-status`);
+        if (res.ok) {
+          const data = await res.json();
+          setDrawdown(data);
+        }
+      } catch (e) {
+        console.error('Failed to fetch drawdown', e);
+      }
+    }
+
     fetchAllLogs();
-  }, []);
+    fetchDrawdown();
+  }, [BACKEND_URL]);
+
+  const handleForceReset = async () => {
+    setResetting(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/risk/reset-drawdown`, { method: 'POST' });
+      if (res.ok) {
+        setDrawdown(prev => prev ? { ...prev, active: false, dailySLCount: 0 } : null);
+        // Add a log artificially to UI so user gets feedback without reload
+        setLogs(prev => [{
+          id: Date.now(),
+          level: 'INFO',
+          source: 'System',
+          message: 'Drawdown Guard successfully reset via UI',
+          timestamp: new Date().toISOString()
+        }, ...prev]);
+      }
+    } catch (e) {
+      console.error('Failed to reset drawdown', e);
+    }
+    setResetting(false);
+  };
 
   const getLevelStyle = (level: string) => {
     switch (level) {
@@ -50,6 +88,41 @@ export default function LogsPage() {
       </header>
 
       <main className="max-w-[1000px] mx-auto">
+        {drawdown && (
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6 shadow-2xl flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-xl border ${drawdown.active ? 'bg-red-500/10 border-red-500/30' : 'bg-emerald-500/10 border-emerald-500/30'}`}>
+                {drawdown.active ? <ShieldAlert className="text-red-400" size={24} /> : <Shield className="text-emerald-400" size={24} />}
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-100 mb-1 flex items-center gap-2">
+                  Drawdown Guard
+                  <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-bold ${drawdown.active ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                    {drawdown.active ? 'Blocked' : 'Secure'}
+                  </span>
+                </h2>
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <span>Daily Stop Loss:</span>
+                  <div className="flex gap-1 items-center">
+                    <span className="text-white font-mono">{drawdown.dailySLCount}</span>
+                    <span className="text-gray-600">/</span>
+                    <span className="text-gray-500">{drawdown.maxDailySL}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <button 
+              onClick={handleForceReset}
+              disabled={resetting}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 rounded-lg font-semibold text-sm transition-all shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw size={16} className={resetting ? 'animate-spin' : ''} />
+              Force Reset
+            </button>
+          </div>
+        )}
+
         <div className="bg-slate-900/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
           {loading ? (
             <div className="p-12 text-center text-gray-500 flex flex-col items-center justify-center">
