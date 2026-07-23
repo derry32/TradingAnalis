@@ -192,13 +192,18 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
         checkAndResetDailyDrawdown();
         dailySLCount++;
         lastSLDateWIB = getTodayWIB();
-        if (dailySLCount >= 2) {
+        
+        const DRAWDOWN_LIMIT = 10;
+        if (dailySLCount >= DRAWDOWN_LIMIT) {
           drawdownGuardActive = true;
-          const msg = `[DrawdownGuard] ⛔ AKTIF! ${dailySLCount} SL hari ini. Semua sinyal diblokir hingga besok.`;
-          console.log(msg);
-          insertSystemLog('WARN', 'DrawdownGuard', msg, { count: dailySLCount });
+          // Hanya kirim notifikasi saat pertama kali mencapai limit hari ini (mencegah spam)
+          if (dailySLCount === DRAWDOWN_LIMIT) {
+            const msg = `[DrawdownGuard] ⛔ AKTIF! ${DRAWDOWN_LIMIT} SL hari ini. Semua sinyal diblokir hingga besok.`;
+            console.log(msg);
+            insertSystemLog('WARN', 'DrawdownGuard', msg, { count: dailySLCount });
+          }
         } else {
-          console.log(`[DrawdownGuard] SL ke-${dailySLCount} hari ini. Batas: 2.`);
+          console.log(`[DrawdownGuard] SL ke-${dailySLCount} hari ini. Batas: ${DRAWDOWN_LIMIT}.`);
         }
       }
   }

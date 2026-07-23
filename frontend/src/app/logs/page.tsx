@@ -11,7 +11,9 @@ export default function LogsPage() {
   const [loading, setLoading] = useState(true);
   const [drawdown, setDrawdown] = useState<{active: boolean, dailySLCount: number, maxDailySL: number} | null>(null);
   const [resetting, setResetting] = useState(false);
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002';
+  const BACKEND_URL = typeof window !== 'undefined' && window.location.hostname !== 'localhost' 
+    ? `http://${window.location.hostname}:3002` 
+    : 'http://localhost:3002';
 
   useEffect(() => {
     async function fetchAllLogs() {
