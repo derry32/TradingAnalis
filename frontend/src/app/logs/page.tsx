@@ -49,7 +49,7 @@ export default function LogsPage() {
         setDrawdown(prev => prev ? { ...prev, active: false, dailySLCount: 0 } : null);
         // Add a log artificially to UI so user gets feedback without reload
         setLogs(prev => [{
-          id: Date.now(),
+          id: Date.now().toString(),
           level: 'INFO',
           source: 'System',
           message: 'Drawdown Guard successfully reset via UI',
