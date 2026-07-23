@@ -312,7 +312,7 @@ app.get('/api/risk/drawdown-status', (req, res) => {
   res.json({
     active: drawdownGuardActive,
     dailySLCount,
-    maxDailySL: 2,
+    maxDailySL: 10,
     resetDate: lastSLDateWIB || getTodayWIB()
   });
 });

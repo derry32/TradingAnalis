@@ -21,7 +21,7 @@ import Link from 'next/link';
 
 const BACKEND_URL = typeof window !== 'undefined' && window.location.hostname !== 'localhost' 
   ? `http://${window.location.hostname}:3002` 
-  : 'http://localhost:3002';
+  : 'http://43.156.79.235:3002';
 const MONTH_NAMES = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
 interface MonthlyStats {
