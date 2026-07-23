@@ -29,11 +29,11 @@ export class TelegramService {
     const formattedTime = new Date(signal.timestamp).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }) + ' WIB';
     
     // Convert reason string into a readable format, handling checklists
-    const formattedReason = signal.reason.split('\n').map(r => r.startsWith('✔') || r.startsWith('✖') || r.startsWith('🚨') ? r : `* ${r}`).join('\n');
+    const formattedReason = signal.reason.split('\n').map(r => r.startsWith('✔') || r.startsWith('✖') || r.startsWith('🚨') ? r : `- ${r}`).join('\n');
 
     const message = `
 🚨 [${signal.strategy} MODE] 🚨
-${emoji} **${signal.type} - ${signal.probabilityLabel}**
+${emoji} *${signal.type} - ${signal.probabilityLabel}*
 Signal ID: \`${signal.id}\`
 Time: ${formattedTime}
 Confidence: ${signal.confidenceScore}%
@@ -41,15 +41,15 @@ Confidence: ${signal.confidenceScore}%
 Session: ${signal.session}
 Market Condition: ${signal.marketCondition}
 
-**Entry Zone**: ${signal.entryZone}
-**SL**: ${signal.stopLoss.toFixed(2)}
-**TP1**: ${signal.takeProfit1.toFixed(2)} (RR 1:2)
-**TP2**: ${signal.takeProfit2.toFixed(2)} (RR 1:3)
+*Entry Zone*: ${signal.entryZone}
+*SL*: ${signal.stopLoss.toFixed(2)}
+*TP1*: ${signal.takeProfit1.toFixed(2)} (RR 1:2)
+*TP2*: ${signal.takeProfit2.toFixed(2)} (RR 1:3)
 
 Valid Time: ${signal.validTime}
 Est. TP Time: ${signal.estimatedTpTime}
 
-**Reason:**
+*Reason:*
 ${formattedReason}
     `.trim();
 
