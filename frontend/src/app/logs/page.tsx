@@ -11,9 +11,7 @@ export default function LogsPage() {
   const [loading, setLoading] = useState(true);
   const [drawdown, setDrawdown] = useState<{active: boolean, dailySLCount: number, maxDailySL: number} | null>(null);
   const [resetting, setResetting] = useState(false);
-  const BACKEND_URL = typeof window !== 'undefined' && window.location.hostname !== 'localhost' 
-    ? `http://${window.location.hostname}:3002` 
-    : 'http://43.156.79.235:3002';
+  const BACKEND_URL = 'Next.js Proxy (/api/*)';
 
   useEffect(() => {
     async function fetchAllLogs() {
@@ -29,7 +27,7 @@ export default function LogsPage() {
     
     async function fetchDrawdown() {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/risk/drawdown-status`);
+        const res = await fetch(`/api/risk/drawdown-status`);
         if (res.ok) {
           const data = await res.json();
           setDrawdown(data);
@@ -41,12 +39,12 @@ export default function LogsPage() {
 
     fetchAllLogs();
     fetchDrawdown();
-  }, [BACKEND_URL]);
+  }, []);
 
   const handleForceReset = async () => {
     setResetting(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/risk/reset-drawdown`, { method: 'POST' });
+      const res = await fetch(`/api/risk/reset-drawdown`, { method: 'POST' });
       if (res.ok) {
         setDrawdown(prev => prev ? { ...prev, active: false, dailySLCount: 0 } : null);
         // Add a log artificially to UI so user gets feedback without reload
