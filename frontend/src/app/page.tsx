@@ -92,7 +92,7 @@ export default function Home() {
             <SystemHealthWidget />
           </div>
           <div 
-            className="flex items-center cyber-card-glow p-1.5 rounded-xl backdrop-blur-md relative z-10 overflow-x-auto w-full max-w-full sm:max-w-none"
+            className="flex items-center cyber-card-glow p-1.5 rounded-xl backdrop-blur-md relative z-10 overflow-x-auto w-full sm:w-max"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
           <Link href="/history" className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">

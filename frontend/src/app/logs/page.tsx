@@ -91,13 +91,13 @@ export default function LogsPage() {
         <div className="text-xs text-gray-500 mb-2 font-mono opacity-50">API TARGET: {BACKEND_URL}</div>
         
         {drawdown ? (
-          <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
               <div className={`p-3 rounded-xl border ${drawdown.active ? 'bg-red-500/10 border-red-500/30' : 'bg-emerald-500/10 border-emerald-500/30'}`}>
                 {drawdown.active ? <ShieldAlert className="text-red-400" size={24} /> : <Shield className="text-emerald-400" size={24} />}
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-100 mb-1 flex items-center gap-2">
+                <h2 className="text-lg font-bold text-gray-100 mb-1 flex flex-wrap items-center gap-2">
                   Drawdown Guard
                   <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-bold ${drawdown.active ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
                     {drawdown.active ? 'Blocked' : 'Secure'}
@@ -117,7 +117,7 @@ export default function LogsPage() {
             <button 
               onClick={handleForceReset}
               disabled={resetting}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 rounded-lg font-semibold text-sm transition-all shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              className="flex items-center justify-center gap-2 px-4 py-2 w-full sm:w-auto bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 rounded-lg font-semibold text-sm transition-all shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw size={16} className={resetting ? 'animate-spin' : ''} />
               Force Reset
