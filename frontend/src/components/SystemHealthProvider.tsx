@@ -79,14 +79,13 @@ export function SystemHealthProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const updateStatus = (currentLogs: SystemLog[]) => {
-     // Very simple logic: if recent log is ERROR/CRITICAL -> RED
-     // if WARN -> YELLOW
-     // else GREEN
-     const recentErrors = currentLogs.filter(l => l.level === 'ERROR' || l.level === 'CRITICAL');
-     const recentWarns = currentLogs.filter(l => l.level === 'WARN');
-     
-     if (recentErrors.length > 0) setStatus('RED');
-     else if (recentWarns.length > 0) setStatus('YELLOW');
+     if (currentLogs.length === 0) {
+       setStatus('GREEN');
+       return;
+     }
+     const latest = currentLogs[0];
+     if (latest.level === 'ERROR' || latest.level === 'CRITICAL') setStatus('RED');
+     else if (latest.level === 'WARN') setStatus('YELLOW');
      else setStatus('GREEN');
   };
 

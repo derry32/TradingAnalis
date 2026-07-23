@@ -321,6 +321,7 @@ app.post('/api/risk/reset-drawdown', (req, res) => {
   dailySLCount = 0;
   drawdownGuardActive = false;
   console.log('[DrawdownGuard] ✅ Guard direset secara manual oleh user.');
+  insertSystemLog('INFO', 'DrawdownGuard', 'Drawdown Guard berhasil direset secara manual. Sistem Trading AI kembali aktif.');
   res.json({ success: true, message: 'Drawdown Guard berhasil direset.' });
 });
 
