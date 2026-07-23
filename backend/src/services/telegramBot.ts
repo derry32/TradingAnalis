@@ -29,17 +29,20 @@ export class TelegramService {
     const formattedTime = new Date(signal.timestamp).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }) + ' WIB';
     
     // Convert reason string into a readable format, handling checklists
-    const formattedReason = signal.reason.split('\n').map(r => r.startsWith('✔') || r.startsWith('✖') || r.startsWith('🚨') ? r : `- ${r}`).join('\n');
+    const formattedReason = signal.reason.split('\n').map(r => r.startsWith('✔') || r.startsWith('✖') || r.startsWith('🚨') ? r : `- ${r}`).join('\n').replace(/_/g, ' ');
+
+    const safeStrategy = signal.strategy.replace(/_/g, ' ');
+    const safeMarketCondition = signal.marketCondition.replace(/_/g, ' ');
 
     const message = `
-🚨 [${signal.strategy} MODE] 🚨
+🚨 [${safeStrategy} MODE] 🚨
 ${emoji} *${signal.type} - ${signal.probabilityLabel}*
 Signal ID: \`${signal.id}\`
 Time: ${formattedTime}
 Confidence: ${signal.confidenceScore}%
 
 Session: ${signal.session}
-Market Condition: ${signal.marketCondition}
+Market Condition: ${safeMarketCondition}
 
 *Entry Zone*: ${signal.entryZone}
 *SL*: ${signal.stopLoss.toFixed(2)}
