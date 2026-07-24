@@ -185,6 +185,33 @@ export class MarketDataService {
         console.error('[MarketData] WebSocket Parse Error', e);
       }
     });
+
+    this.ws.on('close', () => {
+      console.warn('[MarketData] TwelveData WebSocket closed! Reconnecting in 5s...');
+      if (this.ws) {
+        this.ws.removeAllListeners();
+        this.ws = null;
+      }
+      setTimeout(() => this.connectTwelveData(), 5000);
+    });
+
+    this.ws.on('error', (err) => {
+      console.error('[MarketData] TwelveData WebSocket Error:', err);
+      this.ws?.close(); // Will trigger 'close' event and reconnect
+    });
+
+    // Watchdog: If no message for 5 minutes, force reconnect
+    let watchdog: NodeJS.Timeout;
+    const resetWatchdog = () => {
+      clearTimeout(watchdog);
+      watchdog = setTimeout(() => {
+        console.warn('[MarketData] Watchdog timeout: No ticks for 5 minutes! Forcing reconnect...');
+        this.ws?.close();
+      }, 5 * 60 * 1000);
+    };
+    
+    this.ws.on('message', () => resetWatchdog());
+    resetWatchdog();
   }
 
   private getHistoryFilePath(): string {
