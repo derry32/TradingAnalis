@@ -77,7 +77,7 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-100 to-gray-400">
-                Institutional AI
+                Trade Signal
               </h1>
               <p className="text-[10px] text-emerald-400/70 font-medium tracking-widest uppercase">Trading Analyst Engine</p>
             </div>
