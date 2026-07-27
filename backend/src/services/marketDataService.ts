@@ -211,8 +211,8 @@ export class MarketDataService {
       const day = now.getUTCDay();
       const hour = now.getUTCHours();
       if (day === 6) return true; // Saturday
-      if (day === 0 && hour < 22) return true; // Sunday before 22:00 UTC
-      if (day === 5 && hour >= 22) return true; // Friday after 22:00 UTC
+      if (day === 0 && hour < 22) return true; // Sunday before 22:00 UTC (Senin 05:00 WIB)
+      if (day === 5 && hour >= 20) return true; // Friday after 20:00 UTC (Sabtu 03:00 WIB)
       return false;
     };
 
