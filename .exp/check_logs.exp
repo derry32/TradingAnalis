@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout 20
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker logs ai-backend 2>&1 | grep diblokir | tail -n 20"
+expect "password:"
+send "thunder-29%-quantum\r"
+expect eof

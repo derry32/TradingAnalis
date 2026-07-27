@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn scp -o StrictHostKeyChecking=no backend/.env ubuntu@43.156.79.235:~/TradingAnalis/backend/.env
+expect "password:"
+send "thunder-29%-quantum\r"
+expect eof

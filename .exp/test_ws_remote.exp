@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker exec ai-backend node -e \"const WebSocket = require('ws'); const ws = new WebSocket('wss://ws.twelvedata.com/v1/quotes/price?apikey=b8d759ae22664d318c5bcfef3230ee07'); ws.on('open', () => { console.log('Connected'); ws.send(JSON.stringify({ action: 'subscribe', params: { symbols: 'XAU/USD' } })); }); ws.on('message', (d) => { console.log('Received:', d.toString()); }); ws.on('error', (e) => console.log('Error', e)); setTimeout(() => process.exit(1), 60000);\""
+expect "password:"
+send "thunder-29%-quantum\r"
+expect eof
