@@ -205,13 +205,25 @@ export class MarketDataService {
       this.ws?.close(); // Will trigger 'close' event and reconnect
     });
 
-    // Watchdog: If no message for 5 minutes, force reconnect
+    // Watchdog: If no message for 5 minutes (or 1 hour on weekends), force reconnect
+    const isWeekend = () => {
+      const now = new Date();
+      const day = now.getUTCDay();
+      const hour = now.getUTCHours();
+      if (day === 6) return true; // Saturday
+      if (day === 0 && hour < 22) return true; // Sunday before 22:00 UTC
+      if (day === 5 && hour >= 22) return true; // Friday after 22:00 UTC
+      return false;
+    };
+
     const resetWatchdog = () => {
       if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
+      const timeoutMs = isWeekend() ? 60 * 60 * 1000 : 5 * 60 * 1000; // 1 hour on weekend, 5 mins on weekday
+      
       this.watchdogTimer = setTimeout(() => {
-        console.warn('[MarketData] Watchdog timeout: No ticks for 5 minutes! Forcing reconnect...');
+        console.warn(`[MarketData] Watchdog timeout: No ticks for ${timeoutMs / 60000} minutes! Forcing reconnect...`);
         if (this.ws) this.ws.close();
-      }, 5 * 60 * 1000);
+      }, timeoutMs);
     };
     
     this.ws.on('message', () => resetWatchdog());
