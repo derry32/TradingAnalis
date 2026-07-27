@@ -82,6 +82,7 @@ export type MultiTimeframeData = {
 export class MarketDataService {
   private ws: WebSocket | null = null;
   private onM5Closed: ((data: MultiTimeframeData) => void) | null = null;
+  private watchdogTimer: NodeJS.Timeout | null = null;
 
   public m1 = new CandleBuilder(1);
   public m5 = new CandleBuilder(5, 6000); // 6000 M5 candles = 500 hours (enough for 500 H1 candles)
@@ -188,6 +189,10 @@ export class MarketDataService {
 
     this.ws.on('close', () => {
       console.warn('[MarketData] TwelveData WebSocket closed! Reconnecting in 5s...');
+      if (this.watchdogTimer) {
+        clearTimeout(this.watchdogTimer);
+        this.watchdogTimer = null;
+      }
       if (this.ws) {
         this.ws.removeAllListeners();
         this.ws = null;
@@ -201,12 +206,11 @@ export class MarketDataService {
     });
 
     // Watchdog: If no message for 5 minutes, force reconnect
-    let watchdog: NodeJS.Timeout;
     const resetWatchdog = () => {
-      clearTimeout(watchdog);
-      watchdog = setTimeout(() => {
+      if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
+      this.watchdogTimer = setTimeout(() => {
         console.warn('[MarketData] Watchdog timeout: No ticks for 5 minutes! Forcing reconnect...');
-        this.ws?.close();
+        if (this.ws) this.ws.close();
       }, 5 * 60 * 1000);
     };
     
