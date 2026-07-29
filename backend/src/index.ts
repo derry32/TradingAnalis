@@ -225,11 +225,11 @@ marketData.setOnM5Closed((data) => {
   activeTradeScalper = updateTradeState(activeTradeScalper, data.currentM5, 'HYPER_SCALPER');
   
   if (latestSentiment) {
-    const upcomingNews = news.getUpcomingHighImpactNews();
+    const activeNewsContext = news.getActiveNewsContext();
     const strategies: ('SNIPER' | 'HYPER_SCALPER')[] = ['SNIPER', 'HYPER_SCALPER'];
     
     for (const strategy of strategies) {
-      const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, data.currentM5.close, latestSentiment.score, upcomingNews, strategy);
+      const signal = signalGenerator.generate(techResult, latestSentiment.sentiment, data.currentM5.close, latestSentiment.score, activeNewsContext, strategy);
       if (signal) {
         const score = signal.confidenceScore;
         const now = Date.now();

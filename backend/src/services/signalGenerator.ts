@@ -180,12 +180,61 @@ export class SignalGenerator {
     return bestTrade;
   }
 
+  private evaluateNewsBreakoutMode(analysis: AnalysisResult, currentPrice: number, activeStrategy: 'SNIPER' | 'HYPER_SCALPER') {
+    let possibleDirections: ('BUY' | 'SELL')[] = [];
+    if (analysis.trendH1 === 'BULLISH' && (analysis.patternM5.includes('BULL') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'THREE_WHITE_SOLDIERS')) possibleDirections.push('BUY');
+    if (analysis.trendH1 === 'BEARISH' && (analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'THREE_BLACK_CROWS')) possibleDirections.push('SELL');
+
+    let bestTrade: { dir: 'BUY' | 'SELL', score: number, reasons: string[], warnings: string[] } | null = null;
+    for (const dir of possibleDirections) {
+      let score = 0;
+      let reasons: string[] = [];
+      let warnings: string[] = [];
+
+      // Wajib BOS
+      if (dir === 'BUY' && (analysis.marketStructureM15 === 'BOS_BULL' || analysis.marketStructureM15 === 'CHOCH_BULL')) {
+        score += 30; reasons.push(`✔ M15 BOS/CHoCH Valid`);
+      } else if (dir === 'SELL' && (analysis.marketStructureM15 === 'BOS_BEAR' || analysis.marketStructureM15 === 'CHOCH_BEAR')) {
+        score += 30; reasons.push(`✔ M15 BOS/CHoCH Valid`);
+      } else {
+        warnings.push(`✖ Tidak ada BOS M15 (Syarat Mutlak Breakout gagal)`);
+        continue;
+      }
+
+      // Wajib Volume Spike
+      if (analysis.volumeSpikeM5) {
+        score += 30; reasons.push(`✔ Volume Spike Terdeteksi`);
+      } else {
+        warnings.push(`✖ Tidak ada Volume Spike (Syarat Mutlak Breakout gagal)`);
+        continue;
+      }
+
+      if (analysis.atr_M15 > 1.0) {
+        score += 20; reasons.push(`✔ ATR Meningkat / Mendukung Volatilitas`);
+      } else {
+        warnings.push(`✖ ATR kurang (Volatilitas lemah)`);
+        continue;
+      }
+
+      reasons.push(`✔ Trend H1 Searah`);
+      reasons.push(`✔ Pullback M5 Selesai (${analysis.patternM5.replace('_', ' ')})`);
+      reasons.push(`✔ RR minimal 1:3 terjamin`);
+      
+      score += 20; // Extra points for passing all strict filters
+
+      if (!bestTrade || score > bestTrade.score) {
+        bestTrade = { dir, score, reasons, warnings };
+      }
+    }
+    return bestTrade;
+  }
+
   public generate(
     analysis: AnalysisResult,
     sentiment: 'BULLISH' | 'BEARISH' | 'NEUTRAL',
     currentPrice: number,
     sentimentScore: number,
-    upcomingNews: any = null,
+    activeNewsContext: any = null,
     activeStrategy: 'SNIPER' | 'HYPER_SCALPER' = 'SNIPER'
   ): Signal {
     
@@ -193,27 +242,60 @@ export class SignalGenerator {
     const currentHourWIB = (currentHourUTC + 7) % 24;
     const sessionInfo = this.getSession(currentHourWIB);
     
+    // EMERGENCY MODE Check
+    const slippageRisk = analysis.atr_M15 > 5.0; // Contoh Emergency threshold untuk XAUUSD
+    if (slippageRisk) {
+       return this.createWaitSignal("🚨 EMERGENCY MODE: Volatilitas/Spread terlalu ekstrem (ATR > 5.0). NO TRADE untuk keamanan modal.", activeStrategy);
+    }
+    
     if (activeStrategy === 'HYPER_SCALPER' && sessionInfo.type === 'OFF') {
         return this.createWaitSignal("Sesi market tutup (Off-hours).", activeStrategy);
     }
     
     let isNewsMode = false;
     let newsWarning = '';
-    if (upcomingNews) {
-      const eventTime = new Date(upcomingNews.date).getTime();
-      const now = Date.now();
-      if (Math.abs(now - eventTime) <= 30 * 60 * 1000) {
+    let isNewsBreakout = false;
+    let breakoutTitle = '';
+
+    if (activeNewsContext) {
+      const { event, severity, phase } = activeNewsContext;
+      
+      if (severity === 'EXTREME') { // FOMC MODE
+        if (phase === 'PRE') {
+          return this.createWaitSignal(`⚠️ ${event.title} akan rilis < 60 menit. Mode: NO ENTRY. Menunggu hasil berita.`, activeStrategy);
+        } else if (phase === 'DURING') {
+          return this.createWaitSignal(`🔴 ${event.title} rilis! LOCK MODE. Pasar tidak aman (Spread/Slippage ekstrem).`, activeStrategy);
+        } else if (phase === 'STABILIZATION') {
+          return this.createWaitSignal(`🟠 Market masih belum stabil setelah ${event.title}. Menunggu Volume/Spread normal.`, activeStrategy);
+        } else if (phase === 'POST') {
+          isNewsBreakout = true;
+          breakoutTitle = event.title;
+          newsWarning = `🚀 POST FOMC BREAKOUT: Momentum terkonfirmasi dari ${event.title}`;
+        }
+      } else if (severity === 'HIGH') { // NEWS MODE
+        if (phase === 'PRE') {
+          return this.createWaitSignal(`⚠️ HIGH IMPACT NEWS (${event.title}) rilis < 60 menit. Mode: NO ENTRY.`, activeStrategy);
+        } else if (phase === 'DURING') {
+          return this.createWaitSignal(`🔴 HIGH IMPACT NEWS (${event.title}) rilis! LOCK MODE 30 menit.`, activeStrategy);
+        }
         isNewsMode = true;
-        newsWarning = `🚨 HIGH IMPACT NEWS: ${upcomingNews.title} 🚨`;
+        newsWarning = `⚠️ Berita ${event.title} baru berlalu, volatilitas mungkin masih ada.`;
+      } else if (severity === 'MEDIUM') {
+        if (phase === 'DURING') {
+           isNewsMode = true; 
+           newsWarning = `⚠️ Medium Impact News (${event.title}) sedang berlangsung. Filter diperketat.`;
+        }
       }
     }
 
-    if (analysis.patternM5 === 'NONE' && analysis.fibonacciZoneM15 === 'NONE') {
+    if (analysis.patternM5 === 'NONE' && analysis.fibonacciZoneM15 === 'NONE' && !isNewsBreakout) {
        return this.createWaitSignal("Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.", activeStrategy);
     }
 
     let bestTrade;
-    if (analysis.marketCondition === 'SIDEWAYS') {
+    if (isNewsBreakout) {
+       bestTrade = this.evaluateNewsBreakoutMode(analysis, currentPrice, activeStrategy);
+    } else if (analysis.marketCondition === 'SIDEWAYS') {
        bestTrade = this.evaluateSidewaysMode(analysis, currentPrice, sessionInfo.type, isNewsMode, activeStrategy);
     } else {
        bestTrade = this.evaluateTrendingMode(analysis, currentPrice, sessionInfo.type, isNewsMode, activeStrategy);
@@ -234,17 +316,28 @@ export class SignalGenerator {
     const { dir: tradeType, score, reasons, warnings } = bestTrade!;
 
     let stopLoss = 0;
-    const minDistance = 2.0; 
-    const maxRisk = config.STOP_LOSS_PIPS / 10; // 3.0 points = 30 pips for Gold
-
-    if (tradeType === 'BUY') {
-      stopLoss = analysis.closestSwingLowM5 - 0.5;
-      if (stopLoss >= currentPrice - minDistance) stopLoss = currentPrice - minDistance;
-      if (currentPrice - stopLoss > maxRisk) stopLoss = currentPrice - maxRisk;
+    
+    if (isNewsBreakout) {
+      // POST FOMC BREAKOUT Logic (Wider SL, based on 2x ATR)
+      const atr = analysis.atr_M15 || 1.5;
+      if (tradeType === 'BUY') {
+        stopLoss = currentPrice - (atr * 2.0);
+      } else {
+        stopLoss = currentPrice + (atr * 2.0);
+      }
     } else {
-      stopLoss = analysis.closestSwingHighM5 + 0.5;
-      if (stopLoss <= currentPrice + minDistance) stopLoss = currentPrice + minDistance;
-      if (stopLoss - currentPrice > maxRisk) stopLoss = currentPrice + maxRisk;
+      const minDistance = 2.0; 
+      const maxRisk = config.STOP_LOSS_PIPS / 10; // 3.0 points = 30 pips for Gold
+
+      if (tradeType === 'BUY') {
+        stopLoss = analysis.closestSwingLowM5 - 0.5;
+        if (stopLoss >= currentPrice - minDistance) stopLoss = currentPrice - minDistance;
+        if (currentPrice - stopLoss > maxRisk) stopLoss = currentPrice - maxRisk;
+      } else {
+        stopLoss = analysis.closestSwingHighM5 + 0.5;
+        if (stopLoss <= currentPrice + minDistance) stopLoss = currentPrice + minDistance;
+        if (stopLoss - currentPrice > maxRisk) stopLoss = currentPrice + maxRisk;
+      }
     }
 
     const riskAbsolute = Math.abs(currentPrice - stopLoss);
@@ -255,7 +348,11 @@ export class SignalGenerator {
     let tp1 = 0;
     let tp2 = 0;
     
-    if (activeStrategy === 'HYPER_SCALPER') {
+    if (isNewsBreakout) {
+      // POST FOMC BREAKOUT: RR 1:3 minimum
+      tp1 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 3) : currentPrice - (riskAbsolute * 3);
+      tp2 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 4) : currentPrice - (riskAbsolute * 4);
+    } else if (activeStrategy === 'HYPER_SCALPER') {
       tp1 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 1.5) : currentPrice - (riskAbsolute * 1.5);
       tp2 = tradeType === 'BUY' ? currentPrice + (riskAbsolute * 2) : currentPrice - (riskAbsolute * 2);
     } else {
@@ -283,7 +380,10 @@ export class SignalGenerator {
     let estTpTime = '30-90 Menit';
     let timeStopLoss = undefined;
     
-    if (activeStrategy === 'HYPER_SCALPER') {
+    if (isNewsBreakout) {
+      validTime = '30 Menit';
+      estTpTime = '90-180 Menit'; // Momentum post-FOMC biasanya jalan jauh
+    } else if (activeStrategy === 'HYPER_SCALPER') {
       validTime = '5-15 Menit';
       estTpTime = '5-30 Menit';
       timeStopLoss = '30-45 Menit';

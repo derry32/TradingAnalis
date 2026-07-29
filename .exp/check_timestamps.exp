@@ -1,6 +1,6 @@
 #!/usr/bin/expect -f
 set timeout 10
-spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker logs --tail 20 --timestamps ai-backend"
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker logs --tail 100 --timestamps ai-backend"
 expect "password:"
 send "thunder-29%-quantum\r"
 expect eof
