@@ -1,6 +1,18 @@
 # Changelog & Update Historis
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
+## [1.3.3] - Smart News Mode (Institusional 4-Fase)
+### Ditambahkan
+- **News Severity Level Tracker:** AI sekarang tidak memukul rata semua berita. Ia bisa membedakan tingkat keparahan (*Severity*) dari berita: `EXTREME` (FOMC/Powell/Rate), `HIGH` (NFP/CPI), dan `MEDIUM` (PPI).
+- **4 Mode State Machine:** AI memiliki 4 mode dinamis: `NORMAL`, `NEWS`, `FOMC`, dan `EMERGENCY`. 
+- **EMERGENCY MODE:** Sistem pengaman otomatis (*Circuit Breaker*) lapis kedua yang memblokir perdagangan jika deteksi ATR (Volatilitas M15) menembus batas 5.0 (kondisi spread ekstrem / slippage gila di luar kalender).
+- **Strategi FOMC 4-Fase:** Khusus berita tingkat `EXTREME`, AI akan mengeksekusi strategi 4-Fase:
+  - Fase 1 (`PRE`): Pause 60 menit sebelum rilis.
+  - Fase 2 (`DURING`): Lock mode selama 30 menit pasca rilis (menghindari whipsaw).
+  - Fase 3 (`STABILIZATION`): Wait confirmation 30-60 menit.
+  - Fase 4 (`POST_FOMC_BREAKOUT`): Mode berburu tren ekstrem dari 60 hingga 180 menit setelah berita. 
+- **Super Strict Breakout Filter:** Saat menjalankan `POST_FOMC_BREAKOUT`, AI memperlebar jaring SL menjadi **2x ATR** untuk menghindari sisa fluktuasi kasar, dan memasang target TP minimum di **1:3 Risk to Reward**, dilengkapi filter wajib konfirmasi *Volume Spike* dan *BOS*.
+
 
 ## [1.3.2] - System Health & UI Proxy Hotfix
 ### Ditambahkan
