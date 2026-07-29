@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout 10
+spawn scp -o StrictHostKeyChecking=no check_atr.js ubuntu@43.156.79.235:~/TradingAnalis/
+expect "password:"
+send "thunder-29%-quantum\r"
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "cd ~/TradingAnalis && sudo cp check_atr.js backend/data/ && sudo docker exec ai-backend node /app/data/check_atr.js"
+expect "password:"
+send "thunder-29%-quantum\r"
+expect eof

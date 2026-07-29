@@ -242,12 +242,6 @@ export class SignalGenerator {
     const currentHourWIB = (currentHourUTC + 7) % 24;
     const sessionInfo = this.getSession(currentHourWIB);
     
-    // EMERGENCY MODE Check
-    const slippageRisk = analysis.atr_M15 > 5.0; // Contoh Emergency threshold untuk XAUUSD
-    if (slippageRisk) {
-       return this.createWaitSignal("🚨 EMERGENCY MODE: Volatilitas/Spread terlalu ekstrem (ATR > 5.0). NO TRADE untuk keamanan modal.", activeStrategy);
-    }
-    
     if (activeStrategy === 'HYPER_SCALPER' && sessionInfo.type === 'OFF') {
         return this.createWaitSignal("Sesi market tutup (Off-hours).", activeStrategy);
     }
@@ -256,6 +250,7 @@ export class SignalGenerator {
     let newsWarning = '';
     let isNewsBreakout = false;
     let breakoutTitle = '';
+    let bypassEmergency = false;
 
     if (activeNewsContext) {
       const { event, severity, phase } = activeNewsContext;
@@ -264,9 +259,15 @@ export class SignalGenerator {
         if (phase === 'PRE') {
           return this.createWaitSignal(`⚠️ ${event.title} akan rilis < 60 menit. Mode: NO ENTRY. Menunggu hasil berita.`, activeStrategy);
         } else if (phase === 'DURING') {
-          return this.createWaitSignal(`🔴 ${event.title} rilis! LOCK MODE. Pasar tidak aman (Spread/Slippage ekstrem).`, activeStrategy);
+          bypassEmergency = true;
+          isNewsBreakout = true;
+          breakoutTitle = event.title;
+          newsWarning = `🔥 ULTRA BREAKOUT INITIAL: Trading di menit awal ${event.title} (HIGH RISK).`;
         } else if (phase === 'STABILIZATION') {
-          return this.createWaitSignal(`🟠 Market masih belum stabil setelah ${event.title}. Menunggu Volume/Spread normal.`, activeStrategy);
+          bypassEmergency = true;
+          isNewsBreakout = true;
+          breakoutTitle = event.title;
+          newsWarning = `🔥 FOMC SPEECH BREAKOUT: Trading momentum pidato ${event.title} (HIGH RISK).`;
         } else if (phase === 'POST') {
           isNewsBreakout = true;
           breakoutTitle = event.title;
@@ -286,6 +287,12 @@ export class SignalGenerator {
            newsWarning = `⚠️ Medium Impact News (${event.title}) sedang berlangsung. Filter diperketat.`;
         }
       }
+    }
+
+    // EMERGENCY MODE Check
+    const slippageRisk = analysis.atr_M15 > 5.0; // Contoh Emergency threshold untuk XAUUSD
+    if (slippageRisk && !bypassEmergency) {
+       return this.createWaitSignal("🚨 EMERGENCY MODE: Volatilitas/Spread terlalu ekstrem (ATR > 5.0). NO TRADE untuk keamanan modal.", activeStrategy);
     }
 
     if (analysis.patternM5 === 'NONE' && analysis.fibonacciZoneM15 === 'NONE' && !isNewsBreakout) {
@@ -318,12 +325,12 @@ export class SignalGenerator {
     let stopLoss = 0;
     
     if (isNewsBreakout) {
-      // POST FOMC BREAKOUT Logic (Wider SL, based on 2x ATR)
+      // POST FOMC BREAKOUT / ULTRA BREAKOUT Logic (Wider SL, based on 3x ATR)
       const atr = analysis.atr_M15 || 1.5;
       if (tradeType === 'BUY') {
-        stopLoss = currentPrice - (atr * 2.0);
+        stopLoss = currentPrice - (atr * 3.0);
       } else {
-        stopLoss = currentPrice + (atr * 2.0);
+        stopLoss = currentPrice + (atr * 3.0);
       }
     } else {
       const minDistance = 2.0; 
