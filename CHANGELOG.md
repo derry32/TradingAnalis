@@ -1,6 +1,11 @@
 # Changelog & Update Historis
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
+## [1.3.5] - Sideways Support/Resistance Bugfix
+### Diperbaiki
+- **Sideways Scoring Bug:** Memperbaiki *bug* logika fatal pada `checkRetracementH1()` yang menyebabkan AI tidak pernah mendapatkan bonus +40 poin (*Support/Resistance Bounce*) saat tren sedang `NEUTRAL` (Sideways). 
+- **Smarter S/R Detection:** Sistem `AnalysisResult` sekarang secara presisi mendeteksi `isAtSupportH1` dan `isAtResistanceH1` secara terpisah, sehingga AI hanya akan mengambil posisi BUY di *Support* dan SELL di *Resistance* pada saat market *choppy*. Hal ini membuat metode Scalper (Min Skor 70) dan Sniper (Min Skor 90) kembali aktif berburu di fase Sideways.
+
 ## [1.3.4] - Ultra FOMC Breakout Mode & ATR Tuning
 ### Ditambahkan
 - **Ultra FOMC Breakout Mode:** Mengubah sistem pertahanan pasif menjadi agresif khusus pada berita tingkat `EXTREME`. AI kini otomatis mem-bypass *Emergency Lock* dan aktif berburu peluang di fase `DURING` (Menit ke 0-30) dan `STABILIZATION` (Menit ke 30-60) pasca berita.
