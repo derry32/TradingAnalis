@@ -1,6 +1,11 @@
 # Changelog & Update Historis
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
+## [1.3.6] - Sideways Logic Optimization & Dynamic S/R
+### Diperbaiki
+- **Dynamic S/R Proximity Threshold:** Memperbaiki sistem deteksi Support/Resistance (S/R) yang sebelumnya statis di angka $5. Untuk pair volatil seperti XAUUSD, jarak $5 terlalu sempit. Kini jarak pantulan (proximity) S/R bersifat dinamis mengikuti nilai Volatilitas (`Math.max(ATR * 1.5, 5)`). AI kini tidak akan melewatkan setup di mana harga memantul belasan pips dari ujung Support/Resistance akibat tingginya pergerakan market.
+- **Sideways Threshold Adjustment:** Menurunkan batas minimal skor (`Confidence Threshold`) spesifik hanya untuk mode `SIDEWAYS` bagi agen Hyper Scalper dan Sniper. Di saat tren `NEUTRAL`, batas minimal skor diturunkan 10-15 poin, dan skor bonus dari *Volume Spike* dikunci stabil pada 20 poin. Ini membuat AI tetap mampu memberikan sinyal pada *choppy market* (seperti sesi Asia) asalkan ada konfirmasi Price Action dan Volume Spike.
+
 ## [1.3.5] - Sideways Support/Resistance Bugfix
 ### Diperbaiki
 - **Sideways Scoring Bug:** Memperbaiki *bug* logika fatal pada `checkRetracementH1()` yang menyebabkan AI tidak pernah mendapatkan bonus +40 poin (*Support/Resistance Bounce*) saat tren sedang `NEUTRAL` (Sideways). 
