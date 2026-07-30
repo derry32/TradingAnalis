@@ -104,7 +104,8 @@ export class SignalGenerator {
   private getDynamicConfidence(strategy: 'SNIPER' | 'HYPER_SCALPER', marketCondition: string, sessionType: string): number {
     let base = strategy === 'SNIPER' ? 80 : 70;
     if (marketCondition === 'SIDEWAYS') {
-       base += (strategy === 'SNIPER' ? 5 : -5);
+       // Sideways scoring system has lower max — lower threshold accordingly
+       base += (strategy === 'SNIPER' ? -10 : -15);
     }
     if (sessionType === 'SYDNEY') base += 10;
     else if (sessionType === 'TOKYO') base += 5;
@@ -156,9 +157,8 @@ export class SignalGenerator {
       }
 
       if (analysis.volumeSpikeM5) { 
-          const volBonus = sessionType === 'OVERLAP' ? 25 : 10;
-          score += volBonus; 
-          reasons.push(`✔ Volume Spike mendukung False Breakout/Rejection (+${volBonus} Poin)`); 
+          score += 20; // Volume spike selalu +20 di Sideways (tanda momentum yang nyata)
+          reasons.push(`✔ Volume Spike mendukung False Breakout/Rejection (+20 Poin)`); 
       }
       if (analysis.atr_M15 > 1.0) { score += 10; reasons.push(`✔ ATR Volatilitas Cukup`); }
       score += 10; reasons.push(`✔ Risk:Reward Valid`); 
