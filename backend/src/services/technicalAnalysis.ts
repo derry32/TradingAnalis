@@ -11,7 +11,8 @@ export type MarketCondition = 'TRENDING_BULLISH' | 'TRENDING_BEARISH' | 'SIDEWAY
 export interface AnalysisResult {
   trendH1: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
   marketCondition: MarketCondition;
-  isRetracedH1: boolean;
+  isAtSupportH1: boolean;
+  isAtResistanceH1: boolean;
   marketStructureM15: 'BOS_BULL' | 'BOS_BEAR' | 'CHOCH_BULL' | 'CHOCH_BEAR' | 'FAKE_BREAKOUT_BULL' | 'FAKE_BREAKOUT_BEAR' | 'NONE';
   patternM5: 'BULLISH_ENGULFING' | 'BEARISH_ENGULFING' | 'PIN_BAR' | 'MARUBOZU_BULL' | 'MARUBOZU_BEAR' | 'THREE_WHITE_SOLDIERS' | 'THREE_BLACK_CROWS' | 'NONE';
   closestSwingLowM5: number;
@@ -75,22 +76,22 @@ export class TechnicalAnalysis {
      return 'SIDEWAYS';
   }
 
-  private checkRetracementH1(currentPrice: number, swingsH1: SwingPoint[], trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL'): boolean {
-    if (trend === 'NEUTRAL') return false;
+  private checkAtSupportH1(currentPrice: number, swingsH1: SwingPoint[]): boolean {
     const threshold = 5; 
-    
-    if (trend === 'BULLISH') {
-      const recentLows = swingsH1.filter(s => s.type === 'LOW').slice(-3);
-      for (const low of recentLows) {
-        if (Math.abs(currentPrice - low.price) <= threshold) return true;
-        if (currentPrice > low.price && currentPrice - low.price <= threshold) return true;
-      }
-    } else if (trend === 'BEARISH') {
-      const recentHighs = swingsH1.filter(s => s.type === 'HIGH').slice(-3);
-      for (const high of recentHighs) {
-        if (Math.abs(high.price - currentPrice) <= threshold) return true;
-        if (currentPrice < high.price && high.price - currentPrice <= threshold) return true;
-      }
+    const recentLows = swingsH1.filter(s => s.type === 'LOW').slice(-3);
+    for (const low of recentLows) {
+      if (Math.abs(currentPrice - low.price) <= threshold) return true;
+      if (currentPrice > low.price && currentPrice - low.price <= threshold) return true;
+    }
+    return false;
+  }
+
+  private checkAtResistanceH1(currentPrice: number, swingsH1: SwingPoint[]): boolean {
+    const threshold = 5; 
+    const recentHighs = swingsH1.filter(s => s.type === 'HIGH').slice(-3);
+    for (const high of recentHighs) {
+      if (Math.abs(high.price - currentPrice) <= threshold) return true;
+      if (currentPrice < high.price && high.price - currentPrice <= threshold) return true;
     }
     return false;
   }
@@ -234,7 +235,8 @@ export class TechnicalAnalysis {
     const trendH1 = this.detectTrend(swingsH1);
     const marketCondition = this.detectMarketCondition(swingsH1);
     
-    const isRetracedH1 = this.checkRetracementH1(data.currentH1.close, swingsH1, trendH1);
+    const isAtSupportH1 = this.checkAtSupportH1(data.currentH1.close, swingsH1);
+    const isAtResistanceH1 = this.checkAtResistanceH1(data.currentH1.close, swingsH1);
 
     const atr_M15 = this.calculateATR(data.m15, 14);
     const volumeSpikeM5 = this.checkVolumeSpike(data.m5);
@@ -263,7 +265,8 @@ export class TechnicalAnalysis {
     return {
       trendH1,
       marketCondition,
-      isRetracedH1,
+      isAtSupportH1,
+      isAtResistanceH1,
       marketStructureM15,
       patternM5,
       closestSwingLowM5: lastM5Low,

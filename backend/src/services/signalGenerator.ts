@@ -68,7 +68,8 @@ export class SignalGenerator {
     if (bosChochMatch) { score += wM15; reasons.push(`✔ M15 BOS/CHoCH Valid`); }
     else { warnings.push(`✖ Tidak ada BOS/CHoCH searah`); }
 
-    if (analysis.isRetracedH1) { score += wSR; reasons.push(`✔ Terjadi Pantulan di S/R H1`); }
+    const isAtSR = direction === 'BUY' ? analysis.isAtSupportH1 : analysis.isAtResistanceH1;
+    if (isAtSR) { score += wSR; reasons.push(`✔ Terjadi Pantulan di S/R H1`); }
     else { warnings.push(`✖ Harga mengambang / jauh dari S/R`); }
 
     const paMatch = (direction === 'BUY' && (analysis.patternM5 === 'BULLISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'MARUBOZU_BULL' || analysis.patternM5 === 'THREE_WHITE_SOLDIERS')) ||
@@ -122,10 +123,18 @@ export class SignalGenerator {
       let reasons: string[] = [];
       let warnings: string[] = [];
 
-      if (analysis.isRetracedH1) { 
-         score += 40; reasons.push(`✔ Harga memantul di area S/R (Sideways Range)`); 
-      } else { 
-         warnings.push(`✖ Harga mengambang di tengah range Sideways`); 
+      if (dir === 'BUY') {
+        if (analysis.isAtSupportH1) { 
+           score += 40; reasons.push(`✔ Harga memantul di Support (Sideways Range)`); 
+        } else { 
+           warnings.push(`✖ Harga mengambang (Bukan di Support)`); 
+        }
+      } else {
+        if (analysis.isAtResistanceH1) { 
+           score += 40; reasons.push(`✔ Harga memantul di Resistance (Sideways Range)`); 
+        } else { 
+           warnings.push(`✖ Harga mengambang (Bukan di Resistance)`); 
+        }
       }
 
       if (dir === 'BUY' && (analysis.patternM5 === 'BULLISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'MARUBOZU_BULL' || analysis.patternM5 === 'THREE_WHITE_SOLDIERS')) {
