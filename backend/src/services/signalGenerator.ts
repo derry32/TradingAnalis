@@ -290,9 +290,9 @@ export class SignalGenerator {
     }
 
     // EMERGENCY MODE Check
-    const slippageRisk = analysis.atr_M15 > 5.0; // Contoh Emergency threshold untuk XAUUSD
+    const slippageRisk = analysis.atr_M15 > 10.0; // Contoh Emergency threshold untuk XAUUSD
     if (slippageRisk && !bypassEmergency) {
-       return this.createWaitSignal("🚨 EMERGENCY MODE: Volatilitas/Spread terlalu ekstrem (ATR > 5.0). NO TRADE untuk keamanan modal.", activeStrategy);
+       return this.createWaitSignal(`🚨 EMERGENCY MODE: Volatilitas/Spread terlalu ekstrem (ATR > 10.0). Saat ini: ${analysis.atr_M15.toFixed(2)}. NO TRADE.`, activeStrategy);
     }
 
     if (analysis.patternM5 === 'NONE' && analysis.fibonacciZoneM15 === 'NONE' && !isNewsBreakout) {
