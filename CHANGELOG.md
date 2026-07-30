@@ -1,6 +1,14 @@
 # Changelog & Update Historis
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
+## [1.3.4] - Ultra FOMC Breakout Mode & ATR Tuning
+### Ditambahkan
+- **Ultra FOMC Breakout Mode:** Mengubah sistem pertahanan pasif menjadi agresif khusus pada berita tingkat `EXTREME`. AI kini otomatis mem-bypass *Emergency Lock* dan aktif berburu peluang di fase `DURING` (Menit ke 0-30) dan `STABILIZATION` (Menit ke 30-60) pasca berita.
+- **Wider Breakout SL:** Untuk mengantisipasi *whipsaw* / slippage ekstrem selama FOMC Breakout, AI memperlebar jaring Stop Loss secara otomatis dari 2x ATR menjadi **3x ATR**.
+
+### Diperbaiki
+- **ATR Threshold Re-calibration:** Melonggarkan batas `EMERGENCY MODE` dari `ATR > 5.0` menjadi `ATR > 10.0`. Ini mengatasi masalah di mana AI terlalu pemilih/takut (*locked out*) saat sesi market New York yang normal (namun memiliki pergerakan Gold yang cukup liar di rentang 8.0). Scalper dan Sniper kini kembali aktif secara reguler.
+
 ## [1.3.3] - Smart News Mode (Institusional 4-Fase)
 ### Ditambahkan
 - **News Severity Level Tracker:** AI sekarang tidak memukul rata semua berita. Ia bisa membedakan tingkat keparahan (*Severity*) dari berita: `EXTREME` (FOMC/Powell/Rate), `HIGH` (NFP/CPI), dan `MEDIUM` (PPI).
