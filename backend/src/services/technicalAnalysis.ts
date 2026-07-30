@@ -76,22 +76,20 @@ export class TechnicalAnalysis {
      return 'SIDEWAYS';
   }
 
-  private checkAtSupportH1(currentPrice: number, swingsH1: SwingPoint[]): boolean {
-    const threshold = 5; 
+  private checkAtSupportH1(currentPrice: number, swingsH1: SwingPoint[], atr: number): boolean {
+    const threshold = Math.max(atr * 1.5, 5); // dinamis: 1.5x ATR M15, minimal $5
     const recentLows = swingsH1.filter(s => s.type === 'LOW').slice(-3);
     for (const low of recentLows) {
       if (Math.abs(currentPrice - low.price) <= threshold) return true;
-      if (currentPrice > low.price && currentPrice - low.price <= threshold) return true;
     }
     return false;
   }
 
-  private checkAtResistanceH1(currentPrice: number, swingsH1: SwingPoint[]): boolean {
-    const threshold = 5; 
+  private checkAtResistanceH1(currentPrice: number, swingsH1: SwingPoint[], atr: number): boolean {
+    const threshold = Math.max(atr * 1.5, 5); // dinamis: 1.5x ATR M15, minimal $5
     const recentHighs = swingsH1.filter(s => s.type === 'HIGH').slice(-3);
     for (const high of recentHighs) {
       if (Math.abs(high.price - currentPrice) <= threshold) return true;
-      if (currentPrice < high.price && high.price - currentPrice <= threshold) return true;
     }
     return false;
   }
@@ -235,10 +233,11 @@ export class TechnicalAnalysis {
     const trendH1 = this.detectTrend(swingsH1);
     const marketCondition = this.detectMarketCondition(swingsH1);
     
-    const isAtSupportH1 = this.checkAtSupportH1(data.currentH1.close, swingsH1);
-    const isAtResistanceH1 = this.checkAtResistanceH1(data.currentH1.close, swingsH1);
-
     const atr_M15 = this.calculateATR(data.m15, 14);
+
+    const isAtSupportH1 = this.checkAtSupportH1(data.currentH1.close, swingsH1, atr_M15);
+    const isAtResistanceH1 = this.checkAtResistanceH1(data.currentH1.close, swingsH1, atr_M15);
+
     const volumeSpikeM5 = this.checkVolumeSpike(data.m5);
 
     const swingsM15 = this.findSwingPoints(data.m15, 2, 2);
