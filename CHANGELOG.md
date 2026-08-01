@@ -1,6 +1,10 @@
 # Changelog & Update Historis
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
+## [1.3.7] - Weekend Market Closure Detection
+### Diperbaiki
+- **Weekend Signaling Bug:** Menambahkan logika penandaan *weekend* berdasarkan waktu penutupan Forex (Sabtu 04:00 WIB hingga Senin 04:00 WIB). Sebelumnya AI tetap memproses data harga hari Jumat yang tidak berubah, lalu memberikan sinyal di hari Sabtu pagi karena tidak mengenali pergantian hari libur. Sekarang AI otomatis masuk status `WAIT` dengan alasan "Market sedang libur/tutup di akhir pekan" selama rentang waktu ini.
+
 ## [1.3.6] - Sideways Logic Optimization & Dynamic S/R
 ### Diperbaiki
 - **Dynamic S/R Proximity Threshold:** Memperbaiki sistem deteksi Support/Resistance (S/R) yang sebelumnya statis di angka $5. Untuk pair volatil seperti XAUUSD, jarak $5 terlalu sempit. Kini jarak pantulan (proximity) S/R bersifat dinamis mengikuti nilai Volatilitas (`Math.max(ATR * 1.5, 5)`). AI kini tidak akan melewatkan setup di mana harga memantul belasan pips dari ujung Support/Resistance akibat tingginya pergerakan market.

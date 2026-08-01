@@ -247,8 +247,16 @@ export class SignalGenerator {
     activeStrategy: 'SNIPER' | 'HYPER_SCALPER' = 'SNIPER'
   ): Signal {
     
-    const currentHourUTC = new Date().getUTCHours();
+    const now = new Date();
+    const currentHourUTC = now.getUTCHours();
+    const currentDayUTC = now.getUTCDay();
     const currentHourWIB = (currentHourUTC + 7) % 24;
+
+    // Market forex tutup: Jumat 21:00 UTC s/d Minggu 21:00 UTC (Sabtu 04:00 WIB s/d Senin 04:00 WIB)
+    const isWeekend = (currentDayUTC === 5 && currentHourUTC >= 21) || (currentDayUTC === 6) || (currentDayUTC === 0 && currentHourUTC < 21);
+    if (isWeekend) {
+        return this.createWaitSignal("Market sedang libur/tutup di akhir pekan.", activeStrategy);
+    }
     const sessionInfo = this.getSession(currentHourWIB);
     
     if (activeStrategy === 'HYPER_SCALPER' && sessionInfo.type === 'OFF') {
