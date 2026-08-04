@@ -240,62 +240,88 @@ export default function Home() {
                   const isBuy = sig.type === 'BUY';
                   
                   return (
-                  <div key={idx} className={`relative bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 border transition-all duration-300 group hover:-translate-y-1 ${isBuy ? 'border-emerald-500/20 hover:border-emerald-500/40 hover:shadow-[0_8px_30px_rgb(16,185,129,0.1)]' : 'border-rose-500/20 hover:border-rose-500/40 hover:shadow-[0_8px_30px_rgb(244,63,94,0.1)]'}`}>
+                    <div key={idx} className={`relative bg-gray-900/70 backdrop-blur-md rounded-xl p-4 border transition-all duration-300 group hover:-translate-y-0.5 overflow-hidden ${isBuy ? 'border-emerald-500/30 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)]' : 'border-rose-500/30 hover:border-rose-500/50 hover:shadow-[0_0_20px_rgba(244,63,94,0.15)]'}`}>
                     
-                    {/* Signal Header */}
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-bold tracking-wide mb-2 whitespace-nowrap ${isBuy ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
-                          {isBuy ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                          {ext?.probability ? `${sig.type} • ${ext.probability.replace(/[^\x00-\x7F]/g, "").trim()}` : sig.type}
+                    {/* Signal Header: Row 1 (Type & Time) */}
+                    <div className="flex justify-between items-center gap-2 mb-2.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold tracking-wide border shadow-sm ${isBuy ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30'}`}>
+                          {isBuy ? <ArrowUpRight size={13} className="shrink-0" /> : <ArrowDownRight size={13} className="shrink-0" />}
+                          <span>{sig.type}</span>
                         </div>
-                        {ext?.id && <p className="text-[9px] text-gray-600 font-mono">ID: {ext.id}</p>}
+                        {ext?.probability && (
+                          <span className="text-[10px] font-medium text-gray-300 bg-gray-800/80 px-2 py-0.5 rounded border border-gray-700/60 truncate">
+                            {ext.probability.replace(/[^\x00-\x7F]/g, "").trim()}
+                          </span>
+                        )}
                       </div>
                       
-                      <div className="text-right">
-                        <span className="text-[10px] text-gray-500 font-medium">
-                          {new Date(sig.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                        {ext?.confidence && (
-                          <div className="mt-1.5 flex justify-end">
-                            {renderConfidence(ext.confidence)}
-                          </div>
-                        )}
+                      <div className="flex items-center gap-1 text-[11px] font-mono text-gray-400 bg-gray-800/60 px-2 py-0.5 rounded border border-gray-700/50 shrink-0">
+                        <Clock size={11} className="text-gray-400" />
+                        <span>{new Date(sig.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                     </div>
 
-                    {/* Price Targets Grid */}
-                    <div className="grid grid-cols-2 gap-3 text-sm bg-[#0B0F19]/50 rounded-lg p-3 border border-gray-800/50">
-                      <div>
-                        <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
-                          <Crosshair size={10} /> Entry
-                        </p>
-                        <p className="font-mono text-xs text-gray-200 tracking-tight">{ext.entryZone || sig.entryPrice?.toFixed(2) || '-'}</p>
+                    {/* Signal Header: Row 2 (ID & Win Rate Bar) */}
+                    <div className="flex justify-between items-center gap-2 mb-3 pb-2.5 border-b border-gray-800/60">
+                      {ext?.id ? (
+                        <span className="text-[10px] text-gray-400 font-mono tracking-tight truncate">
+                          ID: <span className="text-gray-300">{ext.id}</span>
+                        </span>
+                      ) : <span />}
+                      
+                      {ext?.confidence && (
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <div className="w-12 h-1.5 bg-gray-800 rounded-full overflow-hidden border border-gray-700/50">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-500 ${ext.confidence >= 80 ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : ext.confidence >= 60 ? 'bg-yellow-400 shadow-[0_0_6px_rgba(250,204,21,0.8)]' : 'bg-rose-400'}`} 
+                              style={{ width: `${ext.confidence}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-mono font-bold text-gray-300 whitespace-nowrap">WIN {ext.confidence}%</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Price Targets Box */}
+                    <div className="bg-[#0B0F19]/80 rounded-lg p-2.5 border border-gray-800/70 space-y-2">
+                      {/* Entry Zone Full-width */}
+                      <div className="flex items-center justify-between bg-gray-900/90 px-2.5 py-1.5 rounded border border-gray-800/80">
+                        <span className="text-[9px] text-gray-400 uppercase font-bold tracking-wider flex items-center gap-1">
+                          <Crosshair size={11} className="text-blue-400" /> ENTRY
+                        </span>
+                        <span className="font-mono text-xs font-bold text-gray-100 tracking-tight whitespace-nowrap">
+                          {ext.entryZone || sig.entryPrice?.toFixed(2) || '-'}
+                        </span>
                       </div>
-                      <div>
-                        <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1">SL</p>
-                        <p className="font-mono text-xs text-rose-400/90">{sig.stopLoss?.toFixed(2) || '-'}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1">
-                          TP1 {status?.config?.strategy === 'HYPER_SCALPER' ? '(1:1.5)' : '(1:2)'}
-                        </p>
-                        <p className="font-mono text-xs text-emerald-400/90">{sig.takeProfit?.toFixed(2) || '-'}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-500 text-[9px] uppercase font-bold tracking-widest mb-1">
-                          TP2 {status?.config?.strategy === 'HYPER_SCALPER' ? '(1:2)' : '(1:3)'}
-                        </p>
-                        <p className="font-mono text-xs text-emerald-400/90">{ext?.tp2 ? ext.tp2.toFixed(2) : '-'}</p>
+
+                      {/* SL, TP1, TP2 Grid (3 Kolom Simetris) */}
+                      <div className="grid grid-cols-3 gap-1.5">
+                        <div className="bg-rose-500/10 border border-rose-500/20 rounded p-1.5 text-center">
+                          <p className="text-[8px] font-bold text-rose-400 uppercase tracking-wider mb-0.5">SL</p>
+                          <p className="font-mono text-[11px] font-bold text-rose-300 truncate">{sig.stopLoss?.toFixed(2) || '-'}</p>
+                        </div>
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded p-1.5 text-center">
+                          <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">
+                            TP1 <span className="text-[7px] text-emerald-500/80">{status?.config?.strategy === 'HYPER_SCALPER' ? '1:1.5' : '1:2'}</span>
+                          </p>
+                          <p className="font-mono text-[11px] font-bold text-emerald-300 truncate">{sig.takeProfit?.toFixed(2) || '-'}</p>
+                        </div>
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded p-1.5 text-center">
+                          <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">
+                            TP2 <span className="text-[7px] text-emerald-500/80">{status?.config?.strategy === 'HYPER_SCALPER' ? '1:2' : '1:3'}</span>
+                          </p>
+                          <p className="font-mono text-[11px] font-bold text-emerald-300 truncate">{ext?.tp2 ? ext.tp2.toFixed(2) : '-'}</p>
+                        </div>
                       </div>
                     </div>
 
                     {/* Time Estimates */}
                     {ext?.validTime && (
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[9px] text-gray-500 mt-3 px-1 uppercase tracking-widest font-semibold">
-                         <span>Valid: <span className="text-gray-400">{ext.validTime}</span></span>
-                         <span>Est TP: <span className="text-gray-400">{ext.estTpTime}</span></span>
-                         {ext.timeStopLoss && <span>Time SL: <span className="text-gray-400">{ext.timeStopLoss}</span></span>}
+                      <div className="flex flex-wrap items-center justify-between gap-1 text-[9px] text-gray-400 mt-2.5 px-0.5 uppercase tracking-wider font-medium">
+                         <span>Valid: <span className="text-gray-300 font-mono">{ext.validTime}</span></span>
+                         <span>Est TP: <span className="text-gray-300 font-mono">{ext.estTpTime}</span></span>
+                         {ext.timeStopLoss && <span>Time SL: <span className="text-gray-300 font-mono">{ext.timeStopLoss}</span></span>}
                       </div>
                     )}
 

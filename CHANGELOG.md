@@ -1,6 +1,12 @@
 # Changelog & Update Historis
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
+## [1.3.8] - Signal Card UI/UX Pro Max Redesign & Overflow Fix
+### Diperbaiki
+- **Header & Time/Win Overflow Fix:** Memperbaiki masalah layout di mana elemen jam (`10:46`) dan progress bar (`WIN: 90%`) menabrak/melewati batas border kanan kartu sinyal. Header kini dibagi menjadi 2 baris hierarkis yang rapi (Baris 1: Action Badge & Time, Baris 2: Signal ID & Win Probability Bar) dengan properti `min-w-0` dan `shrink-0`.
+- **Entry Zone Wrapping Fix:** Mengubah kotak target harga menjadi layout modern. Rentang Entry (`4053.83 - 4055.83`) kini mendapatkan blok *full-width* tersendiri di bagian atas sehingga tidak akan pernah terpotong/patah menjadi 2 baris lagi.
+- **Symmetric Target Pillars (SL / TP1 / TP2):** Tiga pilar target (SL, TP1, TP2) kini tersusun simetris dalam format 3 kolom berimbang dengan warna kontras tinggi dan aksen border semi-transparan.
+
 ## [1.3.7] - Weekend Market Closure Detection
 ### Diperbaiki
 - **Weekend Signaling Bug:** Menambahkan logika penandaan *weekend* berdasarkan waktu penutupan Forex (Sabtu 04:00 WIB hingga Senin 04:00 WIB). Sebelumnya AI tetap memproses data harga hari Jumat yang tidak berubah, lalu memberikan sinyal di hari Sabtu pagi karena tidak mengenali pergantian hari libur. Sekarang AI otomatis masuk status `WAIT` dengan alasan "Market sedang libur/tutup di akhir pekan" selama rentang waktu ini.
