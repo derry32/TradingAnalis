@@ -48,7 +48,9 @@ export async function insertSignal(signal: any) {
       estTpTime: signal.estimatedTpTime,
       id: signal.id,
       strategy: signal.strategy,
-      entryZone: signal.entryZone
+      entryZone: signal.entryZone,
+      setupType: signal.setupType,
+      marketPhase: signal.marketPhase
     }),
     timestamp: signal.timestamp
   };

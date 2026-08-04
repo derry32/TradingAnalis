@@ -1,6 +1,31 @@
 # Changelog & Update Historis
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
+
+## [1.4.0] - Hyper Scalper V2 (7-Stage Institutional Smart Money Engine)
+### Ditambahkan
+- **7-Stage Institutional Smart Money Engine:** Merombak total mesin strategi scalper AI menjadi arsitektur multi-tahap berbasis standar trading institusional:
+  - **Tahap 1 (Market Structure H1):** Deteksi struktur Higher Highs/Higher Lows (`HH_HL`) untuk tren Bullish dan Lower Highs/Lower Lows (`LH_LL`) untuk tren Bearish pada H1, serta penentuan batas Support/Resistance yang presisi di kondisi Sideways.
+  - **Tahap 2 (Market Phase Detection):** Klasifikasi 4 fase pergerakan pasar (`TRENDING`, `PULLBACK`, `RANGE`, `BREAKOUT`). AI secara ketat masuk status `WAIT` jika fase pasar tidak terdefinisi (`UNKNOWN`).
+  - **Tahap 3 (Hard Filters & 3-Tier Room to Target):**
+    - *Emergency ATR Filter:* Memblokir entry jika volatilitas mati ($ATR < 1.0$) atau terlalu liar ($ATR > 10.0$).
+    - *News Lockout Filter:* Wajib menunggu jika ada High-Impact News dalam $\le 20$ menit.
+    - *Momentum Exhaustion Guard:* Membatalkan entry jika harga sudah bergerak $\ge 8$ candle berturut-turut satu arah tanpa koreksi untuk menghindari beli di pucuk / jual di dasar.
+    - *3-Tier Room to Target:* Prioritas 1 ($\ge 1.8 \times \text{SL} \rightarrow$ Full Confidence), Prioritas 2 ($1.5\text{x} - 1.8\text{x} \text{SL} \rightarrow$ Penalti 5–10 poin), dan Prioritas 3 ($< 1.5 \times \text{SL} \rightarrow$ **Wajib WAIT**).
+  - **Tahap 4 (Entry Trigger M5):** Konfirmasi Price Action M5 minimal satu pola valid (*Bullish/Bearish Engulfing*, *Pin Bar*, *Marubozu*, *Break & Retest*, *Liquidity Grab Sweep*, atau *Golden Ratio Fibonacci 0.5–0.618*).
+  - **Tahap 5 & 6 (Institutional Volume & Confluence):** Validasi volume spike yang didukung *Strong Institutional Candle* (Body $\ge 60\%$ total range dan close di dekat level ekstrem).
+  - **Tahap 7 (100-Point Scoring Matrix & Dynamic SL):**
+    - Matriks skoring baru: Trend H1 (25p), Structure H1 (20p), BOS/CHoCH M15 (15p), S/R Key Level (15p), Trigger M5 (10p), Volume (10p), MTF Alignment (5p).
+    - Batas kelulusan (*Passing Threshold*): Minimal **50 Poin** untuk merilis sinyal aktif.
+    - *Dynamic Stop Loss:* Dihitung berdasarkan `Swing Low/High M5 + ATR Buffer` (menghapus batas kaku 30-pip cap).
+    - Rasio Target Profit: TP1 = **1:1.8** dan TP2 = **1:2.5**.
+- **Setup Type & Market Phase Classification:** Sinyal kini dilengkapi label klasifikasi setup (`📈 Trend Continuation`, `🪤 Liquidity Grab`, `⚡ Breakout Momentum`, `🔄 S/R Bounce`, `📊 Fibonacci Confluence`) dan fase pasar (`TRENDING`, `PULLBACK`, `RANGE`, `BREAKOUT`).
+- **Telegram & Dashboard UI Badges:** Menambahkan lencana Setup Type dan Market Phase di notifikasi Telegram, kartu sinyal real-time, dan tabel riwayat trade.
+
+### Diperbaiki
+- **Optimasi Historical Data Bootstrap:** Memperbaiki sistem penyimpanan history saat inisialisasi server sehingga tidak memicu ribuan penulisan disk berulang (*I/O loop*), membuat server booting instan dalam hitungan detik.
+- **Stop Loss Safety & Risk Calculation:** Mengatasi masalah SL statis dengan kalkulasi dinamis yang adaptif terhadap volatilitas XAUUSD.
+
 ## [1.3.8] - Signal Card UI/UX Pro Max Redesign & Overflow Fix
 ### Diperbaiki
 - **Header & Time/Win Overflow Fix:** Memperbaiki masalah layout di mana elemen jam (`10:46`) dan progress bar (`WIN: 90%`) menabrak/melewati batas border kanan kartu sinyal. Header kini dibagi menjadi 2 baris hierarkis yang rapi (Baris 1: Action Badge & Time, Baris 2: Signal ID & Win Probability Bar) dengan properti `min-w-0` dan `shrink-0`.

@@ -33,26 +33,30 @@ export class TelegramService {
 
     const safeStrategy = signal.strategy.replace(/_/g, ' ');
     const safeMarketCondition = signal.marketCondition.replace(/_/g, ' ');
+    const safeSetupType = (signal.setupType || 'Trend Setup').replace(/_/g, ' ');
+    const safeMarketPhase = (signal.marketPhase || 'N/A').replace(/_/g, ' ');
 
     const message = `
-🚨 [${safeStrategy} MODE] 🚨
+🚨 [${safeStrategy} V2] 🚨
 ${emoji} *${signal.type} - ${signal.probabilityLabel}*
+🎯 *Setup*: ${safeSetupType}
+Phase: ${safeMarketPhase}
 Signal ID: \`${signal.id}\`
 Time: ${formattedTime}
-Confidence: ${signal.confidenceScore}%
+Confidence: ${signal.confidenceScore}/100
 
 Session: ${signal.session}
 Market Condition: ${safeMarketCondition}
 
 *Entry Zone*: ${signal.entryZone}
 *SL*: ${signal.stopLoss.toFixed(2)}
-*TP1*: ${signal.takeProfit1.toFixed(2)} (RR 1:2)
-*TP2*: ${signal.takeProfit2.toFixed(2)} (RR 1:3)
+*TP1*: ${signal.takeProfit1.toFixed(2)} (RR 1:1.8)
+*TP2*: ${signal.takeProfit2.toFixed(2)} (RR 1:2.5)
 
 Valid Time: ${signal.validTime}
 Est. TP Time: ${signal.estimatedTpTime}
 
-*Reason:*
+*Reason & Confluence:*
 ${formattedReason}
     `.trim();
 

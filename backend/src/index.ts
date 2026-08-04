@@ -61,9 +61,22 @@ async function resumeActiveTrades() {
     const activeSignals = await fetchActiveSignals();
     if (!activeSignals || activeSignals.length === 0) return;
 
-    console.log(`[Main] Found ${activeSignals.length} active signal(s) to resume.`);
+    // Filter: Hanya resume sinyal yang dihasilkan oleh Hyper Scalper V2 (setelah 19:00 WIB / memiliki setupType)
+    const cutoffTime = new Date('2026-08-04T12:00:00.000Z').getTime();
+    const v2ActiveSignals = activeSignals.filter(s => {
+      const isPostV2 = new Date(s.timestamp).getTime() >= cutoffTime;
+      const hasV2Setup = !!s.reason?.setupType;
+      return isPostV2 || hasV2Setup;
+    });
+
+    if (v2ActiveSignals.length === 0) {
+      console.log(`[Main] Sinyal lawas sebelum jam 19.00 WIB dilewati. Slot trade V2 siap & bersih.`);
+      return;
+    }
+
+    console.log(`[Main] Found ${v2ActiveSignals.length} active V2 signal(s) to resume.`);
     
-    for (const sig of activeSignals) {
+    for (const sig of v2ActiveSignals) {
       const state: TradeState = {
         id: sig.reason?.id || `RESUMED-${sig.id}`,
         type: sig.type as 'BUY' | 'SELL',
@@ -234,18 +247,17 @@ marketData.setOnM5Closed((data) => {
         const score = signal.confidenceScore;
         const now = Date.now();
         let shouldSend = true;
-        
         let activeTrade = strategy === 'SNIPER' ? activeTradeSniper : activeTradeScalper;
         
         if (activeTrade && activeTrade.status === 'ACTIVE') {
            if (activeTrade.type === signal.type) {
               shouldSend = false; // Cooldown for same direction
-              if (signal.type !== 'WAIT' && score > activeTrade.score + 10) {
+              if (score > activeTrade.score + 10) {
                  shouldSend = true; // Allow if score is significantly higher
-              } else if (signal.type !== 'WAIT') {
+              } else {
                  console.log(`[Agent Derry][${strategy}] Ignored duplicate ${signal.type} signal (Score: ${score}%) due to Active Trade Cooldown.`);
               }
-           } else if (signal.type !== 'WAIT') {
+           } else {
               console.log(`[Agent Derry][${strategy}] REVERSAL DETECTED! Closing previous ${activeTrade.type} and opening ${signal.type}.`);
               activeTrade.status = 'EXPIRED'; // Close previous
            }

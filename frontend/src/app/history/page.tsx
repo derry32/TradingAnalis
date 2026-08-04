@@ -221,6 +221,11 @@ export default function HistoryPage() {
                       <span className={`inline-flex px-2 py-1 rounded text-[10px] font-bold tracking-widest ${isBuy ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
                         {isBuy ? '🟢 BUY' : '🔴 SELL'}
                       </span>
+                      {ext?.setupType && (
+                        <div className="text-[10px] text-amber-400/90 font-medium mt-1">
+                          {ext.setupType}
+                        </div>
+                      )}
                     </td>
 
                     <td className="p-4 align-top">

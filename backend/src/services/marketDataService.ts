@@ -93,7 +93,9 @@ export class MarketDataService {
     this.m1.onCandleClosed = (c) => this.m5.processCandle(c);
     this.m5.onCandleClosed = (closedM5) => {
       this.m15.processCandle(closedM5);
-      this.saveHistory(); // Save real candles to disk whenever M5 closes
+      if (this.isBootstrapped) {
+        this.saveHistory(); // Save real candles to disk whenever M5 closes
+      }
       
       if (this.onM5Closed && this.m15.currentCandle && this.h1.currentCandle) {
         this.onM5Closed({
@@ -111,6 +113,10 @@ export class MarketDataService {
 
   public setOnM5Closed(callback: (data: MultiTimeframeData) => void) {
     this.onM5Closed = callback;
+  }
+
+  public getCandles(): OHLCV[] {
+    return this.m5.allCandles;
   }
 
   private isBootstrapped = false;
@@ -172,9 +178,9 @@ export class MarketDataService {
           }
           
           if (!this.isBootstrapped) {
-            this.isBootstrapped = true;
             console.log(`[MarketData] First tick received: ${parsed.price}. Bootstrapping history...`);
             await this.generateFallbackCandles(parsed.price); // callback is muted inside here
+            this.isBootstrapped = true;
           }
           
           // TwelveData format: price, day_volume (optional), timestamp (unix seconds)
@@ -277,13 +283,13 @@ export class MarketDataService {
     // If we have fewer than 5000 candles OR the last cached candle is older than 24 hours, fetch fresh data
     const lastCandleTime = savedRealCandles.length > 0 ? savedRealCandles[savedRealCandles.length - 1].time : 0;
     const cacheIsStale = (Date.now() - lastCandleTime) > 24 * 60 * 60 * 1000;
-    const needsFetch = savedRealCandles.length < 5000 || cacheIsStale;
+    const needsFetch = savedRealCandles.length < 1000 || cacheIsStale;
     
     if (needsFetch && config.TWELVEDATA_API_KEY) {
-       if (cacheIsStale && savedRealCandles.length >= 5000) {
+       if (cacheIsStale && savedRealCandles.length >= 1000) {
          console.log(`[MarketData] Local cache is STALE (last candle was ${Math.round((Date.now() - lastCandleTime) / 3600000)}h ago). Force re-fetching fresh data!`);
        } else {
-         console.log(`[MarketData] Local history only has ${savedRealCandles.length} candles. Fetching 5000 historical candles from TwelveData API to skip waiting 20 days!`);
+         console.log(`[MarketData] Local history has ${savedRealCandles.length} candles (< 1000). Fetching 5000 historical candles from TwelveData API...`);
        }
        try {
          const res = await fetch(`https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=5min&outputsize=5000&timezone=UTC&apikey=${config.TWELVEDATA_API_KEY}`);

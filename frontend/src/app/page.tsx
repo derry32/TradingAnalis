@@ -262,6 +262,20 @@ export default function Home() {
                       </div>
                     </div>
 
+                    {/* Setup Type & Market Phase Badges */}
+                    {ext?.setupType && (
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                        <span className="inline-flex items-center text-[10px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/25 px-2 py-0.5 rounded-md">
+                          {ext.setupType}
+                        </span>
+                        {ext.marketPhase && ext.marketPhase !== 'N/A' && (
+                          <span className="inline-flex items-center text-[9px] font-mono uppercase tracking-wider text-blue-400 bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.5 rounded">
+                            {ext.marketPhase}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     {/* Signal Header: Row 2 (ID & Win Rate Bar) */}
                     <div className="flex justify-between items-center gap-2 mb-3 pb-2.5 border-b border-gray-800/60">
                       {ext?.id ? (
@@ -303,13 +317,13 @@ export default function Home() {
                         </div>
                         <div className="bg-emerald-500/10 border border-emerald-500/20 rounded p-1.5 text-center">
                           <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">
-                            TP1 <span className="text-[7px] text-emerald-500/80">{status?.config?.strategy === 'HYPER_SCALPER' ? '1:1.5' : '1:2'}</span>
+                            TP1 <span className="text-[7px] text-emerald-500/80">{status?.config?.strategy === 'HYPER_SCALPER' ? '1:1.8' : '1:2'}</span>
                           </p>
                           <p className="font-mono text-[11px] font-bold text-emerald-300 truncate">{sig.takeProfit?.toFixed(2) || '-'}</p>
                         </div>
                         <div className="bg-emerald-500/10 border border-emerald-500/20 rounded p-1.5 text-center">
                           <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">
-                            TP2 <span className="text-[7px] text-emerald-500/80">{status?.config?.strategy === 'HYPER_SCALPER' ? '1:2' : '1:3'}</span>
+                            TP2 <span className="text-[7px] text-emerald-500/80">{status?.config?.strategy === 'HYPER_SCALPER' ? '1:2.5' : '1:3'}</span>
                           </p>
                           <p className="font-mono text-[11px] font-bold text-emerald-300 truncate">{ext?.tp2 ? ext.tp2.toFixed(2) : '-'}</p>
                         </div>
