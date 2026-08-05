@@ -5,6 +5,7 @@ export interface Signal {
   id: string;
   type: 'BUY' | 'SELL' | 'WAIT';
   setupType?: string;
+  executionType?: string;
   marketPhase?: string;
   probabilityLabel: string;
   confidenceScore: number;
@@ -392,16 +393,64 @@ export class SignalGenerator {
     let reasonString = reasons.join('\n') + (warnings.length > 0 ? '\n' + warnings.join('\n') : '');
     if (newsWarning) reasonString = newsWarning + '\n\n' + reasonString;
 
-    // Format Entry Zone Dinamis
+    // 11. Smart Execution Type & Precision Entry Zone (SMC / Retracement)
+    const isInstantMomentum = isNewsBreakout || 
+                              analysis.strongVolumeM5 || 
+                              analysis.patternM5 === 'MARUBOZU_BULL' || 
+                              analysis.patternM5 === 'MARUBOZU_BEAR' ||
+                              setupType.includes('Breakout');
+
+    let executionType = isInstantMomentum 
+      ? '⚡ INSTANT ENTRY (Market Execution)' 
+      : '⏳ PULLBACK / LIMIT ENTRY (Wait for Zone)';
+
     let entryZoneStr = '';
+    const candleRange = analysis.triggerCandleM5 ? Math.abs(analysis.triggerCandleM5.high - analysis.triggerCandleM5.low) : 0;
+
     if (tradeType === 'BUY') {
-      const zoneMin = (currentPrice - (atr * 0.4)).toFixed(2);
-      const zoneMax = currentPrice.toFixed(2);
-      entryZoneStr = `${zoneMin} - ${zoneMax}`;
+      if (isInstantMomentum) {
+        const zoneMin = (currentPrice - Math.min(0.8, atr * 0.25)).toFixed(2);
+        const zoneMax = currentPrice.toFixed(2);
+        entryZoneStr = `${zoneMin} - ${zoneMax} (Market)`;
+      } else {
+        // Pullback / Retracement Mode: Utamakan Bullish FVG atau 50% Candle Retrace
+        if (analysis.fvgM5.type === 'BULLISH' && analysis.fvgM5.bottom > 0 && analysis.fvgM5.top <= currentPrice + 0.5) {
+          entryZoneStr = `${analysis.fvgM5.bottom.toFixed(2)} - ${analysis.fvgM5.top.toFixed(2)} (FVG Zone)`;
+        } else if (candleRange >= 1.5) {
+          const discountTop = (currentPrice - (candleRange * 0.2)).toFixed(2);
+          const discountBottom = (currentPrice - (candleRange * 0.5)).toFixed(2);
+          entryZoneStr = `${discountBottom} - ${discountTop} (50% Retrace)`;
+        } else if (analysis.isAtSupportH1 && analysis.nearestSupportH1 < currentPrice) {
+          const supMax = (analysis.nearestSupportH1 + Math.min(1.5, atr * 0.4)).toFixed(2);
+          entryZoneStr = `${analysis.nearestSupportH1.toFixed(2)} - ${supMax} (Support Base)`;
+        } else {
+          const zoneMin = (currentPrice - Math.min(2.0, Math.max(0.8, atr * 0.5))).toFixed(2);
+          const zoneMax = (currentPrice - 0.3).toFixed(2);
+          entryZoneStr = `${zoneMin} - ${zoneMax} (Discount Zone)`;
+        }
+      }
     } else {
-      const zoneMin = currentPrice.toFixed(2);
-      const zoneMax = (currentPrice + (atr * 0.4)).toFixed(2);
-      entryZoneStr = `${zoneMin} - ${zoneMax}`;
+      if (isInstantMomentum) {
+        const zoneMin = currentPrice.toFixed(2);
+        const zoneMax = (currentPrice + Math.min(0.8, atr * 0.25)).toFixed(2);
+        entryZoneStr = `${zoneMin} - ${zoneMax} (Market)`;
+      } else {
+        // Bearish Pullback / Retracement Mode: Utamakan Bearish FVG atau 50% Candle Retrace
+        if (analysis.fvgM5.type === 'BEARISH' && analysis.fvgM5.top > 0 && analysis.fvgM5.bottom >= currentPrice - 0.5) {
+          entryZoneStr = `${analysis.fvgM5.bottom.toFixed(2)} - ${analysis.fvgM5.top.toFixed(2)} (FVG Zone)`;
+        } else if (candleRange >= 1.5) {
+          const premiumBottom = (currentPrice + (candleRange * 0.2)).toFixed(2);
+          const premiumTop = (currentPrice + (candleRange * 0.5)).toFixed(2);
+          entryZoneStr = `${premiumBottom} - ${premiumTop} (50% Retrace)`;
+        } else if (analysis.isAtResistanceH1 && analysis.nearestResistanceH1 > currentPrice) {
+          const resMin = (analysis.nearestResistanceH1 - Math.min(1.5, atr * 0.4)).toFixed(2);
+          entryZoneStr = `${resMin} - ${analysis.nearestResistanceH1.toFixed(2)} (Resistance Base)`;
+        } else {
+          const zoneMin = (currentPrice + 0.3).toFixed(2);
+          const zoneMax = (currentPrice + Math.min(2.0, Math.max(0.8, atr * 0.5))).toFixed(2);
+          entryZoneStr = `${zoneMin} - ${zoneMax} (Premium Zone)`;
+        }
+      }
     }
 
     const wibDate = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' });
@@ -412,6 +461,7 @@ export class SignalGenerator {
       id: `XAU-${dateStr}-${randId}`,
       type: tradeType,
       setupType,
+      executionType,
       marketPhase: analysis.marketPhase || 'RANGE',
       probabilityLabel,
       confidenceScore: score,
@@ -421,7 +471,7 @@ export class SignalGenerator {
       stopLoss: Number(stopLoss.toFixed(2)),
       takeProfit1: Number(tp1.toFixed(2)),
       takeProfit2: Number(tp2.toFixed(2)),
-      validTime: '10-20 Menit',
+      validTime: isInstantMomentum ? '5-10 Menit' : '10-20 Menit',
       estimatedTpTime: '15-45 Menit',
       timeStopLoss: '45-60 Menit',
       timestamp: new Date().toISOString(),

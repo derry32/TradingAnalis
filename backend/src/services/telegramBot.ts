@@ -35,23 +35,26 @@ export class TelegramService {
     const safeMarketCondition = signal.marketCondition.replace(/_/g, ' ');
     const safeSetupType = (signal.setupType || 'Trend Setup').replace(/_/g, ' ');
     const safeMarketPhase = (signal.marketPhase || 'N/A').replace(/_/g, ' ');
+    const safeExecutionType = signal.executionType || '⚡ INSTANT ENTRY';
 
     const message = `
 🚨 [${safeStrategy} V2] 🚨
 ${emoji} *${signal.type} - ${signal.probabilityLabel}*
 🎯 *Setup*: ${safeSetupType}
+⚡ *Eksekusi*: ${safeExecutionType}
 Phase: ${safeMarketPhase}
 Signal ID: \`${signal.id}\`
 Time: ${formattedTime}
 Confidence: ${signal.confidenceScore}/100
 
 Session: ${signal.session}
-Market Condition: ${safeMarketCondition}
+Market: ${safeMarketCondition}
 
-*Entry Zone*: ${signal.entryZone}
-*SL*: ${signal.stopLoss.toFixed(2)}
-*TP1*: ${signal.takeProfit1.toFixed(2)} (RR 1:1.8)
-*TP2*: ${signal.takeProfit2.toFixed(2)} (RR 1:2.5)
+📍 *Entry Zone*: ${signal.entryZone}
+💵 *Market Price*: ${signal.entryPrice.toFixed(2)}
+🛑 *SL*: ${signal.stopLoss.toFixed(2)}
+🎯 *TP1*: ${signal.takeProfit1.toFixed(2)} (RR 1:1.8)
+🚀 *TP2*: ${signal.takeProfit2.toFixed(2)} (RR 1:2.5)
 
 Valid Time: ${signal.validTime}
 Est. TP Time: ${signal.estimatedTpTime}

@@ -9,6 +9,12 @@ export interface SwingPoint {
 export type MarketCondition = 'TRENDING_BULLISH' | 'TRENDING_BEARISH' | 'SIDEWAYS';
 export type MarketPhase = 'TRENDING' | 'PULLBACK' | 'RANGE' | 'BREAKOUT' | 'UNKNOWN';
 
+export interface FVGZone {
+  type: 'BULLISH' | 'BEARISH' | 'NONE';
+  top: number;
+  bottom: number;
+}
+
 export interface AnalysisResult {
   trendH1: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
   structureH1: 'HH_HL' | 'LH_LL' | 'EQUAL_RANGE' | 'NEUTRAL';
@@ -29,6 +35,8 @@ export interface AnalysisResult {
   strongVolumeM5: boolean;
   consecutiveCandlesM5: { count: number; direction: 'BULLISH' | 'BEARISH' };
   fibonacciZoneM15: 'GOLDEN_BULL' | 'GOLDEN_BEAR' | 'NONE';
+  fvgM5: FVGZone;
+  triggerCandleM5: { open: number; high: number; low: number; close: number };
 }
 
 export class TechnicalAnalysis {
@@ -311,6 +319,25 @@ export class TechnicalAnalysis {
     return 'NONE';
   }
 
+  private detectFVGM5(candles: OHLCV[]): FVGZone {
+    if (candles.length < 3) return { type: 'NONE', top: 0, bottom: 0 };
+    const c1 = candles[candles.length - 3];
+    const c2 = candles[candles.length - 2];
+    const c3 = candles[candles.length - 1];
+
+    if (!c1 || !c2 || !c3) return { type: 'NONE', top: 0, bottom: 0 };
+
+    // Bullish FVG: Imbalance di mana c3.low > c1.high pada candle impulsif naik
+    if (c3.low > c1.high && c2.close > c2.open) {
+      return { type: 'BULLISH', top: Number(c3.low.toFixed(2)), bottom: Number(c1.high.toFixed(2)) };
+    }
+    // Bearish FVG: Imbalance di mana c3.high < c1.low pada candle impulsif turun
+    if (c3.high < c1.low && c2.close < c2.open) {
+      return { type: 'BEARISH', top: Number(c1.low.toFixed(2)), bottom: Number(c3.high.toFixed(2)) };
+    }
+    return { type: 'NONE', top: 0, bottom: 0 };
+  }
+
   public analyze(data: MultiTimeframeData): AnalysisResult {
     const swingsH1 = this.findSwingPoints(data.h1, 3, 3);
     const { trend: trendH1, structure: structureH1 } = this.detectStructureH1(swingsH1);
@@ -345,6 +372,7 @@ export class TechnicalAnalysis {
     const lastM5High = swingsM5.filter(s => s.type === 'HIGH').pop()?.price || data.currentM5.high + 3;
 
     const fibonacciZoneM15 = this.detectFibonacciRetracement(data.currentM15.close, swingsM15, trendH1, atr_M15);
+    const fvgM5 = this.detectFVGM5(data.m5);
 
 
     const marketPhase = this.detectMarketPhase(
@@ -378,7 +406,14 @@ export class TechnicalAnalysis {
       volumeSpikeM5,
       strongVolumeM5,
       consecutiveCandlesM5,
-      fibonacciZoneM15
+      fibonacciZoneM15,
+      fvgM5,
+      triggerCandleM5: {
+        open: data.currentM5.open,
+        high: data.currentM5.high,
+        low: data.currentM5.low,
+        close: data.currentM5.close
+      }
     };
   }
 }
