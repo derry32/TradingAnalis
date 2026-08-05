@@ -230,8 +230,8 @@ export class SignalGenerator {
 
     // 3. Volatility Hard Filters (Spread / Slippage Protection)
     const atr = analysis.atr_M15 || 1.5;
-    if (atr > 10.0 && !bypassEmergency) {
-      return this.createWaitSignal(`🚨 EMERGENCY MODE: Volatilitas terlalu liar (ATR ${atr.toFixed(2)} > 10.0). NO TRADE.`, activeStrategy);
+    if (atr > 25.0 && !bypassEmergency) {
+      return this.createWaitSignal(`🚨 EMERGENCY MODE: Volatilitas terlalu liar (ATR ${atr.toFixed(2)} > 25.0). NO TRADE.`, activeStrategy);
     }
     if (atr < 1.0) {
       return this.createWaitSignal(`⚠️ HARD FILTER: Volatilitas market terlalu mati (ATR ${atr.toFixed(2)} < 1.0). Ruang gerak minim.`, activeStrategy);

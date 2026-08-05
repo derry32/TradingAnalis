@@ -143,7 +143,7 @@ void SendAck(string signalId, ulong ticket, double price, string status, long sp
                                  InpApiToken, signalId, ticket, price, status, (int)(spread / 10));
    
    char postData[];
-   StringToCharArray(payload, postData);
+   StringToCharArray(payload, postData, 0, StringLen(payload));
    char serverResult[];
    string serverHeaders;
    string headers = "Content-Type: application/json\r\n";
