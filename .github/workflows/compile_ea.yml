@@ -21,6 +21,7 @@ jobs:
         uses: fx31337/mql-compile-action@master
         with:
           path: 'mt5/AurumAI_Executor.mq5'
+          mt-version: '5.0.0.2515'
           verbose: 'true'
 
       - name: Upload compiled .ex5 artifact
