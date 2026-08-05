@@ -276,26 +276,48 @@ export class SignalGenerator {
       setupType: string;
     } | null = null;
 
+    let lastRejectionReason = "Skor probabilitas di bawah ambang batas minimal kelulusan (Minimal 50 Poin).";
+
     for (const dir of possibleDirections) {
-      // Dynamic Stop Loss Calculation: Swing Point + ATR Buffer
-      const atrBuffer = Math.max(1.0, atr * 0.8);
+      // Dynamic Stop Loss Calculation: Swing Point + ATR Buffer dengan Smart Cap
+      const atrBuffer = Math.max(0.8, atr * 0.6);
       let calculatedSL = 0;
+      const defaultRisk = Math.max(2.0, Math.min(4.5, atr * 1.5));
+
       if (dir === 'BUY') {
-        calculatedSL = analysis.closestSwingLowM5 - atrBuffer;
+        if (analysis.closestSwingLowM5 > 0 && analysis.closestSwingLowM5 < currentPrice) {
+          calculatedSL = analysis.closestSwingLowM5 - atrBuffer;
+          // Jika swing low terlalu jauh (> $5.0), gunakan smart ATR SL agar trade tetap aman & proporsional
+          if (currentPrice - calculatedSL > 5.0) {
+            calculatedSL = currentPrice - defaultRisk;
+          }
+        } else {
+          calculatedSL = currentPrice - defaultRisk;
+        }
         if (calculatedSL >= currentPrice - 1.5) calculatedSL = currentPrice - 1.5; // Jarak minimal $1.5 (15 pips)
       } else {
-        calculatedSL = analysis.closestSwingHighM5 + atrBuffer;
+        if (analysis.closestSwingHighM5 > 0 && analysis.closestSwingHighM5 > currentPrice) {
+          calculatedSL = analysis.closestSwingHighM5 + atrBuffer;
+          // Jika swing high terlalu jauh (> $5.0), gunakan smart ATR SL agar trade tetap aman & proporsional
+          if (calculatedSL - currentPrice > 5.0) {
+            calculatedSL = currentPrice + defaultRisk;
+          }
+        } else {
+          calculatedSL = currentPrice + defaultRisk;
+        }
         if (calculatedSL <= currentPrice + 1.5) calculatedSL = currentPrice + 1.5; // Jarak minimal $1.5 (15 pips)
       }
 
       const riskDist = Math.abs(currentPrice - calculatedSL);
 
-      // Hard Filter Safety Cap SL (Maksimal $8.0 / 80 pips untuk menghindari setup liar)
-      if (riskDist > 8.0) {
-        continue; // SL terlalu jauh, abaikan arah ini
+      // Hard Filter Safety Cap SL
+      if (riskDist > 6.0) {
+        lastRejectionReason = `Stop Loss terlalu lebar ($${riskDist.toFixed(2)} > $6.0). Menunggu titik entri yang lebih presisi.`;
+        continue;
       }
-      if (riskDist < 0.8) {
-        continue; // SL terlalu sempit (bahaya noise)
+      if (riskDist < 1.0) {
+        lastRejectionReason = `Stop Loss terlalu sempit ($${riskDist.toFixed(2)} < $1.0). Rawan noise market.`;
+        continue;
       }
 
       // 8. 3-Tier Room to Target Calculation dengan Market Phase Intelligence
@@ -304,23 +326,24 @@ export class SignalGenerator {
         // Mode Sideways: Target kaku di S/R terdekat
         targetPrice = dir === 'BUY' ? analysis.nearestResistanceH1 : analysis.nearestSupportH1;
       } else {
-        // Mode Trending / Breakout: Boleh proyeksikan ke Next S/R atau 2.0x ATR
+        // Mode Trending / Breakout: Proyeksikan ke Next S/R atau minimal 2.0x Risk
         if (dir === 'BUY') {
-          targetPrice = Math.max(analysis.nextResistanceH1, currentPrice + (atr * 2.0));
+          targetPrice = Math.max(analysis.nextResistanceH1, currentPrice + (riskDist * 2.0));
         } else {
-          targetPrice = Math.min(analysis.nextSupportH1, currentPrice - (atr * 2.0));
+          targetPrice = Math.min(analysis.nextSupportH1, currentPrice - (riskDist * 2.0));
         }
       }
 
       const roomDist = Math.abs(targetPrice - currentPrice);
-      const roomRatio = roomDist / riskDist;
+      const roomRatio = riskDist > 0 ? roomDist / riskDist : 0;
 
-      // Tier 3: Room < 1.5x SL -> Reject / WAIT
-      if (roomRatio < 1.5) {
+      // Tier 3: Room < 1.4x SL -> Reject / WAIT
+      if (roomRatio < 1.4) {
+        lastRejectionReason = `Ruang gerak ke target terbatas (RR ${roomRatio.toFixed(1)}x < 1.4x). Tertahan level S/R terdekat.`;
         continue; 
       }
 
-      // Tier 2: 1.5 <= Room < 1.8 -> Penalti 8 poin
+      // Tier 2: 1.4 <= Room < 1.8 -> Penalti 8 poin
       let roomPenalty = 0;
       if (roomRatio < 1.8) {
         roomPenalty = 8;
@@ -351,8 +374,10 @@ export class SignalGenerator {
 
     // 9. Strict Threshold Filter: Skor < 50 LANGSUNG WAIT (Blokir Sinyal Lemah!)
     if (!bestTrade || bestTrade.score < 50) {
-      const highestScore = bestTrade?.score || 0;
-      return this.createWaitSignal(`Skor probabilitas (${highestScore}/100) di bawah ambang batas minimal kelulusan (Minimal 50 Poin).`, activeStrategy);
+      if (bestTrade) {
+        return this.createWaitSignal(`Skor probabilitas (${bestTrade.score}/100) di bawah ambang batas minimal kelulusan (Minimal 50 Poin).`, activeStrategy);
+      }
+      return this.createWaitSignal(lastRejectionReason, activeStrategy);
     }
 
     const { dir: tradeType, score, reasons, warnings, stopLoss, tp1, tp2, setupType } = bestTrade;

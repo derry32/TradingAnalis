@@ -44,8 +44,8 @@ export class SentimentAnalysis {
       let content = response.data.candidates[0].content.parts[0].text;
       content = content.replace(/```json/gi, '').replace(/```/g, '').trim();
       return JSON.parse(content) as SentimentResult;
-    } catch (e) {
-      console.error('[Sentiment] Gemini API Error', e);
+    } catch (e: any) {
+      console.error('[Sentiment] Gemini API Error:', e.response?.data?.error?.message || e.message || 'Unknown error');
       return { sentiment: 'NEUTRAL', score: 5 };
     }
   }
@@ -79,8 +79,8 @@ export class SentimentAnalysis {
       
       const content = response.data.choices[0].message.content;
       return JSON.parse(content) as SentimentResult;
-    } catch (e) {
-      console.error('[Sentiment] OpenAI Error', e);
+    } catch (e: any) {
+      console.error('[Sentiment] OpenAI Error:', e.response?.data?.error?.message || e.message || 'Unknown error');
       return { sentiment: 'NEUTRAL', score: 5 };
     }
   }
