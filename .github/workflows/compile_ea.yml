@@ -17,12 +17,44 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Compile MQL5 EA
-        uses: fx31337/mql-compile-action@v2
-        with:
-          path: 'mt5/AurumAI_Executor.mq5'
-          init-platform: true
-          verbose: true
+      - name: Install MetaTrader 5 and Compile EA
+        shell: powershell
+        run: |
+          Write-Host "=== Downloading MetaTrader 5 Setup ==="
+          Invoke-WebRequest -Uri "https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe" -OutFile "mt5setup.exe"
+          
+          Write-Host "=== Installing MetaTrader 5 silently ==="
+          Start-Process -FilePath ".\mt5setup.exe" -ArgumentList "/auto /portable" -Wait
+          
+          $editorPath = "C:\Program Files\MetaTrader 5\metaeditor64.exe"
+          if (-not (Test-Path $editorPath)) {
+            $editorPath = "$env:LOCALAPPDATA\Programs\MetaTrader 5\metaeditor64.exe"
+          }
+          Write-Host "Found MetaEditor at: $editorPath"
+          
+          $mq5Path = Join-Path $PWD "mt5\AurumAI_Executor.mq5"
+          $logPath = Join-Path $PWD "compile.log"
+          $incPath = "C:\Program Files\MetaTrader 5\MQL5"
+          
+          Write-Host "=== Compiling $mq5Path ==="
+          & "$editorPath" /compile:"$mq5Path" /include:"$incPath" /log:"$logPath"
+          Start-Sleep -Seconds 5
+          
+          if (Test-Path $logPath) {
+            Get-Content -Path $logPath -Encoding Unicode
+          }
+          
+          $ex5Path = Join-Path $PWD "mt5\AurumAI_Executor.ex5"
+          if (Test-Path $ex5Path) {
+            Write-Host "SUCCESS: $ex5Path was generated!"
+          } else {
+            Write-Host "Trying without /include..."
+            & "$editorPath" /compile:"$mq5Path" /log:"$logPath"
+            Start-Sleep -Seconds 5
+            if (Test-Path $logPath) {
+              Get-Content -Path $logPath -Encoding Unicode
+            }
+          }
 
       - name: Upload compiled .ex5 artifact
         uses: actions/upload-artifact@v4
