@@ -5,28 +5,42 @@
 //+------------------------------------------------------------------+
 #property copyright   "Aurum AI Quant Systems 2026"
 #property link        "https://aurum-ai.io"
-#property version     "2.20"
-#property description "Aurum AI Autonomous Execution Engine for MetaTrader 5"
-#property description "Automatically connects with Aurum AI VPS backend to execute XAU/USD signals."
+#property version     "3.00"
+#property description "Aurum AI Autonomous Multi-Layer Scalper Engine for MetaTrader 5"
+#property description "Executes 3 Market + 2 Limit layers with Dynamic Lot Sizing, Basket TP, and Half-Secured BEP Scaling."
 
 //--- Input Parameters
 input group "=== [ API Connection Settings ] ==="
-input string   InpApiUrl          = "http://43.156.79.235:3002";     // Server Backend Base URL
-input string   InpApiToken        = "aurum_secret_bridge_token_2026"; // Secret Bridge Token
-input int      InpTimerSeconds    = 1;                               // Polling Interval (Seconds)
+input string   InpApiUrl             = "http://43.156.79.235:3002";     // Server Backend Base URL
+input string   InpApiToken           = "aurum_secret_bridge_token_2026"; // Secret Bridge Token
+input int      InpTimerSeconds       = 1;                               // Polling Interval (Seconds)
 
-input group "=== [ Risk & Execution Guard ] ==="
-input ulong    InpMagicNumber     = 778899;                          // Magic Number (Order ID Isolation)
-input double   InpFixedLot        = 0.01;                            // Lot Size (Default: 0.01 Demo Safe)
-input int      InpMaxSpreadPoints = 400;                             // Max Spread (Points, 400 = 40 pips on Gold)
-input ulong    InpSlippage        = 30;                              // Max Slippage (Points)
-input bool     InpDemoOnlyGuard   = true;                            // Demo Account Only Guard (Safety)
-input bool     InpUseTP1Only      = true;                            // Default TP Target (true: TP1, false: TP2)
-input bool     InpForceMarketExec = false;                           // Force Market Order (If true, ignores Limit)
+input group "=== [ Multi-Layer Scalper Configuration ] ==="
+input int      InpNumMarketLayers    = 3;                               // Number of Market Orders per Signal (Default: 3)
+input int      InpNumLimitLayers     = 2;                               // Number of Limit Orders per Signal (Default: 2)
+input double   InpMinLot             = 0.03;                            // Lot Size for Confidence < 70% (Defense)
+input double   InpMidLot             = 0.05;                            // Lot Size for Confidence 70% - 79% (Standard)
+input double   InpMaxLot             = 0.09;                            // Lot Size for Confidence >= 80% (High Conviction)
+input int      InpLayerStepPoints    = 35;                              // Step between Limit Layers (Points, 35 = 3.5 pips)
+input int      InpMaxOpenPositions   = 15;                              // Max Simultaneous Open Positions (Account Safety Cap)
 
-//--- Global Variables
-string         g_lastProcessedId  = "";
-bool           g_isInitialized    = false;
+input group "=== [ Risk, Exit & Execution Guard ] ==="
+input ulong    InpMagicNumber        = 778899;                          // Magic Number (Order ID Isolation)
+input int      InpMaxSpreadPoints    = 400;                             // Max Spread (Points, 400 = 40 pips on Gold)
+input ulong    InpSlippage           = 30;                              // Max Slippage (Points)
+input bool     InpDemoOnlyGuard      = true;                            // Demo Account Only Guard (Safety)
+input bool     InpEnableBasketTP     = true;                            // Enable Basket Close (<70% Confidence)
+input bool     InpEnableHalfSecured  = true;                            // Enable Half-Secured & BEP Trailing (>=75% Confidence)
+
+//--- Global Tracking Variables
+string         g_lastProcessedId     = "";
+bool           g_isInitialized       = false;
+string         g_activeSignalId      = "";
+double         g_activeConfidence    = 0.0;
+string         g_activeMode          = "";
+double         g_activeTP1           = 0.0;
+double         g_activeTP2           = 0.0;
+bool           g_isHalfSecuredDone   = false;
 
 //+------------------------------------------------------------------+
 //| Auto-detect broker filling type (FOK, IOC, RETURN)              |
@@ -142,9 +156,36 @@ void SendAck(string signalId, ulong ticket, double price, string status, long sp
 }
 
 //+------------------------------------------------------------------+
-//| Execute Order Send using Pure Native MQL5 API (Zero Dependencies)|
+//| Determine Dynamic Lot Size by Confidence Score                  |
 //+------------------------------------------------------------------+
-bool ExecuteNativeTrade(ENUM_ORDER_TYPE orderType, double price, double sl, double tp, string comment, ulong &outTicket)
+double GetLotSizeByConfidence(double confidence)
+{
+   if(confidence >= 80.0) return InpMaxLot; // 0.09 lot
+   if(confidence >= 70.0) return InpMidLot; // 0.05 lot
+   return InpMinLot;                        // 0.03 lot
+}
+
+//+------------------------------------------------------------------+
+//| Count Current Open Positions by Magic Number                     |
+//+------------------------------------------------------------------+
+int CountOpenPositions()
+{
+   int count = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
+      {
+         count++;
+      }
+   }
+   return count;
+}
+
+//+------------------------------------------------------------------+
+//| Execute Order Send using Pure Native MQL5 API                    |
+//+------------------------------------------------------------------+
+bool ExecuteNativeTradeWithLot(ENUM_ORDER_TYPE orderType, double lot, double price, double sl, double tp, string comment, ulong &outTicket)
 {
    MqlTradeRequest request;
    MqlTradeResult  result;
@@ -153,7 +194,7 @@ bool ExecuteNativeTrade(ENUM_ORDER_TYPE orderType, double price, double sl, doub
 
    request.action       = (orderType == ORDER_TYPE_BUY || orderType == ORDER_TYPE_SELL) ? TRADE_ACTION_DEAL : TRADE_ACTION_PENDING;
    request.symbol       = _Symbol;
-   request.volume       = InpFixedLot;
+   request.volume       = lot;
    request.type         = orderType;
    request.price        = price;
    request.sl           = sl;
@@ -181,6 +222,181 @@ bool ExecuteNativeTrade(ENUM_ORDER_TYPE orderType, double price, double sl, doub
 }
 
 //+------------------------------------------------------------------+
+//| Close a Single Open Position                                     |
+//+------------------------------------------------------------------+
+bool CloseNativePosition(ulong positionTicket)
+{
+   if(!PositionSelectByTicket(positionTicket)) return false;
+
+   ENUM_POSITION_TYPE posType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+   double volume              = PositionGetDouble(POSITION_VOLUME);
+   double closePrice          = (posType == POSITION_TYPE_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_BID) : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   ENUM_ORDER_TYPE orderType  = (posType == POSITION_TYPE_BUY) ? ORDER_TYPE_SELL : ORDER_TYPE_BUY;
+
+   MqlTradeRequest request;
+   MqlTradeResult  result;
+   ZeroMemory(request);
+   ZeroMemory(result);
+
+   request.action       = TRADE_ACTION_DEAL;
+   request.position     = positionTicket;
+   request.symbol       = _Symbol;
+   request.volume       = volume;
+   request.type         = orderType;
+   request.price        = closePrice;
+   request.deviation    = InpSlippage;
+   request.type_filling = GetSymbolFillingType(_Symbol);
+   request.magic        = InpMagicNumber;
+   request.comment      = "Aurum AI Scalp Close";
+
+   if(!OrderSend(request, result)) return false;
+   return (result.retcode == TRADE_RETCODE_DONE);
+}
+
+//+------------------------------------------------------------------+
+//| Move Stop Loss of a Position to Breakeven (BEP)                  |
+//+------------------------------------------------------------------+
+bool MovePositionSLToBEP(ulong positionTicket, double bepPrice)
+{
+   MqlTradeRequest request;
+   MqlTradeResult  result;
+   ZeroMemory(request);
+   ZeroMemory(result);
+
+   request.action   = TRADE_ACTION_SLTP;
+   request.position = positionTicket;
+   request.symbol   = _Symbol;
+   request.sl       = bepPrice;
+   request.tp       = PositionGetDouble(POSITION_TP);
+   request.magic    = InpMagicNumber;
+
+   if(!OrderSend(request, result))
+   {
+      PrintFormat("❌ [Modify SL Failed] Ticket #%I64u | Error: %d", positionTicket, GetLastError());
+      return false;
+   }
+   return (result.retcode == TRADE_RETCODE_DONE);
+}
+
+//+------------------------------------------------------------------+
+//| Close All Open Positions for Basket TP                           |
+//+------------------------------------------------------------------+
+void CloseAllPositions(string reason)
+{
+   PrintFormat("🚀 [BASKET TP HIT] %s -> Menutup semua posisi terbuka...", reason);
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
+      {
+         CloseNativePosition(ticket);
+      }
+   }
+   
+   // Cancel all remaining pending limit orders
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+   {
+      ulong orderTicket = OrderGetTicket(i);
+      if(orderTicket > 0 && OrderGetString(ORDER_SYMBOL) == _Symbol && OrderGetInteger(ORDER_MAGIC) == InpMagicNumber)
+      {
+         MqlTradeRequest request;
+         MqlTradeResult  result;
+         ZeroMemory(request);
+         ZeroMemory(result);
+         request.action = TRADE_ACTION_REMOVE;
+         request.order  = orderTicket;
+         OrderSend(request, result);
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Autonomous Position Manager (Basket TP & Half-Secured Runner)    |
+//+------------------------------------------------------------------+
+void ManageActivePositions()
+{
+   int openCount = CountOpenPositions();
+   if(openCount == 0)
+   {
+      g_isHalfSecuredDone = false;
+      return;
+   }
+
+   double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+
+   // 1. Mode Basket Close (< 70% Confidence)
+   if(InpEnableBasketTP && g_activeMode == "BASKET_SCALPER" && g_activeTP1 > 0.0)
+   {
+      // Check if price reached TP1
+      bool reachedTP1 = false;
+      for(int i = PositionsTotal() - 1; i >= 0; i--)
+      {
+         ulong ticket = PositionGetTicket(i);
+         if(ticket > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
+         {
+            ENUM_POSITION_TYPE posType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+            if(posType == POSITION_TYPE_BUY && currentBid >= g_activeTP1) reachedTP1 = true;
+            if(posType == POSITION_TYPE_SELL && currentAsk <= g_activeTP1) reachedTP1 = true;
+         }
+      }
+
+      if(reachedTP1)
+      {
+         CloseAllPositions(StringFormat("Sinyal %s Basket TP1 (%.2f) Tercapai", g_activeSignalId, g_activeTP1));
+         g_activeSignalId = "";
+         return;
+      }
+   }
+
+   // 2. Mode Half-Secured (>= 75% Confidence)
+   if(InpEnableHalfSecured && g_activeMode == "HALF_SECURED" && !g_isHalfSecuredDone && g_activeTP1 > 0.0)
+   {
+      bool reachedTP1 = false;
+      for(int i = PositionsTotal() - 1; i >= 0; i--)
+      {
+         ulong ticket = PositionGetTicket(i);
+         if(ticket > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
+         {
+            ENUM_POSITION_TYPE posType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+            if(posType == POSITION_TYPE_BUY && currentBid >= g_activeTP1) reachedTP1 = true;
+            if(posType == POSITION_TYPE_SELL && currentAsk <= g_activeTP1) reachedTP1 = true;
+         }
+      }
+
+      if(reachedTP1)
+      {
+         PrintFormat("🛡️ [HALF-SECURED TRIGGERED] Sinyal %s menyentuh TP1 (%.2f)! Menutup 50%% posisi & menggeser SL ke BEP...",
+                     g_activeSignalId, g_activeTP1);
+
+         int closedSoFar = 0;
+         int halfToClose = (openCount >= 4) ? 3 : (openCount / 2);
+
+         for(int i = PositionsTotal() - 1; i >= 0; i--)
+         {
+            ulong ticket = PositionGetTicket(i);
+            if(ticket > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
+            {
+               if(closedSoFar < halfToClose)
+               {
+                  CloseNativePosition(ticket);
+                  closedSoFar++;
+               }
+               else
+               {
+                  // Move SL of remaining positions to Breakeven (Entry Price)
+                  double openPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+                  MovePositionSLToBEP(ticket, openPrice);
+               }
+            }
+         }
+
+         g_isHalfSecuredDone = true;
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
@@ -200,10 +416,11 @@ int OnInit()
    EventSetTimer(InpTimerSeconds);
    
    Print("=================================================");
-   Print("🚀 [Aurum AI] MT5 Autonomous Executor v2.2 (Native Pure MQL5)");
+   Print("🚀 [Aurum AI] Multi-Layer Scalper Engine v3.0");
    Print("🔗 Connecting to: ", InpApiUrl);
    Print("🛡️ Magic Number : ", InpMagicNumber);
-   Print("💰 Fixed Lot     : ", InpFixedLot);
+   Print("🪜 Grid Layers  : ", InpNumMarketLayers, " Market + ", InpNumLimitLayers, " Limit (Total 5)");
+   Print("💰 Dynamic Lots : Min ", InpMinLot, " | Mid ", InpMidLot, " | Max ", InpMaxLot);
    Print("⏱️ Polling Speed : Every ", InpTimerSeconds, " second(s)");
    Print("=================================================");
 
@@ -234,7 +451,10 @@ void OnTimer()
 {
    if(!g_isInitialized) return;
    
-   // Poll backend for signals
+   // 1. Manage existing positions (Basket TP & Half-Secured BEP)
+   ManageActivePositions();
+
+   // 2. Poll backend for new signals
    string url = InpApiUrl + "/api/mt5/signals/latest?token=" + InpApiToken;
    string json = SendGetRequest(url);
    
@@ -253,14 +473,27 @@ void OnTimer()
       return; // Already executed
    }
 
+   // Check Max Position Safety Cap
+   if(CountOpenPositions() >= InpMaxOpenPositions)
+   {
+      PrintFormat("⚠️ [Safety Cap Reached] Total posisi aktif (%d) sudah mencapai batas maksimal (%d). Sinyal %s di-skip.",
+                  CountOpenPositions(), InpMaxOpenPositions, signalId);
+      return;
+   }
+
    string type          = GetJsonString(json, "type");
-   string executionType = GetJsonString(json, "executionType");
    double entryPrice    = GetJsonDouble(json, "price");
    double stopLoss      = GetJsonDouble(json, "stopLoss");
    double takeProfit1   = GetJsonDouble(json, "takeProfit1");
    double takeProfit2   = GetJsonDouble(json, "takeProfit2");
+   double confidence    = GetJsonDouble(json, "confidence");
+   string execMode      = GetJsonString(json, "executionMode");
 
-   double targetTP = InpUseTP1Only ? takeProfit1 : takeProfit2;
+   if(confidence <= 0) confidence = 70.0;
+   if(execMode == "") execMode = (confidence >= 75.0) ? "HALF_SECURED" : "BASKET_SCALPER";
+
+   double targetTP = (execMode == "HALF_SECURED") ? takeProfit2 : takeProfit1;
+   double lotSize  = GetLotSizeByConfidence(confidence);
 
    // Check Spread Filter
    long currentSpread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
@@ -271,77 +504,85 @@ void OnTimer()
       return;
    }
 
-   // Execute Trade
-   bool success = false;
-   ulong orderTicket = 0;
-
    double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double pointValue = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
 
-   // Instant Market Execution or Limit Execution
-   if(executionType == "MARKET" || InpForceMarketExec)
+   double stepPrice = InpLayerStepPoints * pointValue;
+   if(stepPrice <= 0) stepPrice = 0.35; // Default 3.5 pips on Gold
+
+   ulong firstTicket = 0;
+   int executedOrders = 0;
+
+   // 1. Eksekusi 3x Market Orders (Instant Momentum Layer)
+   for(int m = 1; m <= InpNumMarketLayers; m++)
    {
+      ulong ticket = 0;
+      bool ok = false;
       if(type == "BUY")
       {
-         success = ExecuteNativeTrade(ORDER_TYPE_BUY, currentAsk, stopLoss, targetTP, "Aurum AI " + signalId, orderTicket);
-         if(success)
+         ok = ExecuteNativeTradeWithLot(ORDER_TYPE_BUY, lotSize, currentAsk, stopLoss, targetTP, 
+                                        StringFormat("Aurum AI Mkt#%d %s", m, signalId), ticket);
+      }
+      else if(type == "SELL")
+      {
+         ok = ExecuteNativeTradeWithLot(ORDER_TYPE_SELL, lotSize, currentBid, stopLoss, targetTP, 
+                                        StringFormat("Aurum AI Mkt#%d %s", m, signalId), ticket);
+      }
+
+      if(ok)
+      {
+         executedOrders++;
+         if(firstTicket == 0) firstTicket = ticket;
+         PrintFormat("🎯 [MARKET LAYER #%d EXECUTED] Ticket #%I64u | Sinyal %s | Lot: %.2f | TP: %.2f",
+                     m, ticket, signalId, lotSize, targetTP);
+      }
+   }
+
+   // 2. Eksekusi 2x Limit Pullback Orders (Discount Zone Layer)
+   for(int l = 1; l <= InpNumLimitLayers; l++)
+   {
+      ulong ticket = 0;
+      bool ok = false;
+      if(type == "BUY")
+      {
+         double limitPrice = currentAsk - (stepPrice * l);
+         ok = ExecuteNativeTradeWithLot(ORDER_TYPE_BUY_LIMIT, lotSize, limitPrice, stopLoss, targetTP, 
+                                        StringFormat("Aurum AI Lmt#%d %s", l, signalId), ticket);
+         if(ok)
          {
-            PrintFormat("🎯 [BUY INSTANT EXECUTED] Ticket #%I64u | Sinyal %s | Ask: %.2f | SL: %.2f | TP: %.2f",
-                        orderTicket, signalId, currentAsk, stopLoss, targetTP);
+            executedOrders++;
+            PrintFormat("⏳ [BUY LIMIT LAYER #%d PLACED] Ticket #%I64u | Limit Price: %.2f | Lot: %.2f",
+                        l, ticket, limitPrice, lotSize);
          }
       }
       else if(type == "SELL")
       {
-         success = ExecuteNativeTrade(ORDER_TYPE_SELL, currentBid, stopLoss, targetTP, "Aurum AI " + signalId, orderTicket);
-         if(success)
+         double limitPrice = currentBid + (stepPrice * l);
+         ok = ExecuteNativeTradeWithLot(ORDER_TYPE_SELL_LIMIT, lotSize, limitPrice, stopLoss, targetTP, 
+                                        StringFormat("Aurum AI Lmt#%d %s", l, signalId), ticket);
+         if(ok)
          {
-            PrintFormat("🎯 [SELL INSTANT EXECUTED] Ticket #%I64u | Sinyal %s | Bid: %.2f | SL: %.2f | TP: %.2f",
-                        orderTicket, signalId, currentBid, stopLoss, targetTP);
-         }
-      }
-   }
-   else if(executionType == "LIMIT")
-   {
-      if(type == "BUY")
-      {
-         if(entryPrice >= currentAsk)
-         {
-            success = ExecuteNativeTrade(ORDER_TYPE_BUY, currentAsk, stopLoss, targetTP, "Aurum AI " + signalId, orderTicket);
-         }
-         else
-         {
-            success = ExecuteNativeTrade(ORDER_TYPE_BUY_LIMIT, entryPrice, stopLoss, targetTP, "Aurum AI Limit " + signalId, orderTicket);
-         }
-
-         if(success)
-         {
-            PrintFormat("⏳ [BUY LIMIT / MARKET PLACED] Ticket #%I64u | Sinyal %s | Entry: %.2f | SL: %.2f | TP: %.2f",
-                        orderTicket, signalId, entryPrice, stopLoss, targetTP);
-         }
-      }
-      else if(type == "SELL")
-      {
-         if(entryPrice <= currentBid)
-         {
-            success = ExecuteNativeTrade(ORDER_TYPE_SELL, currentBid, stopLoss, targetTP, "Aurum AI " + signalId, orderTicket);
-         }
-         else
-         {
-            success = ExecuteNativeTrade(ORDER_TYPE_SELL_LIMIT, entryPrice, stopLoss, targetTP, "Aurum AI Limit " + signalId, orderTicket);
-         }
-
-         if(success)
-         {
-            PrintFormat("⏳ [SELL LIMIT / MARKET PLACED] Ticket #%I64u | Sinyal %s | Entry: %.2f | SL: %.2f | TP: %.2f",
-                        orderTicket, signalId, entryPrice, stopLoss, targetTP);
+            executedOrders++;
+            PrintFormat("⏳ [SELL LIMIT LAYER #%d PLACED] Ticket #%I64u | Limit Price: %.2f | Lot: %.2f",
+                        l, ticket, limitPrice, lotSize);
          }
       }
    }
 
-   if(success)
+   if(executedOrders > 0)
    {
-      g_lastProcessedId = signalId;
-      SendAck(signalId, orderTicket, entryPrice, "OPENED", currentSpread);
+      g_lastProcessedId   = signalId;
+      g_activeSignalId    = signalId;
+      g_activeConfidence  = confidence;
+      g_activeMode        = execMode;
+      g_activeTP1         = takeProfit1;
+      g_activeTP2         = takeProfit2;
+      g_isHalfSecuredDone = false;
+
+      SendAck(signalId, firstTicket, (type == "BUY" ? currentAsk : currentBid), "OPENED", currentSpread);
+      PrintFormat("🔥 [MULTI-LAYER SCALPER ENGAGED] Sinyal %s | Mode: %s | Total %d Layer Dibuka | Lot/Layer: %.2f",
+                  signalId, execMode, executedOrders, lotSize);
    }
 }
 //+------------------------------------------------------------------+

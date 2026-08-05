@@ -14,6 +14,10 @@ export interface MT5SignalPayload {
   confidence: number;
   validSeconds: number;
   timestamp: string;
+  entryZoneMin?: number;
+  entryZoneMax?: number;
+  recommendedLot?: number;
+  executionMode?: 'BASKET_SCALPER' | 'HALF_SECURED';
 }
 
 export interface MT5AckPayload {
@@ -43,7 +47,7 @@ export class MT5BridgeService {
       return { 
         success: true, 
         data: { 
-          status: 'NO_SIGNAL', 
+            status: 'NO_SIGNAL', 
           serverTime: new Date().toISOString() 
         } 
       };
@@ -64,15 +68,28 @@ export class MT5BridgeService {
 
     const isLimit = this.latestSignal.executionType?.includes('PULLBACK') || this.latestSignal.executionType?.includes('LIMIT');
     
-    // Calculate targeted entry price for limit or market
+    // Calculate targeted entry price and zone bounds for precision layering
     let targetPrice = this.latestSignal.entryPrice;
-    if (isLimit && this.latestSignal.entryZone && this.latestSignal.entryZone.includes('-')) {
+    let zoneMin: number | undefined = undefined;
+    let zoneMax: number | undefined = undefined;
+
+    if (this.latestSignal.entryZone && this.latestSignal.entryZone.includes('-')) {
       const parts = this.latestSignal.entryZone.split('(')[0].split('-').map(s => parseFloat(s.trim()));
       if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-        // Use midpoint of the zone for precision limit order
-        targetPrice = Number(((parts[0] + parts[1]) / 2).toFixed(2));
+        zoneMin = Math.min(parts[0], parts[1]);
+        zoneMax = Math.max(parts[0], parts[1]);
+        if (isLimit) {
+          targetPrice = Number(((parts[0] + parts[1]) / 2).toFixed(2));
+        }
       }
     }
+
+    const confidence = this.latestSignal.confidenceScore || 70;
+    let recommendedLot = 0.03;
+    if (confidence >= 80) recommendedLot = 0.09;
+    else if (confidence >= 70) recommendedLot = 0.05;
+
+    const executionMode = confidence >= 75 ? 'HALF_SECURED' : 'BASKET_SCALPER';
 
     const payload: MT5SignalPayload = {
       id: this.latestSignal.id,
@@ -84,9 +101,13 @@ export class MT5BridgeService {
       takeProfit1: this.latestSignal.takeProfit1,
       takeProfit2: this.latestSignal.takeProfit2,
       strategy: this.latestSignal.strategy,
-      confidence: this.latestSignal.confidenceScore,
+      confidence: confidence,
       validSeconds: isLimit ? 1200 : 300, // 20 mins for limit, 5 mins for market
-      timestamp: this.latestSignal.timestamp
+      timestamp: this.latestSignal.timestamp,
+      entryZoneMin: zoneMin,
+      entryZoneMax: zoneMax,
+      recommendedLot: recommendedLot,
+      executionMode: executionMode
     };
 
     const isAlreadyAcked = this.acknowledgedSignals.has(this.latestSignal.id);
