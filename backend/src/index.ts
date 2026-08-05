@@ -8,6 +8,7 @@ import { SentimentAnalysis, SentimentResult } from './services/sentimentAnalysis
 import { SignalGenerator, Signal } from './services/signalGenerator';
 import { TelegramService } from './services/telegramBot';
 import { insertSignal, fetchRecentSignals, updateSignalStatus, fetchSignalsByDate, fetchMonthlyStats, fetchActiveSignals, insertSystemLog } from './services/database';
+import { mt5Bridge } from './services/mt5Bridge';
 
 const app = express();
 app.use(cors());
@@ -295,6 +296,7 @@ marketData.setOnM5Closed((data) => {
           });
           
           telegramBot.sendSignal(signal);
+          mt5Bridge.setLatestSignal(signal);
         } else if (signal.type === 'WAIT') {
           console.log(`[Agent Derry][${strategy}] Decision: WAIT. Reason: ${signal.reason.split('\n')[0]}`);
         }
@@ -464,6 +466,42 @@ app.get('/api/performance', async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// === S6-EA: MetaTrader 5 Bridge Endpoints ===
+app.get('/api/mt5/status', (req, res) => {
+  res.json({
+    status: 'ONLINE',
+    bridge: 'MT5_REST_BRIDGE',
+    serverTime: new Date().toISOString(),
+    version: '2.0.0'
+  });
+});
+
+app.get('/api/mt5/signals/latest', (req, res) => {
+  const token = (req.query.token as string) || (req.headers['x-mt5-token'] as string) || '';
+  const result = mt5Bridge.getLatestSignalPayload(token);
+  if (!result.success) {
+    return res.status(401).json({ error: result.error });
+  }
+  res.json(result.data);
+});
+
+app.post('/api/mt5/signals/ack', (req, res) => {
+  const token = (req.query.token as string) || (req.headers['x-mt5-token'] as string) || req.body.token || '';
+  const result = mt5Bridge.recordAcknowledgment(token, req.body);
+  if (!result.success) {
+    return res.status(401).json({ error: result.message });
+  }
+  res.json(result);
+});
+
+app.get('/api/mt5/history', (req, res) => {
+  const token = (req.query.token as string) || (req.headers['x-mt5-token'] as string) || '';
+  if (token !== config.MT5_BRIDGE_TOKEN) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  res.json(mt5Bridge.getHistory());
 });
 
 app.listen(config.PORT, () => {

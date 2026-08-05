@@ -15,4 +15,5 @@ export const config = {
   RISK_REWARD_RATIO: 2, // 1:2
   STOP_LOSS_PIPS: process.env.STOP_LOSS_PIPS ? parseInt(process.env.STOP_LOSS_PIPS) : 30, // Standar 30 pips
   TIMEFRAME_MINUTES: 5, // Timeframe M5 sesuai request
+  MT5_BRIDGE_TOKEN: process.env.MT5_BRIDGE_TOKEN || 'aurum_secret_bridge_token_2026',
 };

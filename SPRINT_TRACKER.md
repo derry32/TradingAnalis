@@ -128,7 +128,7 @@ Broadcast ke Telegram & Dashboard User
 | ID | Tipe | Judul | Deskripsi Singkat |
 |----|------|-------|-------------------|
 | I-00 | Core | Mode Zikk Sniper (MTF Top-Down) | Tambah mode strategi ke-3 berbasis SOP Zikk: 4 anak tangga analisis (D1→H4→H1→M5). *High win-rate, low frequency.* Butuh data TF D1 & H4. |
-| I-01 | Feature | MetaTrader EA Integration | Membuat *Expert Advisor* (EA) yang otomatis mengeksekusi *Buy/Sell* langsung ke MT4/MT5 berdasarkan sinyal. |
+| I-01 | Feature | MetaTrader EA Integration | ✅ **Selesai (v2.0.0)**: REST Bridge `/api/mt5` + MQL5 EA `AurumAI_Executor.mq5` (Instant & Limit Order, Spread Filter, ACK Callback). |
 | I-02 | Feature | Payment Gateway | Integrasi Midtrans / Stripe untuk sistem berlangganan (Subscription) sinyal VIP. |
 | I-03 | Feature | Multi-Pair Support | Mengembangkan analisis untuk mata uang lain (EUR/USD, GBP/USD, dll). |
 | I-04 | Core | Multi-Timeframe Analysis | AI menganalisis keselarasan tren pada M5, H1, dan D1 sebelum memberikan sinyal. |

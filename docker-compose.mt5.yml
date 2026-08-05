@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mt5-vnc:
+    image: ghcr.io/ea31337/metatrader:5
+    container_name: ai-mt5-vnc
+    restart: always
+    environment:
+      - WINEPREFIX=/root/.wine
+      - DISPLAY=:1
+      - VNC_PASSWORD=aurum2026
+    ports:
+      - "5900:5900"  # VNC Port
+      - "6080:6080"  # Web noVNC Browser Port
+    volumes:
+      - ./mt5_data:/root/.wine/drive_c/Program Files/MetaTrader 5
+      - ./mt5:/root/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/Aurum
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
