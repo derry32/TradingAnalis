@@ -1,588 +1,468 @@
 //+------------------------------------------------------------------+
-//|                                           AurumAI_Executor.mq5   |
-//|                                  Copyright 2026, Aurum AI Quant  |
-//|                                             https://aurum-ai.io  |
+//|                                          AurumAI_Executor.mq5    |
+//|                                 Copyright 2026, Aurum AI Quant   |
+//|                                            https://aurum-ai.io   |
 //+------------------------------------------------------------------+
 #property copyright   "Aurum AI Quant Systems 2026"
 #property link        "https://aurum-ai.io"
-#property version     "3.00"
-#property description "Aurum AI Autonomous Multi-Layer Scalper Engine for MetaTrader 5"
-#property description "Executes 3 Market + 2 Limit layers with Dynamic Lot Sizing, Basket TP, and Half-Secured BEP Scaling."
+#property version     "3.20"
+#property description "Aurum AI Multi-Layer Scalper - Pure Native, No Includes, No Groups"
 
-//--- Input Parameters
-input group "=== [ API Connection Settings ] ==="
-input string   InpApiUrl             = "http://43.156.79.235:3002";     // Server Backend Base URL
-input string   InpApiToken           = "aurum_secret_bridge_token_2026"; // Secret Bridge Token
-input int      InpTimerSeconds       = 1;                               // Polling Interval (Seconds)
+// ZERO #include directives - pure native MQL5 only
 
-input group "=== [ Multi-Layer Scalper Configuration ] ==="
-input int      InpNumMarketLayers    = 3;                               // Number of Market Orders per Signal (Default: 3)
-input int      InpNumLimitLayers     = 2;                               // Number of Limit Orders per Signal (Default: 2)
-input double   InpMinLot             = 0.03;                            // Lot Size for Confidence < 70% (Defense)
-input double   InpMidLot             = 0.05;                            // Lot Size for Confidence 70% - 79% (Standard)
-input double   InpMaxLot             = 0.09;                            // Lot Size for Confidence >= 80% (High Conviction)
-input int      InpLayerStepPoints    = 35;                              // Step between Limit Layers (Points, 35 = 3.5 pips)
-input int      InpMaxOpenPositions   = 15;                              // Max Simultaneous Open Positions (Account Safety Cap)
+//--- Inputs: API
+input string InpApiUrl       = "http://43.156.79.235:3002";      // Backend URL
+input string InpApiToken     = "aurum_secret_bridge_token_2026"; // Secret Token
+input int    InpTimerSeconds = 1;                                 // Polling (sec)
 
-input group "=== [ Risk, Exit & Execution Guard ] ==="
-input ulong    InpMagicNumber        = 778899;                          // Magic Number (Order ID Isolation)
-input int      InpMaxSpreadPoints    = 400;                             // Max Spread (Points, 400 = 40 pips on Gold)
-input ulong    InpSlippage           = 30;                              // Max Slippage (Points)
-input bool     InpDemoOnlyGuard      = true;                            // Demo Account Only Guard (Safety)
-input bool     InpEnableBasketTP     = true;                            // Enable Basket Close (<70% Confidence)
-input bool     InpEnableHalfSecured  = true;                            // Enable Half-Secured & BEP Trailing (>=75% Confidence)
+//--- Inputs: Scalper layers
+input int    InpNumMarket    = 3;     // Market Order Layers (default 3)
+input int    InpNumLimit     = 2;     // Limit Order Layers  (default 2)
+input double InpMinLot       = 0.03;  // Lot Confidence < 70%
+input double InpMidLot       = 0.05;  // Lot Confidence 70-79%
+input double InpMaxLot       = 0.09;  // Lot Confidence >= 80%
+input int    InpStepPoints   = 35;    // Step between limit layers (pts)
+input int    InpMaxPositions = 15;    // Max simultaneous positions
 
-//--- Global Tracking Variables
-string         g_lastProcessedId     = "";
-bool           g_isInitialized       = false;
-string         g_activeSignalId      = "";
-double         g_activeConfidence    = 0.0;
-string         g_activeMode          = "";
-double         g_activeTP1           = 0.0;
-double         g_activeTP2           = 0.0;
-bool           g_isHalfSecuredDone   = false;
+//--- Inputs: Risk
+input ulong  InpMagic        = 778899; // Magic Number
+input int    InpMaxSpread    = 400;    // Max Spread pts
+input ulong  InpSlippage     = 30;     // Slippage pts
+input bool   InpDemoOnly     = true;   // Demo Guard
+input bool   InpBasketTP     = true;   // Basket TP (conf < 70%)
+input bool   InpHalfSecured  = true;   // Half-Secured BEP (conf >= 75%)
+
+//--- State globals
+string g_lastId      = "";
+string g_activeId    = "";
+string g_activeMode  = "";
+double g_tp1         = 0.0;
+double g_tp2         = 0.0;
+bool   g_halfDone    = false;
+bool   g_ready       = false;
 
 //+------------------------------------------------------------------+
-//| Auto-detect broker filling type (FOK, IOC, RETURN)              |
-//+------------------------------------------------------------------+
-ENUM_ORDER_TYPE_FILLING GetSymbolFillingType(string symbol)
+ENUM_ORDER_TYPE_FILLING GetFilling()
 {
-   uint filling = (uint)SymbolInfoInteger(symbol, SYMBOL_FILLING_MODE);
-   if((filling & SYMBOL_FILLING_IOC) != 0)
-      return ORDER_FILLING_IOC;
-   if((filling & SYMBOL_FILLING_FOK) != 0)
-      return ORDER_FILLING_FOK;
+   uint m = (uint)SymbolInfoInteger(_Symbol, SYMBOL_FILLING_MODE);
+   if((m & SYMBOL_FILLING_IOC) != 0) return ORDER_FILLING_IOC;
+   if((m & SYMBOL_FILLING_FOK) != 0) return ORDER_FILLING_FOK;
    return ORDER_FILLING_RETURN;
 }
 
 //+------------------------------------------------------------------+
-//| Simple JSON parser helper for strings                            |
-//+------------------------------------------------------------------+
-string GetJsonString(string json, string key)
+ulong NativeSend(ENUM_ORDER_TYPE type, double price, double sl, double tp,
+                 double lots, string comment)
 {
-   string search = "\"" + key + "\":\"";
-   int pos = StringFind(json, search);
-   if(pos == -1)
+   MqlTradeRequest req;
+   MqlTradeResult  res;
+   ZeroMemory(req);
+   ZeroMemory(res);
+
+   bool pending = (type == ORDER_TYPE_BUY_LIMIT  || type == ORDER_TYPE_SELL_LIMIT ||
+                   type == ORDER_TYPE_BUY_STOP   || type == ORDER_TYPE_SELL_STOP);
+
+   req.action       = pending ? TRADE_ACTION_PENDING : TRADE_ACTION_DEAL;
+   req.symbol       = _Symbol;
+   req.volume       = lots;
+   req.type         = type;
+   req.price        = price;
+   req.sl           = sl;
+   req.tp           = tp;
+   req.deviation    = InpSlippage;
+   req.type_filling = GetFilling();
+   req.type_time    = ORDER_TIME_GTC;
+   req.magic        = InpMagic;
+   req.comment      = comment;
+
+   if(!OrderSend(req, res))
    {
-      search = "\"" + key + "\":";
-      pos = StringFind(json, search);
-      if(pos == -1) return "";
-      pos += StringLen(search);
-      int endPos = StringFind(json, ",", pos);
-      if(endPos == -1) endPos = StringFind(json, "}", pos);
-      if(endPos == -1) return "";
-      string val = StringSubstr(json, pos, endPos - pos);
-      StringTrimLeft(val);
-      StringTrimRight(val);
-      StringReplace(val, "\"", "");
-      return val;
+      PrintFormat("[OrderSend FAIL] type=%d err=%d retcode=%d", (int)type, GetLastError(), res.retcode);
+      return 0;
    }
-   pos += StringLen(search);
-   int endPos = StringFind(json, "\"", pos);
-   if(endPos == -1) return "";
-   return StringSubstr(json, pos, endPos - pos);
+   if(res.retcode == TRADE_RETCODE_DONE || res.retcode == TRADE_RETCODE_PLACED)
+      return (res.order > 0) ? res.order : res.deal;
+
+   PrintFormat("[OrderSend NON-DONE] retcode=%d %s", res.retcode, res.comment);
+   return 0;
 }
 
 //+------------------------------------------------------------------+
-//| Simple JSON parser helper for numbers                            |
-//+------------------------------------------------------------------+
-double GetJsonDouble(string json, string key)
+int CountPositions()
 {
-   string search = "\"" + key + "\":";
-   int pos = StringFind(json, search);
-   if(pos == -1) return 0.0;
-   pos += StringLen(search);
-   int endPos = StringFind(json, ",", pos);
-   if(endPos == -1) endPos = StringFind(json, "}", pos);
-   if(endPos == -1) return 0.0;
-   string val = StringSubstr(json, pos, endPos - pos);
-   StringTrimLeft(val);
-   StringTrimRight(val);
-   StringReplace(val, "\"", "");
-   return StringToDouble(val);
+   int n = 0;
+   for(int i = PositionsTotal()-1; i >= 0; i--)
+   {
+      ulong t = PositionGetTicket(i);
+      if(t > 0 &&
+         PositionGetString(POSITION_SYMBOL) == _Symbol &&
+         (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagic)
+         n++;
+   }
+   return n;
 }
 
 //+------------------------------------------------------------------+
-//| Send HTTP GET Request to Aurum AI Backend                        |
-//+------------------------------------------------------------------+
-string SendGetRequest(string url)
+void CloseAllPositions(string reason)
 {
-   char serverResult[];
-   string serverHeaders;
-   string emptyData = "";
-   char postData[];
-   StringToCharArray(emptyData, postData);
-   
-   int res = WebRequest("GET", url, "", 3000, postData, serverResult, serverHeaders);
-   if(res == 200)
+   Print("[BASKET CLOSE] " + reason);
+   for(int i = PositionsTotal()-1; i >= 0; i--)
    {
-      return CharArrayToString(serverResult);
+      ulong t = PositionGetTicket(i);
+      if(t > 0 &&
+         PositionGetString(POSITION_SYMBOL) == _Symbol &&
+         (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagic)
+      {
+         MqlTradeRequest req;
+         MqlTradeResult  res;
+         ZeroMemory(req);
+         ZeroMemory(res);
+         req.action   = TRADE_ACTION_DEAL;
+         req.symbol   = _Symbol;
+         req.position = t;
+         req.volume   = PositionGetDouble(POSITION_VOLUME);
+         int pType    = (int)PositionGetInteger(POSITION_TYPE);
+         req.type     = (pType == POSITION_TYPE_BUY) ? ORDER_TYPE_SELL : ORDER_TYPE_BUY;
+         req.price    = (req.type == ORDER_TYPE_SELL)
+                        ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                        : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         req.deviation    = InpSlippage;
+         req.type_filling = GetFilling();
+         req.magic        = InpMagic;
+         if(!OrderSend(req, res))
+            PrintFormat("[Close FAIL] ticket=%I64u err=%d", t, GetLastError());
+      }
    }
-   else if(res == -1)
+   for(int i = OrdersTotal()-1; i >= 0; i--)
    {
-      int err = GetLastError();
-      if(err == 4014)
+      ulong t = OrderGetTicket(i);
+      if(t > 0 &&
+         OrderGetString(ORDER_SYMBOL) == _Symbol &&
+         (ulong)OrderGetInteger(ORDER_MAGIC) == InpMagic)
       {
-         Print("❌ [Aurum AI Error] WebRequest URL belum diizinkan! Masukkan '", InpApiUrl, "' ke Tools -> Options -> Expert Advisors -> Allow WebRequest");
-      }
-      else
-      {
-         Print("⚠️ [Aurum AI WebRequest Error] Code: ", err);
+         MqlTradeRequest req;
+         MqlTradeResult  res;
+         ZeroMemory(req);
+         ZeroMemory(res);
+         req.action = TRADE_ACTION_REMOVE;
+         req.order  = t;
+         if(!OrderSend(req, res))
+            PrintFormat("[RemoveOrder FAIL] ticket=%I64u err=%d", t, GetLastError());
       }
    }
+}
+
+//+------------------------------------------------------------------+
+void ManagePositions()
+{
+   int open = CountPositions();
+   if(open == 0) { g_halfDone = false; return; }
+
+   double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+
+   // Basket TP close
+   if(InpBasketTP && g_activeMode == "BASKET" && g_tp1 > 0.0)
+   {
+      bool hit = false;
+      for(int i = PositionsTotal()-1; i >= 0; i--)
+      {
+         ulong t = PositionGetTicket(i);
+         if(t > 0 &&
+            PositionGetString(POSITION_SYMBOL) == _Symbol &&
+            (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagic)
+         {
+            int pt = (int)PositionGetInteger(POSITION_TYPE);
+            if(pt == POSITION_TYPE_BUY  && bid >= g_tp1) hit = true;
+            if(pt == POSITION_TYPE_SELL && ask <= g_tp1) hit = true;
+         }
+      }
+      if(hit) { CloseAllPositions("Basket TP1 hit for " + g_activeId); g_activeId = ""; }
+   }
+
+   // Half-secured BEP
+   if(InpHalfSecured && g_activeMode == "HALF" && !g_halfDone && g_tp1 > 0.0)
+   {
+      bool hit = false;
+      for(int i = PositionsTotal()-1; i >= 0; i--)
+      {
+         ulong t = PositionGetTicket(i);
+         if(t > 0 &&
+            PositionGetString(POSITION_SYMBOL) == _Symbol &&
+            (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagic)
+         {
+            int pt = (int)PositionGetInteger(POSITION_TYPE);
+            if(pt == POSITION_TYPE_BUY  && bid >= g_tp1) hit = true;
+            if(pt == POSITION_TYPE_SELL && ask <= g_tp1) hit = true;
+         }
+      }
+      if(hit)
+      {
+         PrintFormat("[HALF-SECURED] %s TP1=%.2f hit — closing half, BEP rest", g_activeId, g_tp1);
+         int half    = MathMax(1, open / 2);
+         int closed  = 0;
+         for(int i = PositionsTotal()-1; i >= 0; i--)
+         {
+            ulong t = PositionGetTicket(i);
+            if(t > 0 &&
+               PositionGetString(POSITION_SYMBOL) == _Symbol &&
+               (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagic)
+            {
+               if(closed < half)
+               {
+                  MqlTradeRequest req;
+                  MqlTradeResult  res;
+                  ZeroMemory(req);
+                  ZeroMemory(res);
+                  req.action   = TRADE_ACTION_DEAL;
+                  req.symbol   = _Symbol;
+                  req.position = t;
+                  req.volume   = PositionGetDouble(POSITION_VOLUME);
+                  int pt       = (int)PositionGetInteger(POSITION_TYPE);
+                  req.type     = (pt == POSITION_TYPE_BUY) ? ORDER_TYPE_SELL : ORDER_TYPE_BUY;
+                  req.price    = (req.type == ORDER_TYPE_SELL)
+                                 ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                 : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+                  req.deviation    = InpSlippage;
+                  req.type_filling = GetFilling();
+                  req.magic        = InpMagic;
+                  if(OrderSend(req, res)) closed++;
+               }
+               else
+               {
+                  double openPx = PositionGetDouble(POSITION_PRICE_OPEN);
+                  double curTP  = PositionGetDouble(POSITION_TP);
+                  MqlTradeRequest req;
+                  MqlTradeResult  res;
+                  ZeroMemory(req);
+                  ZeroMemory(res);
+                  req.action   = TRADE_ACTION_SLTP;
+                  req.symbol   = _Symbol;
+                  req.position = t;
+                  req.sl       = openPx;
+                  req.tp       = curTP;
+                  if(!OrderSend(req, res))
+                     PrintFormat("[ModSLTP FAIL] ticket=%I64u err=%d", t, GetLastError());
+               }
+            }
+         }
+         g_halfDone = true;
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+string JStr(string json, string key)
+{
+   string s = "\"" + key + "\":\"";
+   int p = StringFind(json, s);
+   if(p < 0)
+   {
+      s = "\"" + key + "\":";
+      p = StringFind(json, s);
+      if(p < 0) return "";
+      p += StringLen(s);
+      int e1 = StringFind(json, ",", p);
+      int e2 = StringFind(json, "}", p);
+      int e  = (e1 < 0) ? e2 : (e2 < 0) ? e1 : MathMin(e1, e2);
+      if(e < 0) return "";
+      string v = StringSubstr(json, p, e - p);
+      StringTrimLeft(v);
+      StringTrimRight(v);
+      StringReplace(v, "\"", "");
+      return v;
+   }
+   p += StringLen(s);
+   int e = StringFind(json, "\"", p);
+   return (e < 0) ? "" : StringSubstr(json, p, e - p);
+}
+
+//+------------------------------------------------------------------+
+double JDbl(string json, string key)
+{
+   string s = "\"" + key + "\":";
+   int p = StringFind(json, s);
+   if(p < 0) return 0.0;
+   p += StringLen(s);
+   int e1 = StringFind(json, ",", p);
+   int e2 = StringFind(json, "}", p);
+   int e  = (e1 < 0) ? e2 : (e2 < 0) ? e1 : MathMin(e1, e2);
+   if(e < 0) return 0.0;
+   string v = StringSubstr(json, p, e - p);
+   StringTrimLeft(v);
+   StringTrimRight(v);
+   StringReplace(v, "\"", "");
+   return StringToDouble(v);
+}
+
+//+------------------------------------------------------------------+
+string HttpGet(string url)
+{
+   char   req[], res[];
+   string hdrs;
+   ArrayResize(req, 0);
+   int code = WebRequest("GET", url, "", 3000, req, res, hdrs);
+   if(code == 200)
+      return CharArrayToString(res);
+   if(GetLastError() == 4014)
+      Print("[ERROR] Add '" + InpApiUrl + "' to Tools->Options->Expert Advisors->Allow WebRequest");
    return "";
 }
 
 //+------------------------------------------------------------------+
-//| Send HTTP POST Acknowledgment to Backend                         |
-//+------------------------------------------------------------------+
-void SendAck(string signalId, ulong ticket, double price, string status, long spread)
+void SendAck(string id, ulong ticket, double px, string status, long spread)
 {
-   string url = InpApiUrl + "/api/mt5/signals/ack";
-   string payload = StringFormat("{\"token\":\"%s\",\"signalId\":\"%s\",\"ticket\":%I64u,\"executedPrice\":%.2f,\"status\":\"%s\",\"spreadPips\":%d}",
-                                 InpApiToken, signalId, ticket, price, status, (int)(spread / 10));
-   
-   char postData[];
-   StringToCharArray(payload, postData, 0, StringLen(payload));
-   char serverResult[];
-   string serverHeaders;
-   string headers = "Content-Type: application/json\r\n";
-   
-   int res = WebRequest("POST", url, headers, 3000, postData, serverResult, serverHeaders);
-   if(res == 200)
-   {
-      Print("✅ [Aurum AI ACK Sent] Signal ", signalId, " confirmed with Ticket #", ticket);
-   }
+   string body = "{\"token\":\"" + InpApiToken + "\","
+                 + "\"signalId\":\"" + id + "\","
+                 + "\"ticket\":" + IntegerToString((long)ticket) + ","
+                 + "\"executedPrice\":" + DoubleToString(px, 2) + ","
+                 + "\"status\":\"" + status + "\","
+                 + "\"spreadPips\":" + IntegerToString((int)(spread/10)) + "}";
+   char req[], res[];
+   string hdrs;
+   StringToCharArray(body, req, 0, StringLen(body));
+   WebRequest("POST", InpApiUrl + "/api/mt5/signals/ack",
+              "Content-Type: application/json\r\n", 3000, req, res, hdrs);
 }
 
 //+------------------------------------------------------------------+
-//| Determine Dynamic Lot Size by Confidence Score                  |
-//+------------------------------------------------------------------+
-double GetLotSizeByConfidence(double confidence)
+double LotByConf(double c)
 {
-   if(confidence >= 80.0) return InpMaxLot; // 0.09 lot
-   if(confidence >= 70.0) return InpMidLot; // 0.05 lot
-   return InpMinLot;                        // 0.03 lot
+   if(c >= 80.0) return InpMaxLot;
+   if(c >= 70.0) return InpMidLot;
+   return InpMinLot;
 }
 
-//+------------------------------------------------------------------+
-//| Count Current Open Positions by Magic Number                     |
-//+------------------------------------------------------------------+
-int CountOpenPositions()
-{
-   int count = 0;
-   for(int i = PositionsTotal() - 1; i >= 0; i--)
-   {
-      ulong ticket = PositionGetTicket(i);
-      if(ticket > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
-      {
-         count++;
-      }
-   }
-   return count;
-}
-
-//+------------------------------------------------------------------+
-//| Execute Order Send using Pure Native MQL5 API                    |
-//+------------------------------------------------------------------+
-bool ExecuteNativeTradeWithLot(ENUM_ORDER_TYPE orderType, double lot, double price, double sl, double tp, string comment, ulong &outTicket)
-{
-   MqlTradeRequest request;
-   MqlTradeResult  result;
-   ZeroMemory(request);
-   ZeroMemory(result);
-
-   request.action       = (orderType == ORDER_TYPE_BUY || orderType == ORDER_TYPE_SELL) ? TRADE_ACTION_DEAL : TRADE_ACTION_PENDING;
-   request.symbol       = _Symbol;
-   request.volume       = lot;
-   request.type         = orderType;
-   request.price        = price;
-   request.sl           = sl;
-   request.tp           = tp;
-   request.deviation    = InpSlippage;
-   request.type_filling = GetSymbolFillingType(_Symbol);
-   request.type_time    = ORDER_TIME_GTC;
-   request.magic        = InpMagicNumber;
-   request.comment      = comment;
-
-   if(!OrderSend(request, result))
-   {
-      PrintFormat("❌ [OrderSend Failed] Code: %d | Retcode: %d (%s)", GetLastError(), result.retcode, result.comment);
-      return false;
-   }
-
-   if(result.retcode == TRADE_RETCODE_DONE || result.retcode == TRADE_RETCODE_PLACED)
-   {
-      outTicket = (result.order > 0) ? result.order : result.deal;
-      return true;
-   }
-
-   PrintFormat("⚠️ [OrderSend Non-Done Retcode] Retcode: %d (%s)", result.retcode, result.comment);
-   return false;
-}
-
-//+------------------------------------------------------------------+
-//| Close a Single Open Position                                     |
-//+------------------------------------------------------------------+
-bool CloseNativePosition(ulong positionTicket)
-{
-   if(!PositionSelectByTicket(positionTicket)) return false;
-
-   ENUM_POSITION_TYPE posType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-   double volume              = PositionGetDouble(POSITION_VOLUME);
-   double closePrice          = (posType == POSITION_TYPE_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_BID) : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   ENUM_ORDER_TYPE orderType  = (posType == POSITION_TYPE_BUY) ? ORDER_TYPE_SELL : ORDER_TYPE_BUY;
-
-   MqlTradeRequest request;
-   MqlTradeResult  result;
-   ZeroMemory(request);
-   ZeroMemory(result);
-
-   request.action       = TRADE_ACTION_DEAL;
-   request.position     = positionTicket;
-   request.symbol       = _Symbol;
-   request.volume       = volume;
-   request.type         = orderType;
-   request.price        = closePrice;
-   request.deviation    = InpSlippage;
-   request.type_filling = GetSymbolFillingType(_Symbol);
-   request.magic        = InpMagicNumber;
-   request.comment      = "Aurum AI Scalp Close";
-
-   if(!OrderSend(request, result)) return false;
-   return (result.retcode == TRADE_RETCODE_DONE);
-}
-
-//+------------------------------------------------------------------+
-//| Move Stop Loss of a Position to Breakeven (BEP)                  |
-//+------------------------------------------------------------------+
-bool MovePositionSLToBEP(ulong positionTicket, double bepPrice)
-{
-   MqlTradeRequest request;
-   MqlTradeResult  result;
-   ZeroMemory(request);
-   ZeroMemory(result);
-
-   request.action   = TRADE_ACTION_SLTP;
-   request.position = positionTicket;
-   request.symbol   = _Symbol;
-   request.sl       = bepPrice;
-   request.tp       = PositionGetDouble(POSITION_TP);
-   request.magic    = InpMagicNumber;
-
-   if(!OrderSend(request, result))
-   {
-      PrintFormat("❌ [Modify SL Failed] Ticket #%I64u | Error: %d", positionTicket, GetLastError());
-      return false;
-   }
-   return (result.retcode == TRADE_RETCODE_DONE);
-}
-
-//+------------------------------------------------------------------+
-//| Close All Open Positions for Basket TP                           |
-//+------------------------------------------------------------------+
-void CloseAllPositions(string reason)
-{
-   PrintFormat("🚀 [BASKET TP HIT] %s -> Menutup semua posisi terbuka...", reason);
-   for(int i = PositionsTotal() - 1; i >= 0; i--)
-   {
-      ulong ticket = PositionGetTicket(i);
-      if(ticket > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
-      {
-         CloseNativePosition(ticket);
-      }
-   }
-   
-   // Cancel all remaining pending limit orders
-   for(int i = OrdersTotal() - 1; i >= 0; i--)
-   {
-      ulong orderTicket = OrderGetTicket(i);
-      if(orderTicket > 0 && OrderGetString(ORDER_SYMBOL) == _Symbol && OrderGetInteger(ORDER_MAGIC) == InpMagicNumber)
-      {
-         MqlTradeRequest request;
-         MqlTradeResult  result;
-         ZeroMemory(request);
-         ZeroMemory(result);
-         request.action = TRADE_ACTION_REMOVE;
-         request.order  = orderTicket;
-         OrderSend(request, result);
-      }
-   }
-}
-
-//+------------------------------------------------------------------+
-//| Autonomous Position Manager (Basket TP & Half-Secured Runner)    |
-//+------------------------------------------------------------------+
-void ManageActivePositions()
-{
-   int openCount = CountOpenPositions();
-   if(openCount == 0)
-   {
-      g_isHalfSecuredDone = false;
-      return;
-   }
-
-   double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-
-   // 1. Mode Basket Close (< 70% Confidence)
-   if(InpEnableBasketTP && g_activeMode == "BASKET_SCALPER" && g_activeTP1 > 0.0)
-   {
-      // Check if price reached TP1
-      bool reachedTP1 = false;
-      for(int i = PositionsTotal() - 1; i >= 0; i--)
-      {
-         ulong ticket = PositionGetTicket(i);
-         if(ticket > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
-         {
-            ENUM_POSITION_TYPE posType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-            if(posType == POSITION_TYPE_BUY && currentBid >= g_activeTP1) reachedTP1 = true;
-            if(posType == POSITION_TYPE_SELL && currentAsk <= g_activeTP1) reachedTP1 = true;
-         }
-      }
-
-      if(reachedTP1)
-      {
-         CloseAllPositions(StringFormat("Sinyal %s Basket TP1 (%.2f) Tercapai", g_activeSignalId, g_activeTP1));
-         g_activeSignalId = "";
-         return;
-      }
-   }
-
-   // 2. Mode Half-Secured (>= 75% Confidence)
-   if(InpEnableHalfSecured && g_activeMode == "HALF_SECURED" && !g_isHalfSecuredDone && g_activeTP1 > 0.0)
-   {
-      bool reachedTP1 = false;
-      for(int i = PositionsTotal() - 1; i >= 0; i--)
-      {
-         ulong ticket = PositionGetTicket(i);
-         if(ticket > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
-         {
-            ENUM_POSITION_TYPE posType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-            if(posType == POSITION_TYPE_BUY && currentBid >= g_activeTP1) reachedTP1 = true;
-            if(posType == POSITION_TYPE_SELL && currentAsk <= g_activeTP1) reachedTP1 = true;
-         }
-      }
-
-      if(reachedTP1)
-      {
-         PrintFormat("🛡️ [HALF-SECURED TRIGGERED] Sinyal %s menyentuh TP1 (%.2f)! Menutup 50%% posisi & menggeser SL ke BEP...",
-                     g_activeSignalId, g_activeTP1);
-
-         int closedSoFar = 0;
-         int halfToClose = (openCount >= 4) ? 3 : (openCount / 2);
-
-         for(int i = PositionsTotal() - 1; i >= 0; i--)
-         {
-            ulong ticket = PositionGetTicket(i);
-            if(ticket > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
-            {
-               if(closedSoFar < halfToClose)
-               {
-                  CloseNativePosition(ticket);
-                  closedSoFar++;
-               }
-               else
-               {
-                  // Move SL of remaining positions to Breakeven (Entry Price)
-                  double openPrice = PositionGetDouble(POSITION_PRICE_OPEN);
-                  MovePositionSLToBEP(ticket, openPrice);
-               }
-            }
-         }
-
-         g_isHalfSecuredDone = true;
-      }
-   }
-}
-
-//+------------------------------------------------------------------+
-//| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
 {
-   // 1. Demo Guard Verification
-   if(InpDemoOnlyGuard)
+   if(InpDemoOnly &&
+      AccountInfoInteger(ACCOUNT_TRADE_MODE) != ACCOUNT_TRADE_MODE_DEMO)
    {
-      long accountMode = AccountInfoInteger(ACCOUNT_TRADE_MODE);
-      if(accountMode != ACCOUNT_TRADE_MODE_DEMO)
-      {
-         Alert("🚨 [SECURITY WARNING] EA di-lock dalam Mode DEMO ONLY! Akun ini terdeteksi sebagai REAL. EA otomatis dimatikan demi keamanan.");
-         return INIT_FAILED;
-      }
+      Alert("[SAFETY] Demo-only guard — EA stopped on REAL account!");
+      return INIT_FAILED;
    }
 
-   // 2. Start Polling Timer
    EventSetTimer(InpTimerSeconds);
-   
-   Print("=================================================");
-   Print("🚀 [Aurum AI] Multi-Layer Scalper Engine v3.0");
-   Print("🔗 Connecting to: ", InpApiUrl);
-   Print("🛡️ Magic Number : ", InpMagicNumber);
-   Print("🪜 Grid Layers  : ", InpNumMarketLayers, " Market + ", InpNumLimitLayers, " Limit (Total 5)");
-   Print("💰 Dynamic Lots : Min ", InpMinLot, " | Mid ", InpMidLot, " | Max ", InpMaxLot);
-   Print("⏱️ Polling Speed : Every ", InpTimerSeconds, " second(s)");
-   Print("=================================================");
 
-   // Initial status check
-   string statusResponse = SendGetRequest(InpApiUrl + "/api/mt5/status");
-   if(statusResponse != "")
-   {
-      Print("🟢 [Aurum AI Server Status] Connected OK: ", statusResponse);
-   }
+   Print("============================");
+   Print("[Aurum AI] v3.20 Started");
+   Print("Layers : " + IntegerToString(InpNumMarket) + " Market + " + IntegerToString(InpNumLimit) + " Limit");
+   Print("Lots   : " + DoubleToString(InpMinLot,2) + "/" + DoubleToString(InpMidLot,2) + "/" + DoubleToString(InpMaxLot,2));
+   Print("URL    : " + InpApiUrl);
+   Print("============================");
 
-   g_isInitialized = true;
+   string r = HttpGet(InpApiUrl + "/api/mt5/status");
+   if(r != "") Print("[Server] " + r);
+
+   g_ready = true;
    return INIT_SUCCEEDED;
 }
 
 //+------------------------------------------------------------------+
-//| Expert deinitialization function                                 |
-//+------------------------------------------------------------------+
 void OnDeinit(const int reason)
 {
    EventKillTimer();
-   Print("🛑 [Aurum AI] MT5 Executor Deinitialized.");
+   Print("[Aurum AI] Deinitialized.");
 }
 
 //+------------------------------------------------------------------+
-//| Expert timer function (Autonomous Loop)                         |
-//+------------------------------------------------------------------+
 void OnTimer()
 {
-   if(!g_isInitialized) return;
-   
-   // 1. Manage existing positions (Basket TP & Half-Secured BEP)
-   ManageActivePositions();
+   if(!g_ready) return;
 
-   // 2. Poll backend for new signals
-   string url = InpApiUrl + "/api/mt5/signals/latest?token=" + InpApiToken;
-   string json = SendGetRequest(url);
-   
+   ManagePositions();
+
+   string json = HttpGet(InpApiUrl + "/api/mt5/signals/latest?token=" + InpApiToken);
    if(json == "") return;
+   if(JStr(json, "status") != "ACTIVE_SIGNAL") return;
 
-   string status = GetJsonString(json, "status");
-   if(status != "ACTIVE_SIGNAL")
-   {
-      return; // No actionable signal
-   }
+   string id = JStr(json, "id");
+   if(id == "" || id == g_lastId) return;
 
-   // Extract Signal Parameters
-   string signalId = GetJsonString(json, "id");
-   if(signalId == "" || signalId == g_lastProcessedId)
+   if(CountPositions() >= InpMaxPositions)
    {
-      return; // Already executed
-   }
-
-   // Check Max Position Safety Cap
-   if(CountOpenPositions() >= InpMaxOpenPositions)
-   {
-      PrintFormat("⚠️ [Safety Cap Reached] Total posisi aktif (%d) sudah mencapai batas maksimal (%d). Sinyal %s di-skip.",
-                  CountOpenPositions(), InpMaxOpenPositions, signalId);
+      Print("[CAP] max positions reached — skipping " + id);
       return;
    }
 
-   string type          = GetJsonString(json, "type");
-   double entryPrice    = GetJsonDouble(json, "price");
-   double stopLoss      = GetJsonDouble(json, "stopLoss");
-   double takeProfit1   = GetJsonDouble(json, "takeProfit1");
-   double takeProfit2   = GetJsonDouble(json, "takeProfit2");
-   double confidence    = GetJsonDouble(json, "confidence");
-   string execMode      = GetJsonString(json, "executionMode");
+   string  dir    = JStr(json, "type");
+   double  sl     = JDbl(json, "stopLoss");
+   double  tp1    = JDbl(json, "takeProfit1");
+   double  tp2    = JDbl(json, "takeProfit2");
+   double  conf   = JDbl(json, "confidence");
+   string  mode   = JStr(json, "executionMode");
 
-   if(confidence <= 0) confidence = 70.0;
-   if(execMode == "") execMode = (confidence >= 75.0) ? "HALF_SECURED" : "BASKET_SCALPER";
+   if(conf <= 0.0) conf = 70.0;
+   if(mode == "") mode = (conf >= 75.0) ? "HALF" : "BASKET";
 
-   double targetTP = (execMode == "HALF_SECURED") ? takeProfit2 : takeProfit1;
-   double lotSize  = GetLotSizeByConfidence(confidence);
+   double targetTP = (mode == "HALF") ? tp2 : tp1;
+   double lot      = LotByConf(conf);
 
-   // Check Spread Filter
-   long currentSpread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(currentSpread > InpMaxSpreadPoints)
+   long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   if(spread > InpMaxSpread)
    {
-      PrintFormat("⚠️ [Spread Filter] Spread saat ini %d pts melebihi batas toleransi %d pts. Entry sinyal %s ditunda.",
-                  currentSpread, InpMaxSpreadPoints, signalId);
+      Print("[SPREAD] " + IntegerToString((int)spread) + " pts too high — skip " + id);
       return;
    }
 
-   double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   double pointValue = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-
-   double stepPrice = InpLayerStepPoints * pointValue;
-   if(stepPrice <= 0) stepPrice = 0.35; // Default 3.5 pips on Gold
+   double ask  = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double bid  = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double pt   = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   double step = InpStepPoints * pt;
+   if(step <= 0.0) step = 0.35;
 
    ulong firstTicket = 0;
-   int executedOrders = 0;
+   int   opened      = 0;
 
-   // 1. Eksekusi 3x Market Orders (Instant Momentum Layer)
-   for(int m = 1; m <= InpNumMarketLayers; m++)
+   PrintFormat("[SIGNAL] %s dir=%s conf=%.1f mode=%s lot=%.2f tp=%.2f",
+               id, dir, conf, mode, lot, targetTP);
+
+   // Market layers
+   for(int m = 1; m <= InpNumMarket; m++)
    {
-      ulong ticket = 0;
-      bool ok = false;
-      if(type == "BUY")
+      ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+      double          px = (dir == "BUY") ? ask : bid;
+      ulong t = NativeSend(ot, px, sl, targetTP, lot,
+                           "Aurum Mkt#" + IntegerToString(m) + " " + id);
+      if(t > 0)
       {
-         ok = ExecuteNativeTradeWithLot(ORDER_TYPE_BUY, lotSize, currentAsk, stopLoss, targetTP, 
-                                        StringFormat("Aurum AI Mkt#%d %s", m, signalId), ticket);
-      }
-      else if(type == "SELL")
-      {
-         ok = ExecuteNativeTradeWithLot(ORDER_TYPE_SELL, lotSize, currentBid, stopLoss, targetTP, 
-                                        StringFormat("Aurum AI Mkt#%d %s", m, signalId), ticket);
-      }
-
-      if(ok)
-      {
-         executedOrders++;
-         if(firstTicket == 0) firstTicket = ticket;
-         PrintFormat("🎯 [MARKET LAYER #%d EXECUTED] Ticket #%I64u | Sinyal %s | Lot: %.2f | TP: %.2f",
-                     m, ticket, signalId, lotSize, targetTP);
+         opened++;
+         if(firstTicket == 0) firstTicket = t;
+         PrintFormat("[MKT#%d] ticket=%I64u px=%.2f lot=%.2f", m, t, px, lot);
       }
    }
 
-   // 2. Eksekusi 2x Limit Pullback Orders (Discount Zone Layer)
-   for(int l = 1; l <= InpNumLimitLayers; l++)
+   // Limit layers
+   for(int l = 1; l <= InpNumLimit; l++)
    {
-      ulong ticket = 0;
-      bool ok = false;
-      if(type == "BUY")
+      ulong  t  = 0;
+      string cm = "Aurum Lmt#" + IntegerToString(l) + " " + id;
+      if(dir == "BUY")
       {
-         double limitPrice = currentAsk - (stepPrice * l);
-         ok = ExecuteNativeTradeWithLot(ORDER_TYPE_BUY_LIMIT, lotSize, limitPrice, stopLoss, targetTP, 
-                                        StringFormat("Aurum AI Lmt#%d %s", l, signalId), ticket);
-         if(ok)
-         {
-            executedOrders++;
-            PrintFormat("⏳ [BUY LIMIT LAYER #%d PLACED] Ticket #%I64u | Limit Price: %.2f | Lot: %.2f",
-                        l, ticket, limitPrice, lotSize);
-         }
+         double lp = ask - (step * l);
+         t = NativeSend(ORDER_TYPE_BUY_LIMIT, lp, sl, targetTP, lot, cm);
+         if(t > 0) { opened++; PrintFormat("[BUY_LMT#%d] ticket=%I64u px=%.2f", l, t, lp); }
       }
-      else if(type == "SELL")
+      else
       {
-         double limitPrice = currentBid + (stepPrice * l);
-         ok = ExecuteNativeTradeWithLot(ORDER_TYPE_SELL_LIMIT, lotSize, limitPrice, stopLoss, targetTP, 
-                                        StringFormat("Aurum AI Lmt#%d %s", l, signalId), ticket);
-         if(ok)
-         {
-            executedOrders++;
-            PrintFormat("⏳ [SELL LIMIT LAYER #%d PLACED] Ticket #%I64u | Limit Price: %.2f | Lot: %.2f",
-                        l, ticket, limitPrice, lotSize);
-         }
+         double lp = bid + (step * l);
+         t = NativeSend(ORDER_TYPE_SELL_LIMIT, lp, sl, targetTP, lot, cm);
+         if(t > 0) { opened++; PrintFormat("[SELL_LMT#%d] ticket=%I64u px=%.2f", l, t, lp); }
       }
    }
 
-   if(executedOrders > 0)
+   if(opened > 0)
    {
-      g_lastProcessedId   = signalId;
-      g_activeSignalId    = signalId;
-      g_activeConfidence  = confidence;
-      g_activeMode        = execMode;
-      g_activeTP1         = takeProfit1;
-      g_activeTP2         = takeProfit2;
-      g_isHalfSecuredDone = false;
-
-      SendAck(signalId, firstTicket, (type == "BUY" ? currentAsk : currentBid), "OPENED", currentSpread);
-      PrintFormat("🔥 [MULTI-LAYER SCALPER ENGAGED] Sinyal %s | Mode: %s | Total %d Layer Dibuka | Lot/Layer: %.2f",
-                  signalId, execMode, executedOrders, lotSize);
+      g_lastId     = id;
+      g_activeId   = id;
+      g_activeMode = mode;
+      g_tp1        = tp1;
+      g_tp2        = tp2;
+      g_halfDone   = false;
+      SendAck(id, firstTicket, (dir == "BUY" ? ask : bid), "OPENED", spread);
+      PrintFormat("[DONE] Signal %s | mode=%s | %d layers | lot/layer=%.2f",
+                  id, mode, opened, lot);
    }
 }
 //+------------------------------------------------------------------+

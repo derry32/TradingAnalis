@@ -1,0 +1,38 @@
+name: Compile MT5 EA
+
+on:
+  push:
+    paths:
+      - 'mt5/**'
+      - '.github/workflows/compile_ea.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile MQL5 EA
+        uses: fx31337/mql-compile-action@master
+        with:
+          path: 'mt5/AurumAI_Executor.mq5'
+          verbose: 'true'
+
+      - name: Upload compiled .ex5 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AurumAI_Executor
+          path: mt5/AurumAI_Executor.ex5
+
+      - name: Commit and push compiled .ex5
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add mt5/AurumAI_Executor.ex5
+          git commit -m "Auto-compile AurumAI_Executor.ex5 [skip ci]" || exit 0
+          git push
