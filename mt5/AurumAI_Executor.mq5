@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright   "Aurum AI Quant Systems 2026"
 #property link        "https://aurum-ai.io"
-#property version     "2.00"
+#property version     "2.10"
 #property description "Aurum AI Autonomous Execution Engine for MetaTrader 5"
 #property description "Automatically connects with Aurum AI VPS backend to execute XAU/USD signals."
 
@@ -21,15 +21,39 @@ input group "=== [ Risk & Execution Guard ] ==="
 input ulong    InpMagicNumber     = 778899;                          // Magic Number (Order ID Isolation)
 input double   InpFixedLot        = 0.01;                            // Lot Size (Default: 0.01 Demo Safe)
 input int      InpMaxSpreadPoints = 400;                             // Max Spread (Points, 400 = 40 pips on Gold)
-input ulong    InpSlippage        = 20;                              // Max Slippage (Points)
+input ulong    InpSlippage        = 30;                              // Max Slippage (Points)
 input bool     InpDemoOnlyGuard   = true;                            // Demo Account Only Guard (Safety)
 input bool     InpUseTP1Only      = true;                            // Default TP Target (true: TP1, false: TP2)
+input bool     InpForceMarketExec = false;                           // Force Market Order (If true, ignores Limit and buys/sells instantly)
 
 //--- Global Variables
 CTrade         g_trade;
 string         g_lastProcessedId  = "";
 datetime       g_lastPollTime     = 0;
 bool           g_isInitialized    = false;
+
+//+------------------------------------------------------------------+
+//| Auto-detect and set broker-supported Order Filling Type          |
+//+------------------------------------------------------------------+
+void ConfigureOrderFilling()
+{
+   uint filling = (uint)SymbolInfoInteger(_Symbol, SYMBOL_FILLING_MODE);
+   if((filling & SYMBOL_FILLING_IOC) != 0)
+   {
+      g_trade.SetTypeFilling(ORDER_FILLING_IOC);
+      Print("⚙️ [Order Filling] Menggunakan mode: ORDER_FILLING_IOC");
+   }
+   else if((filling & SYMBOL_FILLING_FOK) != 0)
+   {
+      g_trade.SetTypeFilling(ORDER_FILLING_FOK);
+      Print("⚙️ [Order Filling] Menggunakan mode: ORDER_FILLING_FOK");
+   }
+   else
+   {
+      g_trade.SetTypeFilling(ORDER_FILLING_RETURN);
+      Print("⚙️ [Order Filling] Menggunakan mode: ORDER_FILLING_RETURN");
+   }
+}
 
 //+------------------------------------------------------------------+
 //| Simple JSON parser helper for strings                            |
@@ -100,7 +124,7 @@ string SendGetRequest(string url)
       int err = GetLastError();
       if(err == 4014)
       {
-         Print("❌ [Aurum AI Error] WebRequest URL not allowed! Add '", InpApiUrl, "' to Tools -> Options -> Expert Advisors -> Allow WebRequest");
+         Print("❌ [Aurum AI Error] WebRequest URL belum diizinkan! Masukkan '", InpApiUrl, "' ke Tools -> Options -> Expert Advisors -> Allow WebRequest for listed URL");
       }
       else
       {
@@ -143,21 +167,21 @@ int OnInit()
       long accountMode = AccountInfoInteger(ACCOUNT_TRADE_MODE);
       if(accountMode != ACCOUNT_TRADE_MODE_DEMO)
       {
-         Alert("🚨 [SECURITY WARNING] EA di-lock dalam Mode DEMO ONLY! Akun ini terdeteksi sebagai REAL. EA otomatis dimatikan.");
+         Alert("🚨 [SECURITY WARNING] EA di-lock dalam Mode DEMO ONLY! Akun ini terdeteksi sebagai REAL. EA otomatis dimatikan demi keamanan.");
          return INIT_FAILED;
       }
    }
 
-   // 2. Setup Trade Instance
+   // 2. Setup Trade Instance & Dynamic Filling
    g_trade.SetExpertMagicNumber(InpMagicNumber);
    g_trade.SetDeviationInPoints(InpSlippage);
-   g_trade.SetTypeFilling(ORDER_FILLING_FOK);
+   ConfigureOrderFilling();
 
    // 3. Start Polling Timer
    EventSetTimer(InpTimerSeconds);
    
    Print("=================================================");
-   Print("🚀 [Aurum AI] MT5 Autonomous Executor Started!");
+   Print("🚀 [Aurum AI] MT5 Autonomous Executor Started v2.1!");
    Print("🔗 Connecting to: ", InpApiUrl);
    Print("🛡️ Magic Number : ", InpMagicNumber);
    Print("💰 Fixed Lot     : ", InpFixedLot);
@@ -216,8 +240,6 @@ void OnTimer()
    double stopLoss      = GetJsonDouble(json, "stopLoss");
    double takeProfit1   = GetJsonDouble(json, "takeProfit1");
    double takeProfit2   = GetJsonDouble(json, "takeProfit2");
-   int    validSeconds  = (int)GetJsonDouble(json, "validSeconds");
-   if(validSeconds <= 0) validSeconds = 900;
 
    double targetTP = InpUseTP1Only ? takeProfit1 : takeProfit2;
 
@@ -225,7 +247,7 @@ void OnTimer()
    long currentSpread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    if(currentSpread > InpMaxSpreadPoints)
    {
-      PrintFormat("⚠️ [Spread Filter] Spread saat ini %d pts melebihi batas toleransi %d pts. Entry sinyal %s dibatalkan.",
+      PrintFormat("⚠️ [Spread Filter] Spread saat ini %d pts melebihi batas toleransi %d pts. Entry sinyal %s ditunda.",
                   currentSpread, InpMaxSpreadPoints, signalId);
       return;
    }
@@ -234,9 +256,12 @@ void OnTimer()
    bool success = false;
    ulong orderTicket = 0;
 
-   if(executionType == "MARKET")
+   // Re-configure filling mode just in case symbol context changed
+   ConfigureOrderFilling();
+
+   // Instant Market Execution or Limit Execution
+   if(executionType == "MARKET" || InpForceMarketExec)
    {
-      // Instant Market Execution
       if(type == "BUY")
       {
          double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -262,27 +287,47 @@ void OnTimer()
    }
    else if(executionType == "LIMIT")
    {
-      // Pullback Pending Limit Execution
-      datetime expiryTime = TimeCurrent() + validSeconds;
+      double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
 
       if(type == "BUY")
       {
-         success = g_trade.BuyLimit(InpFixedLot, entryPrice, _Symbol, stopLoss, targetTP, ORDER_TIME_SPECIFIED, expiryTime, "Aurum AI Limit " + signalId);
+         // Jika harga limit berada di atas atau sama dengan Ask saat ini, eksekusi Buy Instant
+         if(entryPrice >= currentAsk)
+         {
+            success = g_trade.Buy(InpFixedLot, _Symbol, currentAsk, stopLoss, targetTP, "Aurum AI " + signalId);
+         }
+         else
+         {
+            // Buy Limit Pending Order (Good Till Cancelled - GTC)
+            success = g_trade.BuyLimit(InpFixedLot, entryPrice, _Symbol, stopLoss, targetTP, ORDER_TIME_GTC, 0, "Aurum AI Limit " + signalId);
+         }
+
          if(success)
          {
             orderTicket = g_trade.ResultOrder();
-            PrintFormat("⏳ [BUY LIMIT PLACED] Ticket #%I64u | Sinyal %s | Limit: %.2f | SL: %.2f | TP: %.2f | Expiry: %s",
-                        orderTicket, signalId, entryPrice, stopLoss, targetTP, TimeToString(expiryTime));
+            PrintFormat("⏳ [BUY LIMIT / MARKET PLACED] Ticket #%I64u | Sinyal %s | Entry: %.2f | SL: %.2f | TP: %.2f",
+                        orderTicket, signalId, entryPrice, stopLoss, targetTP);
          }
       }
       else if(type == "SELL")
       {
-         success = g_trade.SellLimit(InpFixedLot, entryPrice, _Symbol, stopLoss, targetTP, ORDER_TIME_SPECIFIED, expiryTime, "Aurum AI Limit " + signalId);
+         // Jika harga limit berada di bawah atau sama dengan Bid saat ini, eksekusi Sell Instant
+         if(entryPrice <= currentBid)
+         {
+            success = g_trade.Sell(InpFixedLot, _Symbol, currentBid, stopLoss, targetTP, "Aurum AI " + signalId);
+         }
+         else
+         {
+            // Sell Limit Pending Order (Good Till Cancelled - GTC)
+            success = g_trade.SellLimit(InpFixedLot, entryPrice, _Symbol, stopLoss, targetTP, ORDER_TIME_GTC, 0, "Aurum AI Limit " + signalId);
+         }
+
          if(success)
          {
             orderTicket = g_trade.ResultOrder();
-            PrintFormat("⏳ [SELL LIMIT PLACED] Ticket #%I64u | Sinyal %s | Limit: %.2f | SL: %.2f | TP: %.2f | Expiry: %s",
-                        orderTicket, signalId, entryPrice, stopLoss, targetTP, TimeToString(expiryTime));
+            PrintFormat("⏳ [SELL LIMIT / MARKET PLACED] Ticket #%I64u | Sinyal %s | Entry: %.2f | SL: %.2f | TP: %.2f",
+                        orderTicket, signalId, entryPrice, stopLoss, targetTP);
          }
       }
    }
