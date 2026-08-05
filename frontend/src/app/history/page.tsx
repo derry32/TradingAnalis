@@ -235,10 +235,26 @@ export default function HistoryPage() {
 
                     <td className="p-4 align-top">
                       <div className="flex flex-col gap-1.5">
-                        <div className="inline-flex items-center gap-2 px-2 py-1 rounded bg-gray-800/50 border border-gray-700/50 w-fit">
-                          <span className="text-[9px] font-bold text-gray-500">E</span>
-                          <span className="font-mono text-xs text-gray-300">{ext.entryZone || sig.entryPrice?.toFixed(2)}</span>
-                        </div>
+                        {(() => {
+                          const raw = ext.entryZone || (sig.entryPrice ? sig.entryPrice.toFixed(2) : '-');
+                          const match = raw.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+                          const priceDisplay = match ? match[1]?.trim() : raw;
+                          const badgeTag = match && match[2] ? match[2].trim() : null;
+
+                          return (
+                            <div className="flex flex-wrap items-center gap-1.5 max-w-[200px]">
+                              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-gray-800/80 border border-gray-700/60">
+                                <span className="text-[9px] font-bold text-gray-400">ENTRY</span>
+                                <span className="font-mono text-xs font-semibold text-gray-200">{priceDisplay}</span>
+                              </div>
+                              {badgeTag && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20 font-medium">
+                                  {badgeTag}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })()}
                         <div className="flex items-center gap-1.5">
                           <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
                             <span className="text-[9px] font-bold text-emerald-500/70">TP</span>
@@ -388,10 +404,26 @@ export default function HistoryPage() {
 
                       {/* Targets Row */}
                       <div className="flex flex-col gap-2">
-                        <div className="inline-flex items-center gap-2 px-2 py-1.5 rounded bg-gray-800/50 border border-gray-700/50 w-full justify-between">
-                          <span className="text-[10px] font-bold text-gray-500">ENTRY</span>
-                          <span className="font-mono text-xs text-gray-300">{ext.entryZone || sig.entryPrice?.toFixed(2)}</span>
-                        </div>
+                        {(() => {
+                          const raw = ext.entryZone || (sig.entryPrice ? sig.entryPrice.toFixed(2) : '-');
+                          const match = raw.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+                          const priceDisplay = match ? match[1]?.trim() : raw;
+                          const badgeTag = match && match[2] ? match[2].trim() : null;
+
+                          return (
+                            <div className="flex items-center justify-between px-2.5 py-1.5 rounded bg-gray-800/80 border border-gray-700/60">
+                              <span className="text-[10px] font-bold text-gray-400">ENTRY</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-xs font-semibold text-gray-200">{priceDisplay}</span>
+                                {badgeTag && (
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20 font-medium">
+                                    {badgeTag}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
                         <div className="flex items-center gap-2 w-full">
                           <div className="inline-flex items-center justify-between px-2 py-1.5 rounded bg-emerald-500/10 border border-emerald-500/20 flex-1">
                             <span className="text-[10px] font-bold text-emerald-500/70">TP</span>

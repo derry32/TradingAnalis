@@ -298,16 +298,32 @@ export default function Home() {
                     </div>
 
                     {/* Price Targets Box */}
-                    <div className="bg-[#0B0F19]/80 rounded-lg p-2.5 border border-gray-800/70 space-y-2">
-                      {/* Entry Zone Full-width */}
-                      <div className="flex items-center justify-between bg-gray-900/90 px-2.5 py-1.5 rounded border border-gray-800/80">
-                        <span className="text-[9px] text-gray-400 uppercase font-bold tracking-wider flex items-center gap-1">
-                          <Crosshair size={11} className="text-blue-400" /> ENTRY
-                        </span>
-                        <span className="font-mono text-xs font-bold text-gray-100 tracking-tight whitespace-nowrap">
-                          {ext.entryZone || sig.entryPrice?.toFixed(2) || '-'}
-                        </span>
-                      </div>
+                    <div className="bg-[#0B0F19]/90 rounded-lg p-2.5 border border-gray-800/80 space-y-2">
+                      {/* Entry Zone Full-width with Clean Layout */}
+                      {(() => {
+                        const raw = ext.entryZone || (sig.entryPrice ? sig.entryPrice.toFixed(2) : '-');
+                        const match = raw.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+                        const priceDisplay = match ? match[1]?.trim() : raw;
+                        const badgeTag = match && match[2] ? match[2].trim() : null;
+
+                        return (
+                          <div className="bg-gray-900/90 px-2.5 py-2 rounded-md border border-gray-800/90 space-y-1">
+                            <div className="flex items-center justify-between gap-1.5">
+                              <span className="text-[9px] text-gray-400 uppercase font-bold tracking-wider flex items-center gap-1">
+                                <Crosshair size={11} className="text-blue-400" /> ENTRY ZONE
+                              </span>
+                              {badgeTag && (
+                                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/25 whitespace-nowrap">
+                                  {badgeTag}
+                                </span>
+                              )}
+                            </div>
+                            <div className="font-mono text-[13px] font-bold text-gray-100 tracking-tight leading-none pt-0.5">
+                              {priceDisplay}
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* SL, TP1, TP2 Grid (3 Kolom Simetris) */}
                       <div className="grid grid-cols-3 gap-1.5">
