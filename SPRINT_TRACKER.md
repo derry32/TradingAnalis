@@ -87,7 +87,42 @@
 
 ---
 
-## 💡 Masa Depan: SPRINT 6 (Fase 2 — Strategi Lanjutan & Monetisasi)
+## 🚀 SPRINT 6 (Multi-Agent Quant Ensemble & Downstream LLM Explainer)
+**Status:** 📋 Backlog / Perencanaan Arsitektur
+**Fokus:** Mengadopsi arsitektur *Deterministic Quant Core + Generative Edge*. Memecah analisis menjadi 5 Micro-Engines modular + 1 Master Aggregator, serta memposisikan LLM murni di tahap akhir sebagai *Narrator & Explainer* (hemat biaya, 100% konsisten, anti-halusinasi).
+
+### 📐 Arsitektur Alur Sistem V2.0:
+```
+Market Data (Tick / M5)
+      │
+      ▼
+[Quant Micro-Engines (AI 1-5)]
+(Market Structure, Liquidity SMC, Trend Quant, News Guard, Risk Engine)
+      │
+      ▼
+[Master AI Consensus & Scoring Matrix (AI 6)] ─── Skor < 50/70 ──► [WAIT / Filtered]
+      │ (Sinyal Valid Terbentuk)
+      ▼
+[Downstream LLM Explainer (AI 7)] ──(Fallback jika timeout)──► Template Bawaan
+      │
+      ▼
+Broadcast ke Telegram & Dashboard User
+```
+
+### Backlog Sprint 6 (Multi-Agent Quant Ensemble)
+| ID | Agen / Tipe | Judul | Deskripsi Singkat | Prioritas |
+|----|-------------|-------|-------------------|-----------|
+| M-01 | AI 1 (Quant) | Market Structure Engine | Deteksi otomatis titik struktur: Higher High (HH), Higher Low (HL), Lower High (LH), Lower Low (LL), BOS (*Break of Structure*), dan CHoCH (*Change of Character*). | 🔴 Sangat Tinggi |
+| M-02 | AI 2 (Quant) | Liquidity & SMC Engine | Deteksi konsep *Smart Money*: Equal High/Low (EQH/EQL), Liquidity Sweep, Stop Hunt, Order Block (OB), dan Fair Value Gap (FVG). | 🔴 Sangat Tinggi |
+| M-03 | AI 3 (Quant) | Trend & Momentum Engine | Kalkulasi indikator kuantitatif cepat: Trend EMA, Volatilitas ATR, Dynamic RSI, MACD Histogram, dan ADX Strength. | 🔴 Sangat Tinggi |
+| M-04 | AI 4 (Quant) | Macro News & Impact Engine | Kalender makro otomatis (CPI, NFP, FOMC, Fed Rate, Powell) dengan filter waktu pra/saat rilis berita (*Emergency Lock Mode*). | 🟠 Tinggi |
+| M-05 | AI 5 (Quant) | Adaptive Risk Engine | Kalkulasi otomatis: Dynamic SL (Swing + ATR buffer), Multiple TP (1:1.8 & 1:2.5), Lot Size berbasis % Equity Modal, dan Drawdown Guard. | 🔴 Sangat Tinggi |
+| M-06 | AI 6 (Consensus) | Master AI Decision Aggregator | Menggabungkan data dari AI 1-5 dengan *Weighted Scoring Matrix* 100 Poin untuk menghasilkan keputusan final (BUY/SELL/WAIT) + Skor Confidence. | 🔴 Sangat Tinggi |
+| M-07 | AI 7 (LLM Edge) | Downstream LLM Explainer | LLM hanya dipanggil di hilir (saat sinyal valid) untuk menyusun narasi edukatif ke user (Reason, Setup Type, Risk context) + fail-safe template jika timeout. | 🟠 Tinggi |
+
+---
+
+## 💡 Masa Depan: SPRINT 7 (Ekosistem Lanjutan & Monetisasi)
 **Status:** Perencanaan Panjang (Icebox)
 
 | ID | Tipe | Judul | Deskripsi Singkat |
