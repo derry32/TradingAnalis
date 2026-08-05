@@ -1,7 +1,15 @@
-import TelegramBot from 'node-telegram-bot-api';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const bot = new TelegramBot('8725968521:AAGOBImnjSBW3T3YT66DYHA74Q3-SY8irA4');
-const chatId = '-1003949398310';
+const token = process.env.TELEGRAM_BOT_TOKEN || '';
+const chatId = process.env.TELEGRAM_CHAT_ID || '';
+
+if (!token || !chatId) {
+  console.error('Error: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID environment variable is missing.');
+  process.exit(1);
+}
+
+const bot = new TelegramBot(token);
 
 const signal = {
   strategy: 'SCALPER',
