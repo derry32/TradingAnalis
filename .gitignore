@@ -1,3 +1,18 @@
+# OS & IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Automation & Debug scripts
+.exp/
+*.log
+
+# Dependencies & Build
+node_modules/
+dist/
+.env
+
+# Temp files
 readme.md
 check_candles.js
 test_timeout.js
