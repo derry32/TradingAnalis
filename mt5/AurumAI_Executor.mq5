@@ -86,7 +86,7 @@ double GetATR(ENUM_TIMEFRAMES tf = PERIOD_M5)
 {
    if(g_atrHandle == INVALID_HANDLE)
       g_atrHandle = iATR(_Symbol, tf, 14);
-   double atr[1];
+   double atr[];
    ArraySetAsSeries(atr, true);
    if(CopyBuffer(g_atrHandle, 0, 0, 1, atr) > 0)
       return atr[0];
