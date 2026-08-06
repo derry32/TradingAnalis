@@ -5,41 +5,71 @@
 //+------------------------------------------------------------------+
 #property copyright   "Aurum AI Quant Systems 2026"
 #property link        "https://aurum-ai.io"
-#property version     "3.20"
-#property description "Aurum AI Multi-Layer Scalper - Pure Native, No Includes, No Groups"
+#property version     "4.10"
+#property description "Aurum AI Multi-Layer Scalper v4.10 (Sprint 1: Core Protection & Smart Exit Framework)"
 
 // ZERO #include directives - pure native MQL5 only
 
-//--- Inputs: API
+//--- Inputs: API & Polling
 input string InpApiUrl       = "http://43.156.79.235:3002";      // Backend URL
 input string InpApiToken     = "aurum_secret_bridge_token_2026"; // Secret Token
-input int    InpTimerSeconds = 1;                                 // Polling (sec)
+input int    InpTimerSeconds = 1;                                 // Polling Interval (sec)
 
-//--- Inputs: Scalper layers
-input int    InpNumMarket    = 3;     // Market Order Layers (default 3)
-input int    InpNumLimit     = 2;     // Limit Order Layers  (default 2)
+//--- Inputs: Scalper Layers
+input int    InpNumMarket    = 3;     // Market Order Layers
+input int    InpNumLimit     = 2;     // Limit Order Layers
 input double InpMinLot       = 0.03;  // Lot Confidence < 70%
 input double InpMidLot       = 0.05;  // Lot Confidence 70-79%
 input double InpMaxLot       = 0.09;  // Lot Confidence >= 80%
 input int    InpStepPoints   = 35;    // Step between limit layers (pts)
 input int    InpMaxPositions = 15;    // Max simultaneous positions
 
-//--- Inputs: Risk
+//--- Inputs: Risk & Basic Guards
 input ulong  InpMagic        = 778899; // Magic Number
 input int    InpMaxSpread    = 400;    // Max Spread pts
 input ulong  InpSlippage     = 30;     // Slippage pts
 input bool   InpDemoOnly     = true;   // Demo Guard
-input bool   InpBasketTP     = true;   // Basket TP (conf < 70%)
-input bool   InpHalfSecured  = true;   // Half-Secured BEP (conf >= 75%)
+
+//=== Inputs: Sprint 1 Smart Exit Framework ===
+input double InpBEMultiplier      = 1.2;  // BE Trigger: MAX(1R, ATR * mult)
+input double InpPartialR          = 1.5;  // Partial TP Trigger (x R)
+input double InpTrailingStartR    = 2.0;  // Trailing Start (x R)
+input double InpTrailingATR2R     = 2.0;  // Trailing Gap @ >= 2R (x ATR)
+input double InpTrailingATR3R     = 1.5;  // Trailing Gap @ >= 3R (x ATR)
+input double InpTrailingATR4R     = 1.0;  // Trailing Gap @ >= 4R (x ATR)
+
+//--- Dynamic Time Stop
+input double InpTimeStopMinR      = 0.5;  // Min Profit R to avoid Time Stop
+input double InpTSAtrSmall        = 1.5;  // ATR small threshold
+input double InpTSAtrLarge        = 5.0;  // ATR large threshold
+input int    InpTSMinsSmall       = 20;   // Time Stop if ATR small (min)
+input int    InpTSMinsNormal      = 30;   // Time Stop if ATR normal (min)
+input int    InpTSMinsLarge       = 45;   // Time Stop if ATR large (min)
+
+//--- Daily Risk Guard
+input double InpDailyMaxLossPct   = 3.0;  // Max Daily Loss % before lockdown
 
 //--- State globals
-string g_lastId      = "";
-string g_activeId    = "";
-string g_activeMode  = "";
-double g_tp1         = 0.0;
-double g_tp2         = 0.0;
-bool   g_halfDone    = false;
-bool   g_ready       = false;
+string   g_lastId            = "";
+string   g_activeId          = "";
+string   g_activeDir         = "";
+double   g_signalOpenPx      = 0.0;
+double   g_signalSL          = 0.0;
+double   g_tp1               = 0.0;
+double   g_tp2               = 0.0;
+double   g_initialR          = 0.0;
+double   g_signalConf        = 70.0;
+datetime g_signalOpenTime    = 0;
+bool     g_beDone            = false;
+bool     g_partialDone       = false;
+double   g_lastTrailingSL    = 0.0;
+int      g_atrHandle         = INVALID_HANDLE;
+bool     g_ready             = false;
+
+//--- Daily Guard Globals
+int      g_currentDay        = -1;
+double   g_dailyStartBalance = 0.0;
+bool     g_dailyGuardBlocked = false;
 
 //+------------------------------------------------------------------+
 ENUM_ORDER_TYPE_FILLING GetFilling()
@@ -48,6 +78,18 @@ ENUM_ORDER_TYPE_FILLING GetFilling()
    if((m & SYMBOL_FILLING_IOC) != 0) return ORDER_FILLING_IOC;
    if((m & SYMBOL_FILLING_FOK) != 0) return ORDER_FILLING_FOK;
    return ORDER_FILLING_RETURN;
+}
+
+//+------------------------------------------------------------------+
+double GetATR(ENUM_TIMEFRAMES tf = PERIOD_M5)
+{
+   if(g_atrHandle == INVALID_HANDLE)
+      g_atrHandle = iATR(_Symbol, tf, 14);
+   double atr[1];
+   ArraySetAsSeries(atr, true);
+   if(CopyBuffer(g_atrHandle, 0, 0, 1, atr) > 0)
+      return atr[0];
+   return 2.0; // safe default for Gold
 }
 
 //+------------------------------------------------------------------+
@@ -105,7 +147,7 @@ int CountPositions()
 //+------------------------------------------------------------------+
 void CloseAllPositions(string reason)
 {
-   Print("[BASKET CLOSE] " + reason);
+   Print("[CLOSE ALL] " + reason);
    for(int i = PositionsTotal()-1; i >= 0; i--)
    {
       ulong t = PositionGetTicket(i);
@@ -153,37 +195,39 @@ void CloseAllPositions(string reason)
 }
 
 //+------------------------------------------------------------------+
-void ManagePositions()
+double GetCurrentProfitDistance()
 {
-   int open = CountPositions();
-   if(open == 0) { g_halfDone = false; return; }
-
+   if(g_activeDir == "" || g_signalOpenPx <= 0.0) return 0.0;
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
 
-   // Basket TP close
-   if(InpBasketTP && g_activeMode == "BASKET" && g_tp1 > 0.0)
-   {
-      bool hit = false;
-      for(int i = PositionsTotal()-1; i >= 0; i--)
-      {
-         ulong t = PositionGetTicket(i);
-         if(t > 0 &&
-            PositionGetString(POSITION_SYMBOL) == _Symbol &&
-            (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagic)
-         {
-            int pt = (int)PositionGetInteger(POSITION_TYPE);
-            if(pt == POSITION_TYPE_BUY  && bid >= g_tp1) hit = true;
-            if(pt == POSITION_TYPE_SELL && ask <= g_tp1) hit = true;
-         }
-      }
-      if(hit) { CloseAllPositions("Basket TP1 hit for " + g_activeId); g_activeId = ""; }
-   }
+   if(g_activeDir == "BUY")
+      return (bid - g_signalOpenPx);
+   else if(g_activeDir == "SELL")
+      return (g_signalOpenPx - ask);
 
-   // Half-secured BEP
-   if(InpHalfSecured && g_activeMode == "HALF" && !g_halfDone && g_tp1 > 0.0)
+   return 0.0;
+}
+
+//+------------------------------------------------------------------+
+// Task 2.1: Adaptive Break Even
+//+------------------------------------------------------------------+
+void CheckAdaptiveBreakEven()
+{
+   if(g_beDone || g_activeId == "" || g_initialR <= 0.0) return;
+
+   double profitDist = GetCurrentProfitDistance();
+   double atr        = GetATR(PERIOD_M5);
+   double trigger    = MathMax(g_initialR, atr * InpBEMultiplier);
+
+   if(profitDist >= trigger)
    {
-      bool hit = false;
+      double pt     = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      long   spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      double buffer = (double)spread * pt;
+      double newSL  = (g_activeDir == "BUY") ? (g_signalOpenPx + buffer) : (g_signalOpenPx - buffer);
+
+      int count = 0;
       for(int i = PositionsTotal()-1; i >= 0; i--)
       {
          ulong t = PositionGetTicket(i);
@@ -191,62 +235,208 @@ void ManagePositions()
             PositionGetString(POSITION_SYMBOL) == _Symbol &&
             (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagic)
          {
-            int pt = (int)PositionGetInteger(POSITION_TYPE);
-            if(pt == POSITION_TYPE_BUY  && bid >= g_tp1) hit = true;
-            if(pt == POSITION_TYPE_SELL && ask <= g_tp1) hit = true;
-         }
-      }
-      if(hit)
-      {
-         PrintFormat("[HALF-SECURED] %s TP1=%.2f hit — closing half, BEP rest", g_activeId, g_tp1);
-         int half    = MathMax(1, open / 2);
-         int closed  = 0;
-         for(int i = PositionsTotal()-1; i >= 0; i--)
-         {
-            ulong t = PositionGetTicket(i);
-            if(t > 0 &&
-               PositionGetString(POSITION_SYMBOL) == _Symbol &&
-               (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagic)
+            double curSL = PositionGetDouble(POSITION_SL);
+            double curTP = PositionGetDouble(POSITION_TP);
+
+            bool needMod = false;
+            if(g_activeDir == "BUY"  && (curSL < newSL || curSL == 0.0)) needMod = true;
+            if(g_activeDir == "SELL" && (curSL > newSL || curSL == 0.0)) needMod = true;
+
+            if(needMod)
             {
-               if(closed < half)
-               {
-                  MqlTradeRequest req;
-                  MqlTradeResult  res;
-                  ZeroMemory(req);
-                  ZeroMemory(res);
-                  req.action   = TRADE_ACTION_DEAL;
-                  req.symbol   = _Symbol;
-                  req.position = t;
-                  req.volume   = PositionGetDouble(POSITION_VOLUME);
-                  int pt       = (int)PositionGetInteger(POSITION_TYPE);
-                  req.type     = (pt == POSITION_TYPE_BUY) ? ORDER_TYPE_SELL : ORDER_TYPE_BUY;
-                  req.price    = (req.type == ORDER_TYPE_SELL)
-                                 ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
-                                 : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-                  req.deviation    = InpSlippage;
-                  req.type_filling = GetFilling();
-                  req.magic        = InpMagic;
-                  if(OrderSend(req, res)) closed++;
-               }
-               else
-               {
-                  double openPx = PositionGetDouble(POSITION_PRICE_OPEN);
-                  double curTP  = PositionGetDouble(POSITION_TP);
-                  MqlTradeRequest req;
-                  MqlTradeResult  res;
-                  ZeroMemory(req);
-                  ZeroMemory(res);
-                  req.action   = TRADE_ACTION_SLTP;
-                  req.symbol   = _Symbol;
-                  req.position = t;
-                  req.sl       = openPx;
-                  req.tp       = curTP;
-                  if(!OrderSend(req, res))
-                     PrintFormat("[ModSLTP FAIL] ticket=%I64u err=%d", t, GetLastError());
-               }
+               MqlTradeRequest req;
+               MqlTradeResult  res;
+               ZeroMemory(req);
+               ZeroMemory(res);
+               req.action   = TRADE_ACTION_SLTP;
+               req.symbol   = _Symbol;
+               req.position = t;
+               req.sl       = NormalizeDouble(newSL, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
+               req.tp       = curTP;
+               if(OrderSend(req, res)) count++;
             }
          }
-         g_halfDone = true;
+      }
+
+      g_beDone = true;
+      PrintFormat("[BE] Signal %s | SL moved to %.2f (profit=%.2f >= trigger=MAX(1R=%.2f, ATR*%.1f=%.2f)=%.2f)",
+                  g_activeId, newSL, profitDist, g_initialR, InpBEMultiplier, (atr * InpBEMultiplier), trigger);
+   }
+}
+
+//+------------------------------------------------------------------+
+// Task 2.2: Dynamic Partial TP (Confidence-based)
+//+------------------------------------------------------------------+
+void CheckDynamicPartialTP()
+{
+   if(g_partialDone || g_activeId == "" || g_initialR <= 0.0) return;
+
+   double profitDist = GetCurrentProfitDistance();
+   double trigger    = InpPartialR * g_initialR;
+
+   if(profitDist >= trigger)
+   {
+      int open = CountPositions();
+      if(open <= 1) { g_partialDone = true; return; }
+
+      double closeRatio = 0.40;
+      if(g_signalConf >= 90.0)      closeRatio = 0.20;
+      else if(g_signalConf >= 75.0) closeRatio = 0.40;
+      else                          closeRatio = 0.60;
+
+      int toClose = MathMax(1, (int)MathRound((double)open * closeRatio));
+      if(toClose >= open) toClose = open - 1;
+
+      int closed = 0;
+      for(int i = PositionsTotal()-1; i >= 0 && closed < toClose; i--)
+      {
+         ulong t = PositionGetTicket(i);
+         if(t > 0 &&
+            PositionGetString(POSITION_SYMBOL) == _Symbol &&
+            (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagic)
+         {
+            MqlTradeRequest req;
+            MqlTradeResult  res;
+            ZeroMemory(req);
+            ZeroMemory(res);
+            req.action   = TRADE_ACTION_DEAL;
+            req.symbol   = _Symbol;
+            req.position = t;
+            req.volume   = PositionGetDouble(POSITION_VOLUME);
+            int pt       = (int)PositionGetInteger(POSITION_TYPE);
+            req.type     = (pt == POSITION_TYPE_BUY) ? ORDER_TYPE_SELL : ORDER_TYPE_BUY;
+            req.price    = (req.type == ORDER_TYPE_SELL)
+                           ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                           : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+            req.deviation    = InpSlippage;
+            req.type_filling = GetFilling();
+            req.magic        = InpMagic;
+            if(OrderSend(req, res)) closed++;
+         }
+      }
+
+      g_partialDone = true;
+      PrintFormat("[PARTIAL_TP] Signal %s | Conf=%.1f%% -> Closed %d/%d positions at profit %.2f (>= %.1fR)",
+                  g_activeId, g_signalConf, closed, open, profitDist, InpPartialR);
+   }
+}
+
+//+------------------------------------------------------------------+
+// Task 3.1: Tiered ATR Trailing Stop
+//+------------------------------------------------------------------+
+void CheckTieredTrailingStop()
+{
+   if(g_activeId == "" || g_initialR <= 0.0) return;
+
+   double profitDist = GetCurrentProfitDistance();
+   double rProfit    = profitDist / g_initialR;
+
+   if(rProfit < InpTrailingStartR) return;
+
+   double mult = InpTrailingATR2R;
+   if(rProfit >= 4.0)      mult = InpTrailingATR4R; // 1.0x ATR
+   else if(rProfit >= 3.0) mult = InpTrailingATR3R; // 1.5x ATR
+   else                    mult = InpTrailingATR2R; // 2.0x ATR
+
+   double atr   = GetATR(PERIOD_M5);
+   double gap   = atr * mult;
+   double bid   = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double ask   = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double pt    = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   int    dig   = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+
+   double candSL = (g_activeDir == "BUY") ? (bid - gap) : (ask + gap);
+   candSL = NormalizeDouble(candSL, dig);
+
+   for(int i = PositionsTotal()-1; i >= 0; i--)
+   {
+      ulong t = PositionGetTicket(i);
+      if(t > 0 &&
+         PositionGetString(POSITION_SYMBOL) == _Symbol &&
+         (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagic)
+      {
+         double curSL = PositionGetDouble(POSITION_SL);
+         double curTP = PositionGetDouble(POSITION_TP);
+
+         bool shouldUpdate = false;
+         if(g_activeDir == "BUY"  && candSL > (curSL + 2.0 * pt)) shouldUpdate = true;
+         if(g_activeDir == "SELL" && (candSL < (curSL - 2.0 * pt) || curSL == 0.0)) shouldUpdate = true;
+
+         if(shouldUpdate)
+         {
+            MqlTradeRequest req;
+            MqlTradeResult  res;
+            ZeroMemory(req);
+            ZeroMemory(res);
+            req.action   = TRADE_ACTION_SLTP;
+            req.symbol   = _Symbol;
+            req.position = t;
+            req.sl       = candSL;
+            req.tp       = curTP;
+            if(OrderSend(req, res))
+            {
+               g_lastTrailingSL = candSL;
+               PrintFormat("[TRAILING-%.1fR] Signal %s | SL moved to %.2f (gap=%.2f, ATR*%.1f)",
+                           rProfit, g_activeId, candSL, gap, mult);
+            }
+         }
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+// Task 4.1: Dynamic Time Stop
+//+------------------------------------------------------------------+
+void CheckDynamicTimeStop()
+{
+   if(g_activeId == "" || g_signalOpenTime == 0 || CountPositions() == 0) return;
+
+   int elapsedMins = (int)((TimeCurrent() - g_signalOpenTime) / 60);
+   double atr      = GetATR(PERIOD_M5);
+   int maxMins     = InpTSMinsNormal;
+
+   if(atr < InpTSAtrSmall)      maxMins = InpTSMinsSmall;  // 20 min
+   else if(atr > InpTSAtrLarge) maxMins = InpTSMinsLarge;  // 45 min
+
+   double profitDist = GetCurrentProfitDistance();
+   double minProfitR = InpTimeStopMinR * g_initialR;
+
+   if(elapsedMins >= maxMins && profitDist < minProfitR)
+   {
+      PrintFormat("[TIME_STOP] Signal %s | Open %dm >= max %dm, profit=%.2f < threshold=%.2f -> Closing all positions",
+                  g_activeId, elapsedMins, maxMins, profitDist, minProfitR);
+      CloseAllPositions("Time Stop (" + IntegerToString(elapsedMins) + "m, flat/slow momentum)");
+      g_activeId = "";
+      g_signalOpenTime = 0;
+   }
+}
+
+//+------------------------------------------------------------------+
+// Task 4.2: Daily Risk Guard
+//+------------------------------------------------------------------+
+void CheckDailyRiskGuard()
+{
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+
+   if(dt.day != g_currentDay)
+   {
+      g_currentDay        = dt.day;
+      g_dailyStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+      g_dailyGuardBlocked = false;
+      PrintFormat("[DAILY_GUARD] New Day %d/08/2026. Starting Balance: %.2f IDR/USD. Daily Guard Reset OK.",
+                  dt.day, g_dailyStartBalance);
+   }
+
+   double currentEquity = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(g_dailyStartBalance > 0.0)
+   {
+      double lossPct = (g_dailyStartBalance - currentEquity) / g_dailyStartBalance * 100.0;
+      if(lossPct >= InpDailyMaxLossPct && !g_dailyGuardBlocked)
+      {
+         g_dailyGuardBlocked = true;
+         PrintFormat("🚨 [DAILY_GUARD TRIGGERED] Current Drawdown: %.2f%% >= Max Allowed: %.2f%%. New entries LOCKED for today!",
+                     lossPct, InpDailyMaxLossPct);
       }
    }
 }
@@ -343,17 +533,23 @@ int OnInit()
       return INIT_FAILED;
    }
 
+   g_atrHandle = iATR(_Symbol, PERIOD_M5, 14);
+
    EventSetTimer(InpTimerSeconds);
 
-   Print("============================");
-   Print("[Aurum AI] v3.20 Started");
-   Print("Layers : " + IntegerToString(InpNumMarket) + " Market + " + IntegerToString(InpNumLimit) + " Limit");
-   Print("Lots   : " + DoubleToString(InpMinLot,2) + "/" + DoubleToString(InpMidLot,2) + "/" + DoubleToString(InpMaxLot,2));
-   Print("URL    : " + InpApiUrl);
-   Print("============================");
+   Print("=================================================");
+   Print("🚀 [Aurum AI] v4.10 (Sprint 1: Core Protection) Started!");
+   Print("🔗 Connecting to: " + InpApiUrl);
+   Print("🛡️ Magic Number : " + IntegerToString(InpMagic));
+   Print("📊 Layers Plan  : " + IntegerToString(InpNumMarket) + " Market + " + IntegerToString(InpNumLimit) + " Limit");
+   Print("💰 Lot Sizing   : Dynamic (<70%:" + DoubleToString(InpMinLot,2) + " | 70-79%:" + DoubleToString(InpMidLot,2) + " | >=80%:" + DoubleToString(InpMaxLot,2) + ")");
+   Print("🛡️ Smart Exit   : Adaptive BE [MAX(1R, ATR*1.2)] | Dynamic Partial TP | Tiered Trailing Stop");
+   Print("⏱️ Time Stop    : Dynamic (" + IntegerToString(InpTSMinsSmall) + "m / " + IntegerToString(InpTSMinsNormal) + "m / " + IntegerToString(InpTSMinsLarge) + "m by ATR)");
+   Print("🛑 Daily Guard  : " + DoubleToString(InpDailyMaxLossPct, 1) + "% Max Drawdown Lockdown");
+   Print("=================================================");
 
    string r = HttpGet(InpApiUrl + "/api/mt5/status");
-   if(r != "") Print("[Server] " + r);
+   if(r != "") Print("🟢 [Server Status] " + r);
 
    g_ready = true;
    return INIT_SUCCEEDED;
@@ -363,15 +559,52 @@ int OnInit()
 void OnDeinit(const int reason)
 {
    EventKillTimer();
+   if(g_atrHandle != INVALID_HANDLE)
+   {
+      IndicatorRelease(g_atrHandle);
+      g_atrHandle = INVALID_HANDLE;
+   }
    Print("[Aurum AI] Deinitialized.");
 }
 
+//+------------------------------------------------------------------+
+// Task 5.1: High-Frequency Exit & Risk Management on each tick
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   if(!g_ready) return;
+
+   if(CountPositions() > 0)
+   {
+      CheckAdaptiveBreakEven();
+      CheckDynamicPartialTP();
+      CheckTieredTrailingStop();
+   }
+   else
+   {
+      if(g_activeId != "" && OrdersTotal() == 0)
+      {
+         g_activeId       = "";
+         g_signalOpenTime = 0;
+         g_beDone         = false;
+         g_partialDone    = false;
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+// Task 5.2: Low-Frequency Polling & Periodic Checks on timer (1 sec)
 //+------------------------------------------------------------------+
 void OnTimer()
 {
    if(!g_ready) return;
 
-   ManagePositions();
+   CheckDailyRiskGuard();
+
+   if(CountPositions() > 0)
+   {
+      CheckDynamicTimeStop();
+   }
 
    string json = HttpGet(InpApiUrl + "/api/mt5/signals/latest?token=" + InpApiToken);
    if(json == "") return;
@@ -379,6 +612,12 @@ void OnTimer()
 
    string id = JStr(json, "id");
    if(id == "" || id == g_lastId) return;
+
+   if(g_dailyGuardBlocked)
+   {
+      PrintFormat("[DAILY_GUARD BLOCKED] Skipping signal %s due to daily loss limit reached.", id);
+      return;
+   }
 
    if(CountPositions() >= InpMaxPositions)
    {
@@ -414,9 +653,10 @@ void OnTimer()
 
    ulong firstTicket = 0;
    int   opened      = 0;
+   double execPrice  = (dir == "BUY") ? ask : bid;
 
-   PrintFormat("[SIGNAL] %s dir=%s conf=%.1f mode=%s lot=%.2f tp=%.2f",
-               id, dir, conf, mode, lot, targetTP);
+   PrintFormat("[SIGNAL] %s dir=%s conf=%.1f mode=%s lot=%.2f tp=%.2f sl=%.2f",
+               id, dir, conf, mode, lot, targetTP, sl);
 
    // Market layers
    for(int m = 1; m <= InpNumMarket; m++)
@@ -454,15 +694,22 @@ void OnTimer()
 
    if(opened > 0)
    {
-      g_lastId     = id;
-      g_activeId   = id;
-      g_activeMode = mode;
-      g_tp1        = tp1;
-      g_tp2        = tp2;
-      g_halfDone   = false;
-      SendAck(id, firstTicket, (dir == "BUY" ? ask : bid), "OPENED", spread);
-      PrintFormat("[DONE] Signal %s | mode=%s | %d layers | lot/layer=%.2f",
-                  id, mode, opened, lot);
+      g_lastId         = id;
+      g_activeId       = id;
+      g_activeDir      = dir;
+      g_signalOpenPx   = execPrice;
+      g_signalSL       = sl;
+      g_tp1            = tp1;
+      g_tp2            = tp2;
+      g_initialR       = MathAbs(execPrice - sl);
+      g_signalConf     = conf;
+      g_signalOpenTime = TimeCurrent();
+      g_beDone         = false;
+      g_partialDone    = false;
+
+      SendAck(id, firstTicket, execPrice, "OPENED", spread);
+      PrintFormat("[DONE] Signal %s | mode=%s | %d layers | 1R=%.2f | lot=%.2f",
+                  id, mode, opened, g_initialR, lot);
    }
 }
 //+------------------------------------------------------------------+
