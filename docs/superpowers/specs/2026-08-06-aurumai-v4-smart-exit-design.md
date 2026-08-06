@@ -1,199 +1,326 @@
-# AurumAI EA v4.0 — Smart Exit + Micro Scalping Engine
+# AurumAI EA v4.1 — Trade Execution Framework
 
-**Date:** 2026-08-06  
-**Author:** Brainstorming Session  
-**Scope:** Pure MQL5 EA upgrade (no backend changes required)  
+**Date:** 2026-08-06 (Revised)
+**Author:** Brainstorming Session
+**Scope:** Pure MQL5 EA upgrade (no backend changes required)
 **File:** `mt5/AurumAI_Executor.mq5`
+**Rating:** Arsitektur ⭐⭐⭐⭐⭐ | Risk Management ⭐⭐⭐⭐⭐ | Scalping Logic ⭐⭐⭐⭐½ | Maintainability ⭐⭐⭐⭐⭐
 
 ---
 
 ## 1. Background
 
-Robot saat ini (`v3.2`) memiliki masalah:
-- Posisi sering sempat floating profit tapi akhirnya kena SL karena tidak ada logika exit yang adaptif
-- EA hanya tahu dua kondisi: **TP kena** atau **SL kena** — tidak ada middle-ground
-- Tidak ada kemampuan mengambil profit dari retracement selama posisi utama masih berjalan
+Robot `v3.2` memiliki masalah:
+- Posisi sering floating profit lalu kena SL — logika exit statis (hanya TP atau SL)
+- Tidak ada adaptive exit berdasarkan kondisi market saat itu
+- Tidak ada kemampuan mengambil profit dari retracement
 
-Tujuan upgrade ini: **lindungi profit lebih awal, dan tambah income dari retracement via Micro Scalping Engine**
+**Goal:** Bangun **Trade Execution Framework** berbasis data, bukan aturan kaku. Implementasi bertahap (3 sprint) agar setiap kelompok fitur bisa divalidasi dengan backtest sebelum lanjut.
 
 ---
 
-## 2. Arsitektur
+## 2. Arsitektur Final v4.1
 
 ```
 Backend AI Signal (BUY/SELL)
           │
           ▼
-   EA Entry Engine (existing)
-   3 Market + 2 Limit Pullback layers
+   Signal Engine (existing: 3 Market + 2 Limit)
           │
           ▼
-   ┌──────────────────────────────────┐
-   │       OnTick() — HIGH FREQ       │
-   │  1. Risk Guard (SL check)        │
-   │  2. Smart Exit Engine            │
-   │     ├── Break Even               │
-   │     ├── Partial TP               │
-   │     ├── ATR Trailing Stop        │
-   │     └── Momentum Exit (CHoCH)    │
-   │  3. Micro Scalping Engine        │
-   │     └── (guarded, see §4)        │
-   └──────────────────────────────────┘
+   ┌──────────────────────────────────────────────┐
+   │           OnTick() — HIGH FREQUENCY          │
+   │  1. Risk Guard (daily loss, volatility)      │
+   │  2. Smart Exit Engine                        │
+   │     ├── Adaptive Break Even                  │
+   │     ├── Dynamic Partial TP (confidence-based)│
+   │     ├── Tiered ATR Trailing                  │
+   │     ├── Momentum Exit (CHoCH + Volume/ADX)   │
+   │     └── Opportunity Cost Engine ⭐            │
+   │  3. Micro Scalping Engine (Sprint 3)         │
+   └──────────────────────────────────────────────┘
           │
-   ┌──────────────────────────────────┐
-   │       OnTimer() — LOW FREQ (1s)  │
-   │  1. Fetch backend signal         │
-   │  2. Time Stop check              │
-   │  3. AI Confidence drop check     │
-   │  4. News/Session guard check     │
-   │  5. Logging & cleanup            │
-   └──────────────────────────────────┘
+   ┌──────────────────────────────────────────────┐
+   │           OnTimer() — LOW FREQUENCY (1s)     │
+   │  1. Fetch backend signal + Confidence check  │
+   │  2. Dynamic Time Stop check                  │
+   │  3. Cooldown Manager check                   │
+   │  4. Daily Risk Guard check                   │
+   │  5. Logging & cleanup                        │
+   └──────────────────────────────────────────────┘
 ```
 
-**Reasoning:** Exit management (breakeven, trailing, counter) dijalankan di `OnTick` agar tidak telat saat XAUUSD bergerak cepat. Polling backend dan housekeeping tetap di `OnTimer`.
+**Reasoning:** Exit management berjalan di `OnTick` (tinggi frekuensi, XAUUSD bisa bergerak $5 dalam 1 detik). Polling backend, time-based checks, dan housekeeping di `OnTimer`.
 
 ---
 
-## 3. Smart Exit Engine
+## 3. Implementasi Bertahap
 
-Dievaluasi tiap tick, **berurutan** (prioritas dari atas ke bawah):
+### ✅ Sprint 1 — Core Protection (WAJIB, implement sekarang)
+Target: **kurangi trade yang balik dari profit ke SL**
 
-### 3.1 Break Even
-- **Trigger:** Profit per posisi ≥ +1R (1R = jarak SL asli)
-- **Aksi:** Modify SL semua posisi sinyal ini menjadi `open_price + spread`
-- **Note:** Tidak ada posisi yang bisa rugi lagi setelah ini
+| Fitur | Deskripsi |
+|---|---|
+| Adaptive Break Even | Trigger = MAX(1R, ATR×1.2) |
+| Dynamic Partial TP | Berdasarkan confidence AI |
+| Tiered ATR Trailing | Makin profit, makin rapat |
+| Dynamic Time Stop | Berdasarkan ATR volatility |
+| Daily Risk Guard | Stop trading jika daily loss ≥ X% |
+| Logger lengkap | Setiap aksi tercatat di Experts |
 
-### 3.2 Partial TP (40%)
-- **Trigger:** Total equity gain dari sinyal ini ≥ +1.5R
-- **Aksi:** Close 40% dari total posisi yang ada (pilih posisi dengan profit terbesar)
-- **Note:** 60% sisanya dibiarkan berjalan
+### 🔜 Sprint 2 — Exit Quality
+Target: **tingkatkan kualitas exit**
 
-### 3.3 ATR Trailing Stop
-- **Trigger:** Total equity gain dari sinyal ini ≥ +2R
-- **Aksi:** Setiap tick, SL digeser ke `current_price - (ATR_14 × 1.5)` (untuk BUY)
-- **Note:** SL hanya boleh naik, tidak boleh turun
+| Fitur | Deskripsi |
+|---|---|
+| Momentum Exit | CHoCH + Volume/ADX confirmation |
+| Opportunity Cost Engine | Close early jika kondisi lebih baik |
+| Session & Volatility Filter | London/NY/Overlap, pause saat news |
+| Trade Cooldown Manager | Pause setelah beruntun loss |
+| Volatility Explosion Guard | Pause saat ATR atau spread meledak |
 
-### 3.4 Momentum Exit (Structure-based)
-- **Trigger (untuk BUY):** Terdeteksi CHoCH bearish di M5 (swing low sebelumnya ditembus)
-- **Trigger (untuk SELL):** Terdeteksi CHoCH bullish di M5
-- **Aksi:** Close semua posisi sinyal ini
+### 🔮 Sprint 3 — Revenue Enhancement
+Target: **tambah profit dari retracement** (setelah Sprint 1 & 2 validated)
+
+| Fitur | Deskripsi |
+|---|---|
+| Micro Scalping Engine | Counter-scalp saat posisi utama BE |
+| Adaptive Counter Logic | Guard 5 wajib + min 2 dari 4 opsional |
+
+---
+
+## 4. Sprint 1: Smart Exit Engine (Detail)
+
+### 4.1 Adaptive Break Even
+- **Formula:** `trigger = MAX(1R, ATR_14(M5) × 1.2)`
+- **Aksi:** SL semua posisi sinyal ini → `open_price + spread`
+- **Reasoning:** Jika SL=10$ tapi ATR=2$, BE terlalu lambat. Jika SL=1$ tapi ATR=3$, BE terlalu cepat. Formula ini adaptif terhadap volatility aktual.
+
+### 4.2 Dynamic Partial TP (Confidence-based)
+Saat profit ≥ `InpPartialR` (default 1.5R), close sebagian posisi berdasarkan confidence AI terakhir:
+
+| Confidence Backend | % Posisi yang di-Close |
+|---|---|
+| ≥ 90% | 20% (AI masih sangat yakin, biarkan jalan) |
+| 75–89% | 40% (Yakin tapi tidak pasti) |
+| < 75% | 60% (AI kurang yakin, amankan lebih banyak) |
+
+### 4.3 Tiered ATR Trailing Stop
+Aktif setelah profit ≥ 2R. Jarak trailing makin rapat seiring profit naik:
+
+| Profit Level | Jarak Trailing |
+|---|---|
+| ≥ 2R | ATR_14 × 2.0 (longgar, kasih napas) |
+| ≥ 3R | ATR_14 × 1.5 |
+| ≥ 4R | ATR_14 × 1.0 (rapat, lock profit maksimal) |
+
+SL hanya boleh bergerak ke arah yang menguntungkan (naik untuk BUY, turun untuk SELL).
+
+### 4.4 Dynamic Time Stop
+Bukan waktu tetap, tapi adaptif berdasarkan volatility ATR saat entry:
+
+| ATR M5 saat Entry | Time Stop |
+|---|---|
+| Kecil (< 1.5 pips) | 20 menit (market flat, keluar cepat) |
+| Normal (1.5–5 pips) | 30 menit |
+| Tinggi (> 5 pips) | 45 menit (market trending, beri kesempatan) |
+
+**Guard:** Time Stop hanya trigger jika profit < `InpTimeStopMinR` (default 0.5R). Jika sudah profit cukup, biarkan trailing yang handle.
+
+### 4.5 Daily Risk Guard
+- **Trigger:** Total realized loss hari ini (UTC) ≥ `InpDailyMaxLossPct` (default: 3%)
+- **Aksi:** EA stop membuka posisi baru hari ini. Posisi yang sudah open tetap dikelola Smart Exit.
+- **Reset:** Setiap hari baru (00:00 UTC)
+
+### 4.6 Logger
+Setiap aksi menghasilkan entry log di Experts tab:
+```
+[BE] Signal XAU-xxx | SL moved to 3350.00 (trigger: MAX(1R=$8, ATR×1.2=$6) = $8)
+[PARTIAL_TP] Signal XAU-xxx | conf=82% → close 40% (3/7 pos) at profit $14.2
+[TRAILING-2R] Signal XAU-xxx | SL now 3358.00 (ATR×2.0)
+[TRAILING-4R] Signal XAU-xxx | SL now 3362.50 (ATR×1.0)
+[TIME_STOP] Signal XAU-xxx | 31min, ATR=normal, profit $0.3 < 0.5R → close
+[DAILY_GUARD] Daily loss 3.1% reached — no new positions today
+```
+
+---
+
+## 5. Sprint 2: Exit Quality (Detail)
+
+### 5.1 Momentum Exit
+- **Trigger:** CHoCH bearish di M5 (swing low ditembus) **DAN** salah satu dari:
+  - Volume candle terakhir < rata-rata volume 10 candle × 0.7 (volume melemah)
+  - ADX_14 turun ≥ 3 poin dalam 3 candle terakhir
 - **Guard:** Hanya aktif jika posisi sudah minimal Break Even
-
-### 3.5 Time Stop
-- **Trigger:** Posisi sudah terbuka > `InpTimeStopMinutes` (default: 25 menit) DAN profit < `InpTimeStopMinProfit` (default: 0.5R)
 - **Aksi:** Close semua posisi sinyal ini
-- **Note:** Berjalan di `OnTimer` bukan `OnTick` (tidak butuh resolusi tinggi)
 
-### 3.6 Confidence Drop Exit
-- **Trigger:** Backend `/api/mt5/signals/latest` mengembalikan signal baru dengan confidence yang berbeda arah, atau status `NO_SIGNAL` sementara posisi masih floating negatif
-- **Aksi:** Close semua posisi jika floating loss > 0.5R dan server sudah tidak support signal ini
-- **Note:** Berjalan di `OnTimer`
+### 5.2 Opportunity Cost Engine ⭐
+Engine baru yang mengevaluasi apakah **lebih baik close posisi sekarang dan tunggu signal baru**.
 
----
+**Trigger:** semua kondisi berikut terpenuhi:
+- Posisi sedang profit (any amount)
+- Backend mengembalikan confidence baru yang **menurun > 15 poin** dari confidence signal awal
+- ATR menurun (momentum melambat)
+- Ada resistance/swing high M5 dalam jarak 0.5R ke depan
 
-## 4. Micro Scalping Engine
+**Aksi:** Close semua posisi sinyal ini dan log:
+```
+[OPP_COST] Signal XAU-xxx | conf dropped 87→64, resistance near, exit early at +$9.2
+```
 
-Mesin ini **hanya aktif** setelah **SEMUA** guard berikut terpenuhi:
+### 5.3 Session & Volatility Filter
+Aktif untuk semua operasi (entry baru dan counter scalping):
 
-### Guard List (semua harus ✅)
-
-| # | Guard | Detail |
+| Session | Status | Note |
 |---|---|---|
-| 1 | Main position sudah Break Even | SL posisi utama sudah di entry price atau lebih tinggi |
-| 2 | Main position masih floating profit | Equity gain dari sinyal ini > 0 |
-| 3 | H1 Trend masih searah | EMA20 vs EMA50 di H1 masih konfirmasi arah sinyal utama |
-| 4 | Candle Reversal terkonfirmasi | Bearish Engulfing atau Pin Bar di M5 (untuk counter-SELL saat posisi BUY) |
-| 5 | CHoCH atau BOS kecil | Swing low M5 sebelumnya ditembus |
-| 6 | EMA20 cross | Harga menutup di bawah EMA20 M5 (untuk counter-SELL) |
-| 7 | ATR dalam rentang | `InpCounterMinATR` < ATR_14(M5) < `InpCounterMaxATR` (cegah flat/news) |
-| 8 | Spread normal | Spread < `InpMaxSpread` |
-| 9 | Session aktif | Hanya London (07:00–16:00 GMT) atau New York (13:00–22:00 GMT) |
-| 10 | Cooldown | Minimal 5 candle M5 (25 menit) sejak counter terakhir |
-| 11 | Max counter aktif | Counter posisi terbuka saat ini < `InpMaxCounter` (default: 2) |
-| 12 | Max daily counter | Total counter hari ini < `InpMaxDailyCounter` (default: 8) |
-| 13 | Liquidity sweep (opsional) | Idealnya terdeteksi sweep Equal High/Low sebelum reversal |
+| Asia (00:00–07:00 GMT) | OFF default | Bisa diaktifkan via input |
+| London (07:00–12:00 GMT) | ON | Normal sizing |
+| London-NY Overlap (12:00–16:00 GMT) | HIGH PRIORITY | Bisa naikkan lot 20–30% (opsional, via input) |
+| New York (16:00–22:00 GMT) | ON | Normal sizing |
+| Roll Over (22:00–00:00 GMT) | OFF | Likuiditas rendah |
 
-### Entry Counter
+### 5.4 Volatility Explosion Guard
+- **Trigger ATR:** ATR saat ini > ATR rata-rata 20 candle × 3.0 (300% spike)
+- **Trigger Spread:** Spread > `InpMaxSpread × 5`
+- **Aksi:** Pause semua entry baru selama `InpVolatilityPauseMin` (default: 5 menit)
+- **Note:** Posisi yang sudah open tetap dikelola
 
-- **Lot:** `main_lot × InpCounterLotRatio` (default: 0.25 = 25% dari lot utama), dibulatkan ke 0.01
-- **TP counter:** `MIN(ATR_14 × 0.8, jarak ke swing high/resistance terdekat)`
-- **SL counter:** `MAX(ATR_14 × 0.5, high candle reversal)` (untuk counter-SELL)
-
-### Setelah Counter Close
-
-- Reset cooldown counter
-- Posisi utama tetap berjalan — tidak dipengaruhi sama sekali
-- Jika counter kena SL: catat dan lanjut, **tidak ada revenge trade**
+### 5.5 Trade Cooldown Manager
+- **Trigger:** Berturut-turut mengalami N kali loss (default: `InpCooldownAfterLoss = 3`)
+- **Aksi:** Pause entry baru selama `InpCooldownMinutes` (default: 30 menit)
+- **Reset:** Reset counter setelah ada 1 trade profit
 
 ---
 
-## 5. New Input Parameters
+## 6. Sprint 3: Micro Scalping Engine (Detail)
+
+### 6.1 Guard System (Berlapis)
+
+**Wajib SEMUA terpenuhi:**
+| Guard | Detail |
+|---|---|
+| Break Even | SL posisi utama ≥ open price |
+| H1 Trend | EMA20 > EMA50 di H1 (untuk BUY), sebaliknya untuk SELL |
+| ATR Range | `InpCounterMinATR` < ATR_14(M5) < `InpCounterMaxATR` |
+| Spread | Spread < `InpMaxSpread` |
+| Cooldown | ≥ 5 candle M5 (25 menit) sejak counter terakhir |
+
+**Minimal 2 dari 4 berikut:**
+| Guard | Detail |
+|---|---|
+| Candle Reversal | Bearish Engulfing atau Pin Bar di M5 |
+| CHoCH/BOS | Swing low M5 sebelumnya ditembus |
+| EMA20 Cross | Harga tutup di bawah EMA20 M5 |
+| Liquidity Sweep | Equal High/Low tersapu sebelum reversal |
+
+### 6.2 Entry & Sizing Counter
+
+Lot sizing tiered berdasarkan urutan counter hari ini:
+| Counter ke- | Lot |
+|---|---|
+| 1st | main_lot × 0.25 |
+| 2nd | main_lot × 0.15 |
+| 3rd | main_lot × 0.10 |
+
+**TP counter:** `MIN(ATR_14(M5) × 0.8, jarak ke resistance terdekat)`
+**SL counter:** `MAX(ATR_14(M5) × 0.5, high candle reversal + spread)`
+
+**Limits:**
+- Max counter posisi aktif: `InpMaxCounter` (default: 2)
+- Max counter per hari: `InpMaxDailyCounter` (default: 8)
+- Tidak ada revenge trade — jika counter kena SL, tunggu cooldown
+
+---
+
+## 7. New Input Parameters
 
 ```mql5
-//--- Smart Exit
-input double InpBreakevenR     = 1.0;   // Break Even setelah profit X*R
-input double InpPartialR       = 1.5;   // Partial TP setelah profit X*R
-input double InpPartialPct     = 40.0;  // % posisi yang di-close saat Partial TP
-input double InpTrailingR      = 2.0;   // Mulai Trailing setelah profit X*R
-input double InpTrailingATRMul = 1.5;   // Jarak trailing = ATR × multiplier
-input int    InpTimeStopMins   = 25;    // Time Stop (menit)
-input double InpTimeStopMinR   = 0.5;   // Min profit R untuk hindari Time Stop
+//=== Sprint 1: Smart Exit ===
+input double InpBEMultiplier      = 1.2;  // BE trigger = MAX(1R, ATR×multiplier)
+input double InpPartialR          = 1.5;  // Partial TP trigger (× R)
+input double InpTrailingStartR    = 2.0;  // Start trailing (× R)
+// ATR Trailing multipliers per level
+input double InpTrailingATR2R     = 2.0;  // Trailing jarak saat 2R
+input double InpTrailingATR3R     = 1.5;  // Trailing jarak saat 3R
+input double InpTrailingATR4R     = 1.0;  // Trailing jarak saat 4R
+// Dynamic Time Stop
+input double InpTimeStopMinR      = 0.5;  // Min profit R untuk hindari Time Stop
+input double InpTSAtrSmall        = 1.5;  // ATR threshold: kecil (pips)
+input double InpTSAtrLarge        = 5.0;  // ATR threshold: besar (pips)
+input int    InpTSMinsSmall       = 20;   // Time Stop jika ATR kecil
+input int    InpTSMinsNormal      = 30;   // Time Stop jika ATR normal
+input int    InpTSMinsLarge       = 45;   // Time Stop jika ATR besar
+// Daily Guard
+input double InpDailyMaxLossPct   = 3.0;  // Max daily loss % sebelum stop
 
-//--- Micro Scalping
-input bool   InpEnableCounter      = true;  // Aktifkan Micro Scalping
-input double InpCounterLotRatio    = 0.25;  // Lot counter = main lot × ratio
-input int    InpMaxCounter         = 2;     // Max counter posisi aktif
-input int    InpMaxDailyCounter    = 8;     // Max counter per hari
-input int    InpCounterCooldownBar = 5;     // Cooldown (candle M5)
-input double InpCounterMinATR      = 1.0;   // Min ATR untuk counter (pips)
-input double InpCounterMaxATR      = 15.0;  // Max ATR untuk counter (pips)
+//=== Sprint 2: Exit Quality ===
+input bool   InpEnableMomentumExit = true; // Aktifkan Momentum Exit
+input bool   InpEnableOppCost      = true; // Aktifkan Opportunity Cost Engine
+input double InpOppCostConfDrop    = 15.0; // Min confidence drop untuk trigger
+input bool   InpEnableSessionFilter= true; // Aktifkan session filter
+input bool   InpEnableAsiaSession  = false;// Izinkan trading di Asia session
+input bool   InpEnableOverlapBoost = false;// Naikkan lot saat London-NY overlap
+input double InpOverlapBoostPct    = 20.0; // % kenaikan lot saat overlap
+input double InpVolExplosionMul    = 3.0;  // ATR spike multiplier untuk pause
+input int    InpVolatilityPauseMins= 5;    // Pause duration saat volatility explosion
+input int    InpCooldownAfterLoss  = 3;    // Berturut-turut loss sebelum cooldown
+input int    InpCooldownMinutes    = 30;   // Durasi cooldown (menit)
+
+//=== Sprint 3: Micro Scalping ===
+input bool   InpEnableCounter      = false;// Aktifkan Micro Scalping (OFF by default sampai Sprint 3)
+input int    InpMaxCounter         = 2;    // Max counter posisi aktif
+input int    InpMaxDailyCounter    = 8;    // Max counter per hari
+input int    InpCounterCooldownBar = 5;    // Cooldown (candle M5)
+input double InpCounterMinATR      = 1.0;  // Min ATR untuk counter (pips)
+input double InpCounterMaxATR      = 15.0; // Max ATR untuk counter (pips)
 ```
 
 ---
 
-## 6. Priority Order (OnTick Execution)
+## 8. Verification Plan per Sprint
 
-```
-1. Risk Guard — ada posisi? hitung R saat ini
-2. Break Even check
-3. Partial TP check
-4. ATR Trailing update
-5. Momentum Exit (CHoCH) check
-6. Micro Scalping guard evaluation
-7. Micro Scalping entry (jika semua guard ✅)
-```
+### Sprint 1 Verification (Demo, minimal 50 trade)
+- [ ] SL geser ke BEP setelah trigger MAX(1R, ATR×1.2) terpenuhi
+- [ ] Partial TP: confidence 90% → close 20%, confidence 80% → close 40%, confidence 70% → close 60%
+- [ ] Trailing gap berkurang saat profit naik (2R→ATR×2, 3R→ATR×1.5, 4R→ATR×1)
+- [ ] Time Stop: 20min saat ATR kecil, 30min normal, 45min ATR besar
+- [ ] Daily Guard: stop entry baru setelah loss 3%
+- [ ] Semua aksi ada log entry di Experts tab
 
-Jika step 4 (Momentum Exit) di-trigger, Micro Scalping **tidak dieksekusi** di tick yang sama.
+### Sprint 2 Verification (Demo, minimal 50 trade tambahan)
+- [ ] Momentum Exit hanya trigger jika CHoCH + volume/ADX confirmation
+- [ ] Opportunity Cost Engine close lebih awal saat confidence turun >15 poin
+- [ ] Tidak ada entry counter saat session Roll Over (22:00–00:00 GMT)
+- [ ] Pause 5 menit saat ATR spike 300%
+- [ ] Cooldown aktif setelah 3x loss berturut-turut
 
----
-
-## 7. Verification Plan
-
-### Demo Testing (sebelum live)
-- Run di XAUUSD M5 demo account
-- Minimal 5 sinyal BUY/SELL diobservasi
-- Verifikasi: SL geser ke BEP setelah profit 1R
-- Verifikasi: Partial close 40% setelah profit 1.5R
-- Verifikasi: Counter tidak terbuka saat posisi utama masih rugi
-- Verifikasi: Counter tidak terbuka saat H1 trend berlawanan
-- Verifikasi: Time Stop bekerja setelah 25 menit
-
-### Log Verification
-Setiap aksi Smart Exit dan Micro Scalping harus menghasilkan log di Experts tab:
-```
-[BREAKEVENR] Signal XAU-xxx | SL moved to 3350.00
-[PARTIAL_TP] Signal XAU-xxx | Closed 2/5 positions at profit $12.4
-[TRAILING] Signal XAU-xxx | SL now 3358.00
-[TIME_STOP] Signal XAU-xxx | 26min, profit $0.8 < threshold
-[COUNTER] BUY→counter-SELL | lot=0.01 TP=3356.50 SL=3358.20
-[COUNTER_GUARD_FAIL] H1 trend bearish — counter blocked
-```
+### Sprint 3 Verification (Demo, minimal 100 trade counter)
+- [ ] Counter tidak terbuka saat posisi utama masih floating loss
+- [ ] Counter tidak terbuka saat H1 trend berlawanan
+- [ ] Guard: minimal 2 dari 4 opsional harus terpenuhi
+- [ ] Lot counter: 25% → 15% → 10% sesuai urutan
+- [ ] Max 2 counter aktif, max 8 per hari
 
 ---
 
-## 8. Out of Scope (untuk versi ini)
+## 9. Metrics untuk Evaluasi antar Sprint
+
+Setelah setiap sprint, compare metrics vs baseline (v3.2):
+
+| Metric | Target |
+|---|---|
+| Win Rate | ≥ 55% |
+| Profit Factor | ≥ 1.5 |
+| Expectancy per Trade | Positif |
+| Max Drawdown | ≤ 10% |
+| Average Holding Time | 8–30 menit |
+| Trades yang balik dari profit→SL | Turun >50% vs v3.2 |
+
+---
+
+## 10. Out of Scope
 
 - Tidak ada perubahan pada backend/API
 - Tidak ada perubahan pada logic entry utama (tetap 3 Market + 2 Limit)
-- Liquidity Sweep filter (Equal High/Low detection) — nice to have, bukan blocker
 - Multi-pair support
+- Backtest engine (gunakan MT5 Strategy Tester)
