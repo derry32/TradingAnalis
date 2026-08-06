@@ -240,20 +240,22 @@ void CheckMomentumReversalExit()
    // 2. Early Invalidation on Strong Opposing M5 Candle
    if(g_initialR > 0.0 && profitDist < (-0.3 * g_initialR))
    {
-      double o = iOpen(_Symbol, PERIOD_M5, 0);
-      double c = iClose(_Symbol, PERIOD_M5, 0);
-      bool isOpposingCandle = false;
-      if(g_activeDir == "BUY"  && c < o && (o - c) > atr * 0.8)
-         isOpposingCandle = true;
-      if(g_activeDir == "SELL" && c > o && (c - o) > atr * 0.8)
-         isOpposingCandle = true;
-
-      if(isOpposingCandle)
+      double o[1], c[1];
+      if(CopyOpen(_Symbol, PERIOD_M5, 0, 1, o) > 0 && CopyClose(_Symbol, PERIOD_M5, 0, 1, c) > 0)
       {
-         Print("[EARLY INVALIDATION CUT] Signal " + g_activeId + " | Opposing M5 candle detected at floating loss " + DoubleToString(profitDist, 2) + " -> Cutloss early!");
-         CloseAllPositions("Early Invalidation Cut (" + DoubleToString(profitDist, 2) + ")");
-         g_activeId = "";
-         return;
+         bool isOpposingCandle = false;
+         if(g_activeDir == "BUY"  && c[0] < o[0] && (o[0] - c[0]) > atr * 0.8)
+            isOpposingCandle = true;
+         if(g_activeDir == "SELL" && c[0] > o[0] && (c[0] - o[0]) > atr * 0.8)
+            isOpposingCandle = true;
+
+         if(isOpposingCandle)
+         {
+            Print("[EARLY INVALIDATION CUT] Signal " + g_activeId + " | Opposing M5 candle detected at floating loss " + DoubleToString(profitDist, 2) + " -> Cutloss early!");
+            CloseAllPositions("Early Invalidation Cut (" + DoubleToString(profitDist, 2) + ")");
+            g_activeId = "";
+            return;
+         }
       }
    }
 }
