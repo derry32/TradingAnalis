@@ -18,6 +18,8 @@ export interface FVGZone {
 export interface AnalysisResult {
   trendH1: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
   structureH1: 'HH_HL' | 'LH_LL' | 'EQUAL_RANGE' | 'NEUTRAL';
+  trendM15: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+  structureM15: 'HH_HL' | 'LH_LL' | 'EQUAL_RANGE' | 'NEUTRAL';
   marketCondition: MarketCondition;
   marketPhase: MarketPhase;
   isAtSupportH1: boolean;
@@ -213,8 +215,7 @@ export class TechnicalAnalysis {
     return trSum / period;
   }
 
-  private detectBOSCHoCH(currentPrice: number, swings: SwingPoint[], trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL', hasVolumeSpike: boolean, atr: number): AnalysisResult['marketStructureM15'] {
-    if (trend === 'NEUTRAL') return 'NONE';
+  private detectBOSCHoCH(currentPrice: number, swings: SwingPoint[], trendH1: 'BULLISH' | 'BEARISH' | 'NEUTRAL', trendM15: 'BULLISH' | 'BEARISH' | 'NEUTRAL', hasVolumeSpike: boolean, atr: number): AnalysisResult['marketStructureM15'] {
     const highs = swings.filter(s => s.type === 'HIGH');
     const lows = swings.filter(s => s.type === 'LOW');
     if (highs.length === 0 || lows.length === 0) return 'NONE';
@@ -225,13 +226,23 @@ export class TechnicalAnalysis {
     
     const isValidBreakout = hasVolumeSpike || atr > 1.0;
 
-    if (trend === 'BULLISH') {
-      if (currentPrice > lastHigh.price) return isValidBreakout ? 'BOS_BULL' : 'FAKE_BREAKOUT_BULL';
-      if (currentPrice < lastLow.price) return isValidBreakout ? 'CHOCH_BEAR' : 'FAKE_BREAKOUT_BEAR';
-    } else {
-      if (currentPrice < lastLow.price) return isValidBreakout ? 'BOS_BEAR' : 'FAKE_BREAKOUT_BEAR';
-      if (currentPrice > lastHigh.price) return isValidBreakout ? 'CHOCH_BULL' : 'FAKE_BREAKOUT_BULL';
+    // Direct M15 swing breakout
+    if (currentPrice > lastHigh.price) {
+      if (trendH1 === 'BULLISH' || trendM15 === 'BULLISH') {
+        return isValidBreakout ? 'BOS_BULL' : 'FAKE_BREAKOUT_BULL';
+      } else {
+        return isValidBreakout ? 'CHOCH_BULL' : 'FAKE_BREAKOUT_BULL';
+      }
     }
+
+    if (currentPrice < lastLow.price) {
+      if (trendH1 === 'BEARISH' || trendM15 === 'BEARISH') {
+        return isValidBreakout ? 'BOS_BEAR' : 'FAKE_BREAKOUT_BEAR';
+      } else {
+        return isValidBreakout ? 'CHOCH_BEAR' : 'FAKE_BREAKOUT_BEAR';
+      }
+    }
+
     return 'NONE';
   }
 
@@ -341,7 +352,11 @@ export class TechnicalAnalysis {
   public analyze(data: MultiTimeframeData): AnalysisResult {
     const swingsH1 = this.findSwingPoints(data.h1, 3, 3);
     const { trend: trendH1, structure: structureH1 } = this.detectStructureH1(swingsH1);
-    const marketCondition: MarketCondition = trendH1 === 'BULLISH' ? 'TRENDING_BULLISH' : trendH1 === 'BEARISH' ? 'TRENDING_BEARISH' : 'SIDEWAYS';
+
+    const swingsM15 = this.findSwingPoints(data.m15, 2, 2);
+    const { trend: trendM15, structure: structureM15 } = this.detectStructureH1(swingsM15);
+
+    const marketCondition: MarketCondition = trendM15 === 'BULLISH' ? 'TRENDING_BULLISH' : trendM15 === 'BEARISH' ? 'TRENDING_BEARISH' : (trendH1 === 'BULLISH' ? 'TRENDING_BULLISH' : trendH1 === 'BEARISH' ? 'TRENDING_BEARISH' : 'SIDEWAYS');
     
     const atr_M15 = this.calculateATR(data.m15, 14);
 
@@ -352,9 +367,8 @@ export class TechnicalAnalysis {
     const { volumeSpike: volumeSpikeM5, strongVolume: strongVolumeM5 } = this.checkVolume(data.m5);
     const consecutiveCandlesM5 = this.countConsecutiveCandles(data.m5);
 
-    const swingsM15 = this.findSwingPoints(data.m15, 2, 2);
-    // BOS/CHoCH detection uses H1 trend as context to evaluate M15 structure break
-    const marketStructureM15 = this.detectBOSCHoCH(data.currentM15.close, swingsM15, trendH1, volumeSpikeM5, atr_M15);
+    // BOS/CHoCH detection using H1 and M15 trends
+    const marketStructureM15 = this.detectBOSCHoCH(data.currentM15.close, swingsM15, trendH1, trendM15, volumeSpikeM5, atr_M15);
 
     const len = data.m5.length;
     let patternM5: AnalysisResult['patternM5'] = 'NONE';
@@ -390,6 +404,8 @@ export class TechnicalAnalysis {
     return {
       trendH1,
       structureH1,
+      trendM15,
+      structureM15,
       marketCondition,
       marketPhase,
       isAtSupportH1,

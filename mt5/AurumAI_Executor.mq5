@@ -30,21 +30,21 @@ input int    InpMaxSpread    = 400;    // Max Spread pts
 input ulong  InpSlippage     = 30;     // Slippage pts
 input bool   InpDemoOnly     = true;   // Demo Guard
 
-//=== Inputs: Sprint 1 Smart Exit Framework ===
-input double InpBEMultiplier      = 1.2;  // BE Trigger: MAX(1R, ATR * mult)
-input double InpPartialR          = 1.5;  // Partial TP Trigger (x R)
-input double InpTrailingStartR    = 2.0;  // Trailing Start (x R)
-input double InpTrailingATR2R     = 2.0;  // Trailing Gap @ >= 2R (x ATR)
-input double InpTrailingATR3R     = 1.5;  // Trailing Gap @ >= 3R (x ATR)
-input double InpTrailingATR4R     = 1.0;  // Trailing Gap @ >= 4R (x ATR)
+//=== Inputs: Smart & Rapid Scalp Exit Framework ===
+input double InpBEMultiplier      = 0.8;  // BE Trigger: MIN(0.8R, ATR * mult)
+input double InpPartialR          = 1.0;  // Partial TP Trigger (x R)
+input double InpTrailingStartR    = 0.8;  // Trailing Start (x R)
+input double InpTrailingATR2R     = 1.5;  // Trailing Gap @ >= 0.8R (x ATR)
+input double InpTrailingATR3R     = 1.2;  // Trailing Gap @ >= 1.5R (x ATR)
+input double InpTrailingATR4R     = 1.0;  // Trailing Gap @ >= 2.5R (x ATR)
 
 //--- Dynamic Time Stop
-input double InpTimeStopMinR      = 0.5;  // Min Profit R to avoid Time Stop
+input double InpTimeStopMinR      = 0.4;  // Min Profit R to avoid Time Stop
 input double InpTSAtrSmall        = 1.5;  // ATR small threshold
 input double InpTSAtrLarge        = 5.0;  // ATR large threshold
-input int    InpTSMinsSmall       = 20;   // Time Stop if ATR small (min)
-input int    InpTSMinsNormal      = 30;   // Time Stop if ATR normal (min)
-input int    InpTSMinsLarge       = 45;   // Time Stop if ATR large (min)
+input int    InpTSMinsSmall       = 8;    // Time Stop if ATR small (min)
+input int    InpTSMinsNormal      = 15;   // Time Stop if ATR normal (min)
+input int    InpTSMinsLarge       = 20;   // Time Stop if ATR large (min)
 
 //--- Daily Risk Guard
 input double InpDailyMaxLossPct   = 3.0;  // Max Daily Loss % before lockdown
@@ -63,6 +63,7 @@ datetime g_signalOpenTime    = 0;
 bool     g_beDone            = false;
 bool     g_partialDone       = false;
 double   g_lastTrailingSL    = 0.0;
+double   g_peakProfitDist    = 0.0;
 int      g_atrHandle         = INVALID_HANDLE;
 bool     g_ready             = false;
 
@@ -210,7 +211,60 @@ double GetCurrentProfitDistance()
 }
 
 //+------------------------------------------------------------------+
-// Task 2.1: Adaptive Break Even
+// Task 2.0: Momentum Reversal & Peak Profit Protection Exit
+//+------------------------------------------------------------------+
+void CheckMomentumReversalExit()
+{
+   if(g_activeId == "" || CountPositions() == 0) return;
+
+   double profitDist = GetCurrentProfitDistance();
+   double atr        = GetATR(PERIOD_M5);
+
+   if(profitDist > g_peakProfitDist)
+      g_peakProfitDist = profitDist;
+
+   // 1. Peak Profit Protection: If trade reached at least +1.0 ($1.00 / 10 pips) and drops by >= 45% of peak
+   double minLockProfit = MathMax(1.0, atr * 0.8);
+   if(g_peakProfitDist >= minLockProfit)
+   {
+      double dropDist = g_peakProfitDist - profitDist;
+      if(dropDist >= (g_peakProfitDist * 0.45) && profitDist > 0.0)
+      {
+         PrintFormat("⚡ [PEAK PROFIT LOCK] Signal %s | Peak was +%.2f, dropped to +%.2f (-%.2f drop) -> Securing profit at market!",
+                     g_activeId, g_peakProfitDist, profitDist, dropDist);
+         CloseAllPositions("Peak Profit Lock (Secured +" + DoubleToString(profitDist, 2) + ")");
+         g_activeId = "";
+         return;
+      }
+   }
+
+   // 2. Early Invalidation on Strong Opposing M5 Candle
+   if(g_initialR > 0.0 && profitDist < (-0.3 * g_initialR))
+   {
+      MqlRates rates[];
+      ArraySetAsSeries(rates, true);
+      if(CopyRates(_Symbol, PERIOD_M5, 0, 2, rates) >= 2)
+      {
+         bool isOpposingCandle = false;
+         if(g_activeDir == "BUY"  && rates[0].close < rates[0].open && (rates[0].open - rates[0].close) > atr * 0.8)
+            isOpposingCandle = true;
+         if(g_activeDir == "SELL" && rates[0].close > rates[0].open && (rates[0].close - rates[0].open) > atr * 0.8)
+            isOpposingCandle = true;
+
+         if(isOpposingCandle)
+         {
+            PrintFormat("🛡️ [EARLY INVALIDATION CUT] Signal %s | Strong opposing candle detected while floating %.2f loss -> Cutloss to prevent full SL!",
+                        g_activeId, profitDist);
+            CloseAllPositions("Early Invalidation Cut (" + DoubleToString(profitDist, 2) + ")");
+            g_activeId = "";
+            return;
+         }
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+// Task 2.1: Rapid Adaptive Break Even (BE + Spread Buffer)
 //+------------------------------------------------------------------+
 void CheckAdaptiveBreakEven()
 {
@@ -218,13 +272,13 @@ void CheckAdaptiveBreakEven()
 
    double profitDist = GetCurrentProfitDistance();
    double atr        = GetATR(PERIOD_M5);
-   double trigger    = MathMax(g_initialR, atr * InpBEMultiplier);
+   double trigger    = MathMax(1.0, MathMin(0.8 * g_initialR, atr * InpBEMultiplier));
 
    if(profitDist >= trigger)
    {
       double pt     = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
       long   spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      double buffer = (double)spread * pt;
+      double buffer = MathMax(0.20, (double)spread * pt);
       double newSL  = (g_activeDir == "BUY") ? (g_signalOpenPx + buffer) : (g_signalOpenPx - buffer);
 
       int count = 0;
@@ -259,30 +313,30 @@ void CheckAdaptiveBreakEven()
       }
 
       g_beDone = true;
-      PrintFormat("[BE] Signal %s | SL moved to %.2f (profit=%.2f >= trigger=MAX(1R=%.2f, ATR*%.1f=%.2f)=%.2f)",
-                  g_activeId, newSL, profitDist, g_initialR, InpBEMultiplier, (atr * InpBEMultiplier), trigger);
+      PrintFormat("[BE] Signal %s | SL moved to %.2f (profit=%.2f >= trigger=%.2f)",
+                  g_activeId, newSL, profitDist, trigger);
    }
 }
 
 //+------------------------------------------------------------------+
-// Task 2.2: Dynamic Partial TP (Confidence-based)
+// Task 2.2: Fast Dynamic Partial TP (50% lot at +1.0R / +15-20 pips)
 //+------------------------------------------------------------------+
 void CheckDynamicPartialTP()
 {
    if(g_partialDone || g_activeId == "" || g_initialR <= 0.0) return;
 
    double profitDist = GetCurrentProfitDistance();
-   double trigger    = InpPartialR * g_initialR;
+   double trigger    = MathMax(1.2, InpPartialR * g_initialR);
 
    if(profitDist >= trigger)
    {
       int open = CountPositions();
       if(open <= 1) { g_partialDone = true; return; }
 
-      double closeRatio = 0.40;
-      if(g_signalConf >= 90.0)      closeRatio = 0.20;
-      else if(g_signalConf >= 75.0) closeRatio = 0.40;
-      else                          closeRatio = 0.60;
+      double closeRatio = 0.50;
+      if(g_signalConf >= 85.0)      closeRatio = 0.35;
+      else if(g_signalConf >= 75.0) closeRatio = 0.50;
+      else                          closeRatio = 0.65;
 
       int toClose = MathMax(1, (int)MathRound((double)open * closeRatio));
       if(toClose >= open) toClose = open - 1;
@@ -322,7 +376,7 @@ void CheckDynamicPartialTP()
 }
 
 //+------------------------------------------------------------------+
-// Task 3.1: Tiered ATR Trailing Stop
+// Task 3.1: Tiered ATR Trailing Stop (Fast Scalp Trailing)
 //+------------------------------------------------------------------+
 void CheckTieredTrailingStop()
 {
@@ -331,12 +385,12 @@ void CheckTieredTrailingStop()
    double profitDist = GetCurrentProfitDistance();
    double rProfit    = profitDist / g_initialR;
 
-   if(rProfit < InpTrailingStartR) return;
+   if(rProfit < InpTrailingStartR && profitDist < 1.5) return;
 
    double mult = InpTrailingATR2R;
-   if(rProfit >= 4.0)      mult = InpTrailingATR4R; // 1.0x ATR
-   else if(rProfit >= 3.0) mult = InpTrailingATR3R; // 1.5x ATR
-   else                    mult = InpTrailingATR2R; // 2.0x ATR
+   if(rProfit >= 2.5)      mult = InpTrailingATR4R; // 1.0x ATR
+   else if(rProfit >= 1.5) mult = InpTrailingATR3R; // 1.2x ATR
+   else                    mult = InpTrailingATR2R; // 1.5x ATR
 
    double atr   = GetATR(PERIOD_M5);
    double gap   = atr * mult;
@@ -385,7 +439,7 @@ void CheckTieredTrailingStop()
 }
 
 //+------------------------------------------------------------------+
-// Task 4.1: Dynamic Time Stop
+// Task 4.1: Dynamic Time Stop (Fast Scalp Timeout)
 //+------------------------------------------------------------------+
 void CheckDynamicTimeStop()
 {
@@ -395,8 +449,8 @@ void CheckDynamicTimeStop()
    double atr      = GetATR(PERIOD_M5);
    int maxMins     = InpTSMinsNormal;
 
-   if(atr < InpTSAtrSmall)      maxMins = InpTSMinsSmall;  // 20 min
-   else if(atr > InpTSAtrLarge) maxMins = InpTSMinsLarge;  // 45 min
+   if(atr < InpTSAtrSmall)      maxMins = InpTSMinsSmall;  // 8 min
+   else if(atr > InpTSAtrLarge) maxMins = InpTSMinsLarge;  // 20 min
 
    double profitDist = GetCurrentProfitDistance();
    double minProfitR = InpTimeStopMinR * g_initialR;
@@ -405,7 +459,7 @@ void CheckDynamicTimeStop()
    {
       PrintFormat("[TIME_STOP] Signal %s | Open %dm >= max %dm, profit=%.2f < threshold=%.2f -> Closing all positions",
                   g_activeId, elapsedMins, maxMins, profitDist, minProfitR);
-      CloseAllPositions("Time Stop (" + IntegerToString(elapsedMins) + "m, flat/slow momentum)");
+      CloseAllPositions("Time Stop (" + IntegerToString(elapsedMins) + "m timeout)");
       g_activeId = "";
       g_signalOpenTime = 0;
    }
@@ -576,6 +630,7 @@ void OnTick()
 
    if(CountPositions() > 0)
    {
+      CheckMomentumReversalExit();
       CheckAdaptiveBreakEven();
       CheckDynamicPartialTP();
       CheckTieredTrailingStop();
@@ -588,6 +643,7 @@ void OnTick()
          g_signalOpenTime = 0;
          g_beDone         = false;
          g_partialDone    = false;
+         g_peakProfitDist = 0.0;
       }
    }
 }
@@ -715,6 +771,7 @@ void OnTimer()
       g_signalOpenTime = TimeCurrent();
       g_beDone         = false;
       g_partialDone    = false;
+      g_peakProfitDist = 0.0;
 
       SendAck(id, firstTicket, execPrice, "OPENED", spread);
       PrintFormat("[DONE] Signal %s | mode=%s | %d layers | 1R=%.2f | lot=%.2f",

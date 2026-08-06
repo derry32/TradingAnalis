@@ -77,82 +77,99 @@ export class SignalGenerator {
     let reasons: string[] = [];
     let warnings: string[] = [];
 
-    // 100-Point Institutional Scoring Matrix
-    // 1. Trend H1 (25 Poin)
-    const trendMatch = (direction === 'BUY' && analysis.trendH1 === 'BULLISH') || 
-                       (direction === 'SELL' && analysis.trendH1 === 'BEARISH');
-    if (trendMatch) { 
-      score += 25; 
-      reasons.push(`✔ Trend H1 ${analysis.trendH1} (+25)`); 
-    } else if (analysis.trendH1 === 'NEUTRAL') {
-      score += 10;
-      reasons.push(`✔ Trend H1 Netral/Sideways Range (+10)`);
-    } else { 
-      warnings.push(`✖ Counter Trend H1 (0 Poin)`); 
-    }
+    // 100-Point Institutional Scoring Matrix (Adaptive for Scalper & Sniper)
+    // 1. Trend H1 & M15 Structure (30 Poin total)
+    const trendH1Match = (direction === 'BUY' && analysis.trendH1 === 'BULLISH') || 
+                         (direction === 'SELL' && analysis.trendH1 === 'BEARISH');
+    const trendM15Match = (direction === 'BUY' && analysis.trendM15 === 'BULLISH') ||
+                          (direction === 'SELL' && analysis.trendM15 === 'BEARISH');
+    const structM15Match = (direction === 'BUY' && analysis.structureM15 === 'HH_HL') ||
+                           (direction === 'SELL' && analysis.structureM15 === 'LH_LL');
 
-    // 2. Market Structure H1 (20 Poin)
-    const structMatch = (direction === 'BUY' && analysis.structureH1 === 'HH_HL') ||
-                        (direction === 'SELL' && analysis.structureH1 === 'LH_LL');
-    if (structMatch) {
-      score += 20;
-      reasons.push(`✔ Market Structure H1 (${analysis.structureH1}) Terkonfirmasi (+20)`);
-    } else if (analysis.structureH1 === 'EQUAL_RANGE') {
-      score += 15;
-      reasons.push(`✔ Struktur Range/Sideways Teratur (+15)`);
+    if (strategy === 'HYPER_SCALPER') {
+      // Scalper prioritizes M15 momentum & short-term structure
+      if (trendM15Match || structM15Match) {
+        score += 20;
+        reasons.push(`✔ Trend/Struktur M15 (${analysis.trendM15}) Selaras (+20)`);
+      } else if (analysis.trendM15 === 'NEUTRAL') {
+        score += 10;
+        reasons.push(`✔ Struktur M15 Sideways / Range (+10)`);
+      }
+
+      if (trendH1Match) {
+        score += 10;
+        reasons.push(`✔ H1 Major Trend Support (${analysis.trendH1}) (+10)`);
+      } else if (analysis.trendH1 === 'NEUTRAL') {
+        score += 5;
+      }
     } else {
-      warnings.push(`✖ Struktur H1 belum rapi (0 Poin)`);
+      // Sniper prioritizes H1 Trend alignment
+      if (trendH1Match) {
+        score += 20;
+        reasons.push(`✔ Trend H1 ${analysis.trendH1} (+20)`);
+      } else if (analysis.trendH1 === 'NEUTRAL') {
+        score += 10;
+        reasons.push(`✔ Trend H1 Netral/Sideways Range (+10)`);
+      }
+
+      if (trendM15Match || structM15Match) {
+        score += 10;
+        reasons.push(`✔ Konfirmasi Struktur M15 (+10)`);
+      }
     }
 
-    // 3. BOS / CHoCH M15 (15 Poin)
+    // 2. BOS / CHoCH M15 (20 Poin)
     const bosChochMatch = (direction === 'BUY' && (analysis.marketStructureM15 === 'BOS_BULL' || analysis.marketStructureM15 === 'CHOCH_BULL')) ||
                           (direction === 'SELL' && (analysis.marketStructureM15 === 'BOS_BEAR' || analysis.marketStructureM15 === 'CHOCH_BEAR'));
     if (bosChochMatch) { 
-      score += 15; 
-      reasons.push(`✔ M15 BOS/CHoCH Valid (+15)`); 
+      score += 20; 
+      reasons.push(`✔ M15 ${analysis.marketStructureM15} Valid (+20)`); 
     } else if (analysis.marketStructureM15.includes('FAKE_BREAKOUT')) {
-      score += 15;
-      reasons.push(`✔ Liquidity Grab / Stop Hunt M15 Terdeteksi (+15)`);
+      score += 20;
+      reasons.push(`✔ Liquidity Grab / Stop Hunt M15 Terdeteksi (+20)`);
     } else { 
       warnings.push(`✖ Tidak ada BOS/CHoCH searah (0 Poin)`); 
     }
 
-    // 4. Key Level S/R H1 & Fibonacci (15 Poin)
+    // 3. Key Level S/R H1 & Fibonacci (15 Poin)
     const isAtSR = direction === 'BUY' ? analysis.isAtSupportH1 : analysis.isAtResistanceH1;
     const fibMatch = (direction === 'BUY' && analysis.fibonacciZoneM15 === 'GOLDEN_BULL') || 
                      (direction === 'SELL' && analysis.fibonacciZoneM15 === 'GOLDEN_BEAR');
-    if (isAtSR || fibMatch) { 
+    if (isAtSR) { 
       score += 15; 
-      reasons.push(`✔ Pantulan S/R H1 / Fibonacci Golden Ratio (+15)`); 
+      reasons.push(`✔ Pantulan Key Level S/R (+15)`); 
+    } else if (fibMatch) {
+      score += 12;
+      reasons.push(`✔ Fibonacci Golden Ratio Zone (+12)`);
     } else { 
       warnings.push(`✖ Harga mengambang / jauh dari S/R (0 Poin)`); 
     }
 
-    // 5. Price Action Trigger M5 (10 Poin)
+    // 4. Price Action Trigger M5 (20 Poin)
     const paMatch = (direction === 'BUY' && (analysis.patternM5 === 'BULLISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'MARUBOZU_BULL' || analysis.patternM5 === 'THREE_WHITE_SOLDIERS')) ||
                     (direction === 'SELL' && (analysis.patternM5 === 'BEARISH_ENGULFING' || analysis.patternM5 === 'PIN_BAR' || analysis.patternM5 === 'MARUBOZU_BEAR' || analysis.patternM5 === 'THREE_BLACK_CROWS'));
     if (paMatch) { 
-      score += 10; 
-      reasons.push(`✔ Price Action M5 (${analysis.patternM5.replace('_', ' ')}) Valid (+10)`); 
+      score += 20; 
+      reasons.push(`✔ Price Action M5 (${analysis.patternM5.replace('_', ' ')}) Valid (+20)`); 
     } else {
       warnings.push(`✖ Konfirmasi Candle M5 Kurang Tegas (0 Poin)`);
     }
 
-    // 6. Institutional Volume (10 Poin)
+    // 5. Institutional Volume (10 Poin)
     if (analysis.strongVolumeM5) {
       score += 10;
-      reasons.push(`✔ Institutional Volume Kuat (Spike + Solid Body + Extreme Close) (+10)`);
+      reasons.push(`✔ Institutional Volume Kuat (+10)`);
     } else if (analysis.volumeSpikeM5) {
       score += 6;
       reasons.push(`✔ Volume Spike Terdeteksi (+6)`);
     }
 
-    // 7. Multi-Timeframe Alignment (5 Poin)
-    const mtfAligned = (direction === 'BUY' && (analysis.trendH1 === 'BULLISH' || analysis.marketPhase === 'TRENDING') && paMatch) ||
-                       (direction === 'SELL' && (analysis.trendH1 === 'BEARISH' || analysis.marketPhase === 'TRENDING') && paMatch);
+    // 6. Multi-Timeframe Alignment (5 Poin)
+    const mtfAligned = (direction === 'BUY' && trendH1Match && trendM15Match) ||
+                       (direction === 'SELL' && trendH1Match && trendM15Match);
     if (mtfAligned) {
       score += 5;
-      reasons.push(`✔ Multi-Timeframe Alignment (H1-M15-M5 Selaras) (+5)`);
+      reasons.push(`✔ MTF Alignment (H1 & M15 Selaras) (+5)`);
     }
 
     // Kurangi penalti Room jika berada di Tier 2 (1.5x - 1.8x SL)
@@ -247,18 +264,20 @@ export class SignalGenerator {
       return this.createWaitSignal("Struktur fase pasar (Market Phase) tidak jelas. Menunggu formasi yang rapi.", activeStrategy);
     }
 
-    // 6. Price Action Entry Trigger Check (Minimal 1 konfirmasi wajib)
-    const hasTrigger = analysis.patternM5 !== 'NONE' || analysis.fibonacciZoneM15 !== 'NONE' || analysis.marketStructureM15.includes('BOS') || analysis.marketStructureM15.includes('FAKE_BREAKOUT') || isNewsBreakout;
-    if (!hasTrigger) {
-      return this.createWaitSignal("Menunggu konfirmasi Price Action (M5) atau pantulan Fibonacci Golden Ratio.", activeStrategy);
+    // 6. Price Action Entry Trigger Check (Wajib konfirmasi candle atau structure break)
+    const hasCandleTrigger = analysis.patternM5 !== 'NONE' || analysis.strongVolumeM5 || analysis.volumeSpikeM5;
+    const hasStructureTrigger = analysis.marketStructureM15.includes('BOS') || analysis.marketStructureM15.includes('CHOCH') || analysis.marketStructureM15.includes('FAKE_BREAKOUT') || isNewsBreakout;
+
+    if (!hasCandleTrigger && !hasStructureTrigger) {
+      return this.createWaitSignal("Menunggu konfirmasi Price Action Candle M5 atau Breakout Struktur M15.", activeStrategy);
     }
 
     // 7. Evaluasi Arah Trade & Dynamic Stop Loss
     let possibleDirections: ('BUY' | 'SELL')[] = [];
-    if (analysis.patternM5.includes('BULL') || analysis.patternM5 === 'PIN_BAR' || analysis.fibonacciZoneM15 === 'GOLDEN_BULL' || analysis.marketStructureM15 === 'BOS_BULL' || analysis.marketStructureM15 === 'FAKE_BREAKOUT_BEAR') {
+    if (analysis.patternM5.includes('BULL') || analysis.patternM5 === 'PIN_BAR' || analysis.marketStructureM15 === 'BOS_BULL' || analysis.marketStructureM15 === 'CHOCH_BULL' || analysis.marketStructureM15 === 'FAKE_BREAKOUT_BEAR' || (analysis.fibonacciZoneM15 === 'GOLDEN_BULL' && hasCandleTrigger) || analysis.trendM15 === 'BULLISH') {
       possibleDirections.push('BUY');
     }
-    if (analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'PIN_BAR' || analysis.fibonacciZoneM15 === 'GOLDEN_BEAR' || analysis.marketStructureM15 === 'BOS_BEAR' || analysis.marketStructureM15 === 'FAKE_BREAKOUT_BULL') {
+    if (analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'PIN_BAR' || analysis.marketStructureM15 === 'BOS_BEAR' || analysis.marketStructureM15 === 'CHOCH_BEAR' || analysis.marketStructureM15 === 'FAKE_BREAKOUT_BULL' || (analysis.fibonacciZoneM15 === 'GOLDEN_BEAR' && hasCandleTrigger) || analysis.trendM15 === 'BEARISH') {
       possibleDirections.push('SELL');
     }
 
@@ -281,15 +300,16 @@ export class SignalGenerator {
 
     for (const dir of possibleDirections) {
       // Dynamic Stop Loss Calculation: Swing Point + ATR Buffer dengan Smart Cap
-      const atrBuffer = Math.max(0.8, atr * 0.6);
+      const atrBuffer = Math.max(0.6, atr * 0.5);
       let calculatedSL = 0;
-      const defaultRisk = Math.max(2.0, Math.min(4.5, atr * 1.5));
+      const defaultRisk = activeStrategy === 'HYPER_SCALPER'
+        ? Math.max(1.8, Math.min(3.5, atr * 1.2))
+        : Math.max(2.0, Math.min(4.5, atr * 1.5));
 
       if (dir === 'BUY') {
         if (analysis.closestSwingLowM5 > 0 && analysis.closestSwingLowM5 < currentPrice) {
           calculatedSL = analysis.closestSwingLowM5 - atrBuffer;
-          // Jika swing low terlalu jauh (> $5.0), gunakan smart ATR SL agar trade tetap aman & proporsional
-          if (currentPrice - calculatedSL > 5.0) {
+          if (currentPrice - calculatedSL > 4.5) {
             calculatedSL = currentPrice - defaultRisk;
           }
         } else {
@@ -299,8 +319,7 @@ export class SignalGenerator {
       } else {
         if (analysis.closestSwingHighM5 > 0 && analysis.closestSwingHighM5 > currentPrice) {
           calculatedSL = analysis.closestSwingHighM5 + atrBuffer;
-          // Jika swing high terlalu jauh (> $5.0), gunakan smart ATR SL agar trade tetap aman & proporsional
-          if (calculatedSL - currentPrice > 5.0) {
+          if (calculatedSL - currentPrice > 4.5) {
             calculatedSL = currentPrice + defaultRisk;
           }
         } else {
@@ -312,8 +331,8 @@ export class SignalGenerator {
       const riskDist = Math.abs(currentPrice - calculatedSL);
 
       // Hard Filter Safety Cap SL
-      if (riskDist > 6.0) {
-        lastRejectionReason = `Stop Loss terlalu lebar ($${riskDist.toFixed(2)} > $6.0). Menunggu titik entri yang lebih presisi.`;
+      if (riskDist > 5.5) {
+        lastRejectionReason = `Stop Loss terlalu lebar ($${riskDist.toFixed(2)} > $5.5). Menunggu titik entri yang lebih presisi.`;
         continue;
       }
       if (riskDist < 1.0) {
@@ -324,30 +343,28 @@ export class SignalGenerator {
       // 8. 3-Tier Room to Target Calculation dengan Market Phase Intelligence
       let targetPrice = 0;
       if (analysis.marketPhase === 'RANGE' || analysis.structureH1 === 'EQUAL_RANGE') {
-        // Mode Sideways: Target kaku di S/R terdekat
         targetPrice = dir === 'BUY' ? analysis.nearestResistanceH1 : analysis.nearestSupportH1;
       } else {
-        // Mode Trending / Breakout: Proyeksikan ke Next S/R atau minimal 2.0x Risk
+        const rrMultiplier = activeStrategy === 'HYPER_SCALPER' ? 1.5 : 2.0;
         if (dir === 'BUY') {
-          targetPrice = Math.max(analysis.nextResistanceH1, currentPrice + (riskDist * 2.0));
+          targetPrice = Math.max(analysis.nextResistanceH1, currentPrice + (riskDist * rrMultiplier));
         } else {
-          targetPrice = Math.min(analysis.nextSupportH1, currentPrice - (riskDist * 2.0));
+          targetPrice = Math.min(analysis.nextSupportH1, currentPrice - (riskDist * rrMultiplier));
         }
       }
 
       const roomDist = Math.abs(targetPrice - currentPrice);
       const roomRatio = riskDist > 0 ? roomDist / riskDist : 0;
 
-      // Tier 3: Room < 1.4x SL -> Reject / WAIT
-      if (roomRatio < 1.4) {
-        lastRejectionReason = `Ruang gerak ke target terbatas (RR ${roomRatio.toFixed(1)}x < 1.4x). Tertahan level S/R terdekat.`;
+      // Tier 3: Room < 1.3x SL -> Reject / WAIT
+      if (roomRatio < 1.3) {
+        lastRejectionReason = `Ruang gerak ke target terbatas (RR ${roomRatio.toFixed(1)}x < 1.3x). Tertahan level S/R terdekat.`;
         continue; 
       }
 
-      // Tier 2: 1.4 <= Room < 1.8 -> Penalti 8 poin
       let roomPenalty = 0;
-      if (roomRatio < 1.8) {
-        roomPenalty = 8;
+      if (roomRatio < 1.6) {
+        roomPenalty = 6;
       }
 
       // Hitung Skor 100-Point Matrix
@@ -355,9 +372,12 @@ export class SignalGenerator {
       
       const setupType = this.determineSetupType(dir, analysis, isNewsBreakout);
 
-      // TP1 = 1:1.8, TP2 = 1:2.5
-      const tp1 = dir === 'BUY' ? currentPrice + (riskDist * 1.8) : currentPrice - (riskDist * 1.8);
-      const tp2 = dir === 'BUY' ? currentPrice + (riskDist * 2.5) : currentPrice - (riskDist * 2.5);
+      // Scalper TP1 = 1:1.3, TP2 = 1:2.0 | Sniper TP1 = 1:1.8, TP2 = 1:2.5
+      const tp1Ratio = activeStrategy === 'HYPER_SCALPER' ? 1.3 : 1.8;
+      const tp2Ratio = activeStrategy === 'HYPER_SCALPER' ? 2.0 : 2.5;
+
+      const tp1 = dir === 'BUY' ? currentPrice + (riskDist * tp1Ratio) : currentPrice - (riskDist * tp1Ratio);
+      const tp2 = dir === 'BUY' ? currentPrice + (riskDist * tp2Ratio) : currentPrice - (riskDist * tp2Ratio);
 
       if (!bestTrade || scoreResult.score > bestTrade.score) {
         bestTrade = {
