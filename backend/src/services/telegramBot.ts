@@ -5,6 +5,9 @@ import { Signal } from './signalGenerator';
 export class TelegramService {
   private bot: TelegramBot | null = null;
 
+  private onResetCallback: (() => { success: boolean; count: number }) | null = null;
+  private getStatusCallback: (() => any) | null = null;
+
   constructor() {
     if (config.TELEGRAM_BOT_TOKEN) {
       this.bot = new TelegramBot(config.TELEGRAM_BOT_TOKEN, { polling: true });
@@ -12,12 +15,47 @@ export class TelegramService {
       
       this.bot.onText(/\/start/, (msg) => {
         const chatId = msg.chat.id;
-        this.bot?.sendMessage(chatId, `Selamat datang di AI Trading XAU/USD!\nChat ID Anda: ${chatId}`);
+        this.bot?.sendMessage(chatId, `👋 *Selamat datang di AurumAI Trading Engine!*\n\nCommand yang tersedia:\n• /status - Cek status AI, Market & SL Harian\n• /reset_ea - Reset Guard & Buka Kunci Robot MT5\n• /help - Panduan penggunaan`, { parse_mode: 'Markdown' });
+      });
+
+      this.bot.onText(/\/reset|\/reset_ea|\/reset_guard/, (msg) => {
+        const chatId = msg.chat.id;
+        if (this.onResetCallback) {
+          const res = this.onResetCallback();
+          this.bot?.sendMessage(chatId, `✅ *Drawdown Guard & Robot MT5 Berhasil Direset!*\n\n• *SL Hari Ini*: 0\n• *Status*: 🟢 AKTIF\n• *Robot MT5*: Kunci Sleep dibuka, siap menerima sinyal baru!`, { parse_mode: 'Markdown' });
+        } else {
+          this.bot?.sendMessage(chatId, `⚠️ Reset callback belum terhubung.`);
+        }
+      });
+
+      this.bot.onText(/\/status/, (msg) => {
+        const chatId = msg.chat.id;
+        if (this.getStatusCallback) {
+          const s = this.getStatusCallback();
+          const guardIcon = s.isGuardActive ? '⛔ SLEEP / TERKUNCI' : '🟢 AKTIF';
+          const msgText = `📊 *Status Sistem AurumAI:*\n\n` +
+            `• *Session*: ${s.session}\n` +
+            `• *Status AI*: ${guardIcon}\n` +
+            `• *SL Hari Ini*: ${s.dailySLCount} / ${s.maxDailySL}\n` +
+            `• *Sniper Trade*: ${s.activeSniper ? '🔥 ' + s.activeSniper.type + ' @ ' + s.activeSniper.entryPrice : 'Standby'}\n` +
+            `• *Scalper Trade*: ${s.activeScalper ? '⚡ ' + s.activeScalper.type + ' @ ' + s.activeScalper.entryPrice : 'Standby'}\n\n` +
+            `_Gunakan /reset_ea untuk mengaktifkan kembali jika terkunci._`;
+          this.bot?.sendMessage(chatId, msgText, { parse_mode: 'Markdown' });
+        }
       });
     } else {
       console.warn('[Telegram] No Bot Token. Telegram notifications disabled.');
     }
   }
+
+  public setOnReset(cb: () => { success: boolean; count: number }) {
+    this.onResetCallback = cb;
+  }
+
+  public setGetStatus(cb: () => any) {
+    this.getStatusCallback = cb;
+  }
+
 
   public async sendSignal(signal: Signal) {
     if (!this.bot || !config.TELEGRAM_CHAT_ID) {

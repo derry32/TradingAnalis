@@ -608,6 +608,15 @@ void OnTimer()
 
    string json = HttpGet(InpApiUrl + "/api/mt5/signals/latest?token=" + InpApiToken);
    if(json == "") return;
+
+   // Check remote reset from Telegram / Web
+   if(JStr(json, "resetGuard") == "true")
+   {
+      g_dailyGuardBlocked = false;
+      g_dailyStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+      Print("🟢 [REMOTE RESET] Daily Guard unlocked via Telegram / Web!");
+   }
+
    if(JStr(json, "status") != "ACTIVE_SIGNAL") return;
 
    string id = JStr(json, "id");

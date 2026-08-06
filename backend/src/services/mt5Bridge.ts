@@ -32,6 +32,12 @@ export interface MT5AckPayload {
 export class MT5BridgeService {
   private latestSignal: Signal | null = null;
   private acknowledgedSignals: Map<string, MT5AckPayload> = new Map();
+  private resetRequested: boolean = false;
+
+  public triggerResetGuard(): void {
+    this.resetRequested = true;
+    console.log('[MT5 Bridge] Reset Guard signal flagged for next MT5 poll.');
+  }
 
   public setLatestSignal(signal: Signal): void {
     if (signal.type === 'WAIT') return;
@@ -43,11 +49,17 @@ export class MT5BridgeService {
       return { success: false, error: 'Unauthorized: Invalid token' };
     }
 
+    const resetFlag = this.resetRequested;
+    if (this.resetRequested) {
+      this.resetRequested = false; // consume flag
+    }
+
     if (!this.latestSignal || this.latestSignal.type === 'WAIT') {
       return { 
         success: true, 
         data: { 
-            status: 'NO_SIGNAL', 
+          status: 'NO_SIGNAL',
+          resetGuard: resetFlag ? "true" : "false",
           serverTime: new Date().toISOString() 
         } 
       };
@@ -116,6 +128,7 @@ export class MT5BridgeService {
       success: true,
       data: {
         status: isAlreadyAcked ? 'ALREADY_ACKNOWLEDGED' : 'ACTIVE_SIGNAL',
+        resetGuard: resetFlag ? "true" : "false",
         signal: payload,
         serverTime: new Date().toISOString()
       }
