@@ -47,7 +47,8 @@ input int    InpTSMinsNormal      = 15;   // Time Stop if ATR normal (min)
 input int    InpTSMinsLarge       = 20;   // Time Stop if ATR large (min)
 
 //--- Daily Risk Guard
-input double InpDailyMaxLossPct   = 3.0;  // Max Daily Loss % before lockdown
+input bool   InpEnableDailyGuard  = false; // Enable Daily Max Drawdown Guard (false = off)
+input double InpDailyMaxLossPct   = 5.0;   // Max Daily Loss % before lockdown (0 = disabled)
 
 //--- State globals
 string   g_lastId            = "";
@@ -466,6 +467,12 @@ void CheckDynamicTimeStop()
 //+------------------------------------------------------------------+
 void CheckDailyRiskGuard()
 {
+   if(!InpEnableDailyGuard || InpDailyMaxLossPct <= 0.0)
+   {
+      g_dailyGuardBlocked = false;
+      return;
+   }
+
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
 
@@ -474,7 +481,7 @@ void CheckDailyRiskGuard()
       g_currentDay        = dt.day;
       g_dailyStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
       g_dailyGuardBlocked = false;
-      PrintFormat("[DAILY_GUARD] New Day %d/08/2026. Starting Balance: %.2f IDR/USD. Daily Guard Reset OK.",
+      PrintFormat("[DAILY_GUARD] New Day %d/08/2026. Starting Balance: %.2f. Daily Guard Reset OK.",
                   dt.day, g_dailyStartBalance);
    }
 
@@ -584,6 +591,8 @@ int OnInit()
    }
 
    g_atrHandle = iATR(_Symbol, PERIOD_M5, 14);
+   g_dailyStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+   g_dailyGuardBlocked = false;
 
    EventSetTimer(InpTimerSeconds);
 

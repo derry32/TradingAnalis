@@ -32,11 +32,11 @@ export interface MT5AckPayload {
 export class MT5BridgeService {
   private latestSignal: Signal | null = null;
   private acknowledgedSignals: Map<string, MT5AckPayload> = new Map();
-  private resetRequested: boolean = false;
+  private resetRequestedUntil: number = 0;
 
   public triggerResetGuard(): void {
-    this.resetRequested = true;
-    console.log('[MT5 Bridge] Reset Guard signal flagged for next MT5 poll.');
+    this.resetRequestedUntil = Date.now() + 30000; // Keep reset flag active for 30 seconds
+    console.log('[MT5 Bridge] Reset Guard signal flagged active for next 30 seconds.');
   }
 
   public setLatestSignal(signal: Signal): void {
@@ -49,17 +49,14 @@ export class MT5BridgeService {
       return { success: false, error: 'Unauthorized: Invalid token' };
     }
 
-    const resetFlag = this.resetRequested;
-    if (this.resetRequested) {
-      this.resetRequested = false; // consume flag
-    }
+    const isReset = Date.now() < this.resetRequestedUntil;
 
     if (!this.latestSignal || this.latestSignal.type === 'WAIT') {
       return { 
         success: true, 
         data: { 
           status: 'NO_SIGNAL',
-          resetGuard: resetFlag ? "true" : "false",
+          resetGuard: isReset ? "true" : "false",
           serverTime: new Date().toISOString() 
         } 
       };
@@ -72,6 +69,7 @@ export class MT5BridgeService {
         success: true, 
         data: { 
           status: 'NO_SIGNAL', 
+          resetGuard: isReset ? "true" : "false",
           reason: 'Latest signal expired (>20m)',
           serverTime: new Date().toISOString() 
         } 
@@ -128,7 +126,7 @@ export class MT5BridgeService {
       success: true,
       data: {
         status: isAlreadyAcked ? 'ALREADY_ACKNOWLEDGED' : 'ACTIVE_SIGNAL',
-        resetGuard: resetFlag ? "true" : "false",
+        resetGuard: isReset ? "true" : "false",
         signal: payload,
         serverTime: new Date().toISOString()
       }
