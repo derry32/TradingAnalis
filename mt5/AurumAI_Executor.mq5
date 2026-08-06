@@ -230,8 +230,7 @@ void CheckMomentumReversalExit()
       double dropDist = g_peakProfitDist - profitDist;
       if(dropDist >= (g_peakProfitDist * 0.45) && profitDist > 0.0)
       {
-         PrintFormat("[PEAK PROFIT LOCK] Signal %s | Peak was +%.2f, dropped to +%.2f (-%.2f drop) -> Securing profit at market!",
-                     g_activeId, g_peakProfitDist, profitDist, dropDist);
+         Print("[PEAK PROFIT LOCK] Signal " + g_activeId + " | Peak=" + DoubleToString(g_peakProfitDist, 2) + " dropped to " + DoubleToString(profitDist, 2) + " -> Securing profit!");
          CloseAllPositions("Peak Profit Lock (Secured +" + DoubleToString(profitDist, 2) + ")");
          g_activeId = "";
          return;
@@ -241,24 +240,20 @@ void CheckMomentumReversalExit()
    // 2. Early Invalidation on Strong Opposing M5 Candle
    if(g_initialR > 0.0 && profitDist < (-0.3 * g_initialR))
    {
-      MqlRates rates[];
-      ArraySetAsSeries(rates, true);
-      if(CopyRates(_Symbol, PERIOD_M5, 0, 2, rates) >= 2)
-      {
-         bool isOpposingCandle = false;
-         if(g_activeDir == "BUY"  && rates[0].close < rates[0].open && (rates[0].open - rates[0].close) > atr * 0.8)
-            isOpposingCandle = true;
-         if(g_activeDir == "SELL" && rates[0].close > rates[0].open && (rates[0].close - rates[0].open) > atr * 0.8)
-            isOpposingCandle = true;
+      double o = iOpen(_Symbol, PERIOD_M5, 0);
+      double c = iClose(_Symbol, PERIOD_M5, 0);
+      bool isOpposingCandle = false;
+      if(g_activeDir == "BUY"  && c < o && (o - c) > atr * 0.8)
+         isOpposingCandle = true;
+      if(g_activeDir == "SELL" && c > o && (c - o) > atr * 0.8)
+         isOpposingCandle = true;
 
-         if(isOpposingCandle)
-         {
-            PrintFormat("[EARLY INVALIDATION CUT] Signal %s | Strong opposing candle detected while floating %.2f loss -> Cutloss to prevent full SL!",
-                        g_activeId, profitDist);
-            CloseAllPositions("Early Invalidation Cut (" + DoubleToString(profitDist, 2) + ")");
-            g_activeId = "";
-            return;
-         }
+      if(isOpposingCandle)
+      {
+         Print("[EARLY INVALIDATION CUT] Signal " + g_activeId + " | Opposing M5 candle detected at floating loss " + DoubleToString(profitDist, 2) + " -> Cutloss early!");
+         CloseAllPositions("Early Invalidation Cut (" + DoubleToString(profitDist, 2) + ")");
+         g_activeId = "";
+         return;
       }
    }
 }
@@ -430,8 +425,7 @@ void CheckTieredTrailingStop()
             if(OrderSend(req, res))
             {
                g_lastTrailingSL = candSL;
-               PrintFormat("[TRAILING-%.1fR] Signal %s | SL moved to %.2f (gap=%.2f, ATR*%.1f)",
-                           rProfit, g_activeId, candSL, gap, mult);
+               Print("[TRAILING] Signal " + g_activeId + " | R=" + DoubleToString(rProfit, 1) + " -> SL moved to " + DoubleToString(candSL, 2) + " (gap=" + DoubleToString(gap, 2) + ")");
             }
          }
       }
