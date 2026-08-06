@@ -230,7 +230,7 @@ void CheckMomentumReversalExit()
       double dropDist = g_peakProfitDist - profitDist;
       if(dropDist >= (g_peakProfitDist * 0.45) && profitDist > 0.0)
       {
-         PrintFormat("⚡ [PEAK PROFIT LOCK] Signal %s | Peak was +%.2f, dropped to +%.2f (-%.2f drop) -> Securing profit at market!",
+         PrintFormat("[PEAK PROFIT LOCK] Signal %s | Peak was +%.2f, dropped to +%.2f (-%.2f drop) -> Securing profit at market!",
                      g_activeId, g_peakProfitDist, profitDist, dropDist);
          CloseAllPositions("Peak Profit Lock (Secured +" + DoubleToString(profitDist, 2) + ")");
          g_activeId = "";
@@ -253,7 +253,7 @@ void CheckMomentumReversalExit()
 
          if(isOpposingCandle)
          {
-            PrintFormat("🛡️ [EARLY INVALIDATION CUT] Signal %s | Strong opposing candle detected while floating %.2f loss -> Cutloss to prevent full SL!",
+            PrintFormat("[EARLY INVALIDATION CUT] Signal %s | Strong opposing candle detected while floating %.2f loss -> Cutloss to prevent full SL!",
                         g_activeId, profitDist);
             CloseAllPositions("Early Invalidation Cut (" + DoubleToString(profitDist, 2) + ")");
             g_activeId = "";
@@ -489,7 +489,7 @@ void CheckDailyRiskGuard()
       if(lossPct >= InpDailyMaxLossPct && !g_dailyGuardBlocked)
       {
          g_dailyGuardBlocked = true;
-         PrintFormat("🚨 [DAILY_GUARD TRIGGERED] Current Drawdown: %.2f%% >= Max Allowed: %.2f%%. New entries LOCKED for today!",
+         PrintFormat("[DAILY_GUARD TRIGGERED] Current Drawdown: %.2f%% >= Max Allowed: %.2f%%. New entries LOCKED for today!",
                      lossPct, InpDailyMaxLossPct);
       }
    }
@@ -583,7 +583,7 @@ int OnInit()
    if(InpDemoOnly &&
       AccountInfoInteger(ACCOUNT_TRADE_MODE) != ACCOUNT_TRADE_MODE_DEMO)
    {
-      Alert("[SAFETY] Demo-only guard — EA stopped on REAL account!");
+      Alert("[SAFETY] Demo-only guard - EA stopped on REAL account!");
       return INIT_FAILED;
    }
 
@@ -592,18 +592,18 @@ int OnInit()
    EventSetTimer(InpTimerSeconds);
 
    Print("=================================================");
-   Print("🚀 [Aurum AI] v4.10 (Sprint 1: Core Protection) Started!");
-   Print("🔗 Connecting to: " + InpApiUrl);
-   Print("🛡️ Magic Number : " + IntegerToString(InpMagic));
-   Print("📊 Layers Plan  : " + IntegerToString(InpNumMarket) + " Market + " + IntegerToString(InpNumLimit) + " Limit");
-   Print("💰 Lot Sizing   : Dynamic (<70%:" + DoubleToString(InpMinLot,2) + " | 70-79%:" + DoubleToString(InpMidLot,2) + " | >=80%:" + DoubleToString(InpMaxLot,2) + ")");
-   Print("🛡️ Smart Exit   : Adaptive BE [MAX(1R, ATR*1.2)] | Dynamic Partial TP | Tiered Trailing Stop");
-   Print("⏱️ Time Stop    : Dynamic (" + IntegerToString(InpTSMinsSmall) + "m / " + IntegerToString(InpTSMinsNormal) + "m / " + IntegerToString(InpTSMinsLarge) + "m by ATR)");
-   Print("🛑 Daily Guard  : " + DoubleToString(InpDailyMaxLossPct, 1) + "% Max Drawdown Lockdown");
+   Print("[Aurum AI] v4.10 (Sprint 1: Rapid Scalp Protection) Started!");
+   Print("Connecting to: " + InpApiUrl);
+   Print("Magic Number : " + IntegerToString(InpMagic));
+   Print("Layers Plan  : " + IntegerToString(InpNumMarket) + " Market + " + IntegerToString(InpNumLimit) + " Limit");
+   Print("Lot Sizing   : Dynamic (<70%:" + DoubleToString(InpMinLot,2) + " | 70-79%:" + DoubleToString(InpMidLot,2) + " | >=80%:" + DoubleToString(InpMaxLot,2) + ")");
+   Print("Smart Exit   : Early BE [MIN(0.8R, ATR*0.8)] | Dynamic Partial TP | Rapid Trailing Stop");
+   Print("Time Stop    : Dynamic (" + IntegerToString(InpTSMinsSmall) + "m / " + IntegerToString(InpTSMinsNormal) + "m / " + IntegerToString(InpTSMinsLarge) + "m by ATR)");
+   Print("Daily Guard  : " + DoubleToString(InpDailyMaxLossPct, 1) + "% Max Drawdown Lockdown");
    Print("=================================================");
 
    string r = HttpGet(InpApiUrl + "/api/mt5/status");
-   if(r != "") Print("🟢 [Server Status] " + r);
+   if(r != "") Print("[Server Status] " + r);
 
    g_ready = true;
    return INIT_SUCCEEDED;
@@ -670,7 +670,7 @@ void OnTimer()
    {
       g_dailyGuardBlocked = false;
       g_dailyStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
-      Print("🟢 [REMOTE RESET] Daily Guard unlocked via Telegram / Web!");
+      Print("[REMOTE RESET] Daily Guard unlocked via Telegram / Web!");
    }
 
    if(JStr(json, "status") != "ACTIVE_SIGNAL") return;
@@ -686,7 +686,7 @@ void OnTimer()
 
    if(CountPositions() >= InpMaxPositions)
    {
-      Print("[CAP] max positions reached — skipping " + id);
+      Print("[CAP] max positions reached - skipping " + id);
       return;
    }
 
@@ -706,7 +706,7 @@ void OnTimer()
    long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    if(spread > InpMaxSpread)
    {
-      Print("[SPREAD] " + IntegerToString((int)spread) + " pts too high — skip " + id);
+      Print("[SPREAD] " + IntegerToString((int)spread) + " pts too high - skip " + id);
       return;
    }
 
