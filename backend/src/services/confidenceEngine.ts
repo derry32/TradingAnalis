@@ -144,10 +144,14 @@ export class ConfidenceEngine {
     }
 
     // 4. Smart Money Liquidity & Imbalance (15 Poin)
-    if (s.m1.structure.hasFVG || s.m5.structure.hasFVG) {
+    const isBullishFVG = s.m1.structure.fvgZone?.type === 'BULLISH' || s.m5.structure.fvgZone?.type === 'BULLISH';
+    const isBearishFVG = s.m1.structure.fvgZone?.type === 'BEARISH' || s.m5.structure.fvgZone?.type === 'BEARISH';
+    
+    if ((direction === 'BUY' && isBullishFVG) || (direction === 'SELL' && isBearishFVG)) {
       liquidityScore += 10;
       reasons.push(`✔ FVG (Fair Value Gap) Imbalance Zone Terdeteksi (+10)`);
-    } else if (s.m1.structure.liquiditySweep !== 'NONE') {
+    } else if ((direction === 'BUY' && s.m1.structure.liquiditySweep === 'SWEEP_LOW') || 
+               (direction === 'SELL' && s.m1.structure.liquiditySweep === 'SWEEP_HIGH')) {
       liquidityScore += 10;
       reasons.push(`✔ Liquidity Sweep Terdeteksi (+10)`);
     } else {
@@ -179,7 +183,11 @@ export class ConfidenceEngine {
       (direction === 'BUY' && m1Candle.close > m1Candle.open && m1Candle.close >= s.m1.structure.swingHigh) ||
       (direction === 'SELL' && m1Candle.close < m1Candle.open && m1Candle.close <= s.m1.structure.swingLow);
 
-    if (isM1Momentum || s.m1.structure.lastBOS !== 'NONE') {
+    const isDirectionalBOS = 
+      (direction === 'BUY' && s.m1.structure.lastBOS === 'BULLISH_BOS') || 
+      (direction === 'SELL' && s.m1.structure.lastBOS === 'BEARISH_BOS');
+
+    if (isM1Momentum || isDirectionalBOS) {
       timingScore += 10;
       reasons.push(`✔ Intrabar M1 Micro Breakout Trigger (+10)`);
     } else {

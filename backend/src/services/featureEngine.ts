@@ -221,9 +221,9 @@ export class FeatureEngine {
     }
 
     let structureType: 'HH_HL' | 'LH_LL' | 'RANGING' = 'RANGING';
-    if (lastBOS === 'BULLISH_BOS' || (current.close > swingLow && current.low > swingLow)) {
+    if (lastBOS === 'BULLISH_BOS' || lastCHoCH === 'BULLISH_CHOCH') {
       structureType = 'HH_HL';
-    } else if (lastBOS === 'BEARISH_BOS' || (current.close < swingHigh && current.high < swingHigh)) {
+    } else if (lastBOS === 'BEARISH_BOS' || lastCHoCH === 'BEARISH_CHOCH') {
       structureType = 'LH_LL';
     }
 
