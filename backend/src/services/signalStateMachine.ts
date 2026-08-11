@@ -46,9 +46,18 @@ export interface BurstSignalPayload {
 export class SignalStateMachine {
   private currentState: SignalLifecycleState = 'WAITING';
   private currentActiveSignal: BurstSignalPayload | null = null;
-  private reEntryCycleCount: number = 0;
+  
+  // Smart Re-Entry Active Cycle tracking
+  private activeCycle: {
+    id: string;
+    direction: 'BUY' | 'SELL';
+    entriesCount: number;
+    lastEntryPrice: number;
+    initialEntryPrice: number;
+    lastSignalTime: number;
+  } | null = null;
+
   private lastTradeResult: 'HIT_TP' | 'HIT_SL' | 'NONE' = 'NONE';
-  private lastSignalTime: number = 0;
 
   /**
    * Cek apakah sinyal masih berlaku (belum kadaluarsa berdasarkan TTL)
@@ -66,19 +75,63 @@ export class SignalStateMachine {
     snapshot: LiveMarketSnapshot,
     ttlSeconds: number = 30
   ): BurstSignalPayload | null {
-    if (evaluation.direction === 'WAIT') {
+    if (evaluation.direction === 'WAIT' || evaluation.totalScore < 65) {
       this.currentState = 'WAITING';
       return null;
     }
 
-    // Cooldown check: minimal 15 detik dari sinyal sebelumnya agar tidak spam
-    if (Date.now() - this.lastSignalTime < 15000) {
-      return null;
+    const now = Date.now();
+    const dir = evaluation.direction;
+    const price = snapshot.currentPrice;
+    const atr = snapshot.m1.features.atr || 1.5;
+
+    // Check if we have an active cycle
+    if (this.activeCycle) {
+      // Reset cycle if direction changes or it's been more than 2 hours since the first signal
+      if (this.activeCycle.direction !== dir || (now - this.activeCycle.lastSignalTime) > 2 * 60 * 60 * 1000) {
+        this.activeCycle = null;
+      }
     }
 
-    const price = snapshot.currentPrice;
-    const dir = evaluation.direction;
-    const atr = snapshot.m1.features.atr || 1.5;
+    let currentEntryCycle = 1;
+    // Normalized Risk Budget (Total 100% / 1.0)
+    let lotRatioPerLayer = 0.1052; // Entry 1: 52.6% total (0.1052 * 5)
+
+    if (this.activeCycle) {
+      // Cooldown check: minimal 15 detik dari sinyal sebelumnya agar tidak spam
+      if (now - this.activeCycle.lastSignalTime < 15000) {
+        return null;
+      }
+
+      if (this.activeCycle.entriesCount >= 3) {
+        return null; // Max 3 entries reached for this cycle
+      }
+
+      // Calculate Pullback Distance: MAX(5 pips, ATR_M5 * 0.25)
+      // Since 1 pip = 0.1 in price (XAUUSD), 5 pips = 0.5 price diff
+      const atrM5 = snapshot.m5.features.atr || atr;
+      const minPullbackPoints = Math.max(0.5, atrM5 * 0.25);
+
+      // Anti-chasing check
+      if (dir === 'BUY') {
+        if (price > this.activeCycle.lastEntryPrice - minPullbackPoints) {
+           return null; // Must be lower by minPullbackPoints
+        }
+      } else {
+        if (price < this.activeCycle.lastEntryPrice + minPullbackPoints) {
+           return null; // Must be higher by minPullbackPoints
+        }
+      }
+
+      currentEntryCycle = this.activeCycle.entriesCount + 1;
+      
+      // Update lot ratios for re-entries
+      if (currentEntryCycle === 2) {
+        lotRatioPerLayer = 0.0632; // Entry 2: 31.6% total (0.0632 * 5)
+      } else if (currentEntryCycle === 3) {
+        lotRatioPerLayer = 0.0316; // Entry 3: 15.8% total (0.0316 * 5)
+      }
+    }
 
     // Hitung Entry Zone Toleransi (0.5x ATR M1, misal +/- $0.8 Gold)
     const zoneTolerance = Math.max(0.5, atr * 0.5);
@@ -116,12 +169,11 @@ export class SignalStateMachine {
         tpPips,
         slPrice,
         slPips,
-        lotRatio: 0.2, // 20% total lot per layer (5 layer = 100%)
+        lotRatio: lotRatioPerLayer,
       });
     }
 
     const signalId = `AURUM-${Date.now().toString().slice(-6)}`;
-    this.lastSignalTime = Date.now();
     this.currentState = 'TRIGGERED';
 
     const payload: BurstSignalPayload = {
@@ -135,14 +187,30 @@ export class SignalStateMachine {
       entryZoneMax: Number(entryZoneMax.toFixed(2)),
       pullbackLimitPrice,
       stopLossPrice: slPrice,
-      timestampMs: Date.now(),
+      timestampMs: now,
       ttlSeconds,
-      currentReEntryCycle: this.reEntryCycleCount + 1,
-      maxReEntryCycles: evaluation.maxReEntryCycles,
+      currentReEntryCycle: currentEntryCycle,
+      maxReEntryCycles: 3,
       layers,
       reasons: evaluation.reasons,
       warnings: evaluation.warnings,
     };
+
+    // Update active cycle state
+    if (!this.activeCycle) {
+      this.activeCycle = {
+        id: signalId,
+        direction: dir,
+        entriesCount: 1,
+        lastEntryPrice: price,
+        initialEntryPrice: price,
+        lastSignalTime: now,
+      };
+    } else {
+      this.activeCycle.entriesCount = currentEntryCycle;
+      this.activeCycle.lastEntryPrice = price;
+      this.activeCycle.lastSignalTime = now;
+    }
 
     this.currentActiveSignal = payload;
     return payload;
@@ -153,21 +221,24 @@ export class SignalStateMachine {
    */
   public recordTradeOutcome(result: 'HIT_TP' | 'HIT_SL') {
     this.lastTradeResult = result;
+    
+    // Reset siklus jika trade ditutup (baik kena TP maupun SL)
+    // agar setup berikutnya bersih memulai dari Entry #1 lagi.
+    this.activeCycle = null;
+    
     if (result === 'HIT_TP') {
-      this.reEntryCycleCount++;
       this.currentState = 'HIT_TP';
     } else {
-      // Jika kena SL, reset siklus re-entry agar tidak memburu kerugian (anti-revenge)
-      this.reEntryCycleCount = 0;
       this.currentState = 'HIT_SL';
     }
   }
 
   /**
    * Periksa apakah robot diizinkan melakukan Re-Entry Stacking
+   * (Fungsi legacy, sekarang logika dikendalikan di dalam createBurstSignal)
    */
   public canReEnter(maxAllowedCycles: number): boolean {
-    return this.lastTradeResult === 'HIT_TP' && this.reEntryCycleCount < maxAllowedCycles;
+    return false; // Disable legacy logic
   }
 
   public getCurrentSignal(): BurstSignalPayload | null {
