@@ -10,6 +10,10 @@ Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Anal
   - **Probabilistic Forecast Scoring:** Engine memprediksi arah bukan dengan tebak-tebakan, melainkan kalkulasi probabilitas matematis (korelasi terbalik Yield/DXY terhadap Gold, dipadukan dengan struktur H1 & M15).
   - **4-Stage News State Machine:** `PREPARE` (T-30), `LOCKED` (T-5), `EXECUTE` (T=0), dan `IDLE`.
 - **NFP & CPI Promotion:** Status berita Non-Farm Payroll, CPI, dan Inflasi dinaikkan ke level `EXTREME`, memaksa `Normal Quant Engine` masuk mode *Lock* dan menyerahkan kendali sepenuhnya pada `Pre-News Engine`.
+- **Smart Institutional Re-Entry Guard (Anti-Overtrading):**
+  - **Hybrid Dynamic Pullback:** Mencegah robot menembak posisi *Averaging* secara membabi buta. Sinyal tambahan (Entry #2 dan #3) HANYA diizinkan jika harga telah terkoreksi minimal sejauh `MAX(5 pips, ATR_M5 * 0.25)` dari posisi sebelumnya.
+  - **Anti-Chasing Protection:** Robot dilarang keras membeli di harga yang lebih mahal dari sebelumnya (Buy) atau menjual di harga yang lebih murah (Sell). Memastikan *Averaging* selalu mendapatkan harga "diskon".
+  - **Risk Budget Normalization:** Exposure dibatasi secara proporsional. Entry #1 dialokasikan 52.6% lot, Entry #2 dialokasikan 31.6%, dan Entry #3 dialokasikan 15.8%. Total keseluruhan risiko dibatasi secara ketat maksimal 100% per siklus sinyal (menghindari risiko bengkak berlipat ganda).
 
 ### Diperbaiki
 - **Stale Data Guard (2-Level Validation):** Memperbaiki sistem pelindung data macet yang sebelumnya terlalu agresif (langsung memblokir sinyal jika telat 5 detik). Kini dipisah menjadi 2 level: Peringatan (usia harga > 10 detik) dan Pemblokiran ketat (koneksi mati > 30 detik). Sinyal M5 kini berhasil lolos persis di detik `:00`.
