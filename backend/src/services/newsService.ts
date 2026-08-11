@@ -47,16 +47,14 @@ export class NewsService {
 
   public static getNewsSeverity(title: string): NewsSeverity {
     const titleLower = title.toLowerCase();
-    if (titleLower.includes('fomc') || titleLower.includes('powell') || titleLower.includes('fed rate') || titleLower.includes('interest rate') || titleLower.includes('federal funds rate')) {
+    // NFP, CPI, Fed, FOMC -> EXTREME (Trigger Pre-News Engine)
+    if (titleLower.includes('fomc') || titleLower.includes('powell') || titleLower.includes('fed rate') || titleLower.includes('interest rate') || titleLower.includes('federal funds rate') || titleLower.includes('nfp') || titleLower.includes('non-farm') || titleLower.includes('cpi') || titleLower.includes('inflation')) {
       return 'EXTREME';
     }
-    if (titleLower.includes('nfp') || titleLower.includes('non-farm') || titleLower.includes('cpi') || titleLower.includes('inflation')) {
+    if (titleLower.includes('ppi') || titleLower.includes('unemployment') || titleLower.includes('retail sales')) {
       return 'HIGH';
     }
-    if (titleLower.includes('ppi') || titleLower.includes('unemployment')) {
-      return 'MEDIUM';
-    }
-    return 'HIGH'; // Default to High for other high impact news
+    return 'MEDIUM'; // Default to Medium for other high impact news
   }
 
   public getUpcomingHighImpactNews(): NewsEvent | null {

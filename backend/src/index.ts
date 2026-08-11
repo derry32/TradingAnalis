@@ -9,6 +9,10 @@ import { SignalGenerator, Signal } from './services/signalGenerator';
 import { TelegramService } from './services/telegramBot';
 import { insertSignal, fetchRecentSignals, updateSignalStatus, fetchSignalsByDate, fetchMonthlyStats, fetchActiveSignals, insertSystemLog } from './services/database';
 import { mt5Bridge } from './services/mt5Bridge';
+import { featureEngine } from './services/featureEngine';
+import { confidenceEngine } from './services/confidenceEngine';
+import { signalStateMachine, BurstSignalPayload } from './services/signalStateMachine';
+import { preNewsEngine } from './services/preNewsEngine';
 
 const app = express();
 app.use(cors());
@@ -226,6 +230,77 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
 }
 
 // 2. Wire Market Data
+marketData.setOnM1Closed((data) => {
+  if (data.m1.length < 10 || data.m5.length < 10) return;
+  const currentPrice = data.currentM1?.close || data.m5[data.m5.length - 1].close;
+
+  // 1. Fast Incremental Feature Extraction (<15ms)
+  const snapshot = featureEngine.generateSnapshot(
+    data.m1,
+    data.m5,
+    data.m15,
+    data.h1,
+    currentPrice
+  );
+
+  // 2. Deterministic Quant Confidence Evaluation (<5ms, Zero LLM)
+  const evaluation = confidenceEngine.evaluate(snapshot);
+
+  // 3. Check Drawdown Guard
+  checkAndResetDailyDrawdown();
+  const DRAWDOWN_LIMIT = 10;
+  const isGuardActive = dailySLCount >= DRAWDOWN_LIMIT;
+
+  if (evaluation.direction !== 'WAIT' && evaluation.totalScore >= 65 && !isGuardActive) {
+    if (data.isStaleData) {
+       console.log(`[StaleDataGuard] ⛔ Sinyal ${evaluation.direction} diblokir! Koneksi mati (message terakhir ${data.lastMessageAgeSec?.toFixed(1)}s lalu, tick terakhir ${data.lastTickAgeSec?.toFixed(1)}s lalu).`);
+       return;
+    }
+    // 4. Create 5-Layer Burst Signal Payload with TTL (30s)
+    const burst = signalStateMachine.createBurstSignal(evaluation, snapshot, 30);
+    if (burst) {
+      console.log(`[Critical Path ⚡] Micro-Burst Sinyal M1 Generated: ${burst.direction} @ ${burst.entryPrice} (Skor: ${burst.confidenceScore}%, Tier: ${burst.tier})`);
+
+      // ⚡ CRITICAL PATH (<100ms Push to MT5 & Telegram)
+      mt5Bridge.setLatestBurstSignal(burst);
+
+      // Construct legacy Signal format for DB & Telegram compatibility
+      const legacySignal: Signal = {
+        id: burst.id,
+        type: burst.direction,
+        setupType: `⚡ ${burst.tier} (5-Layer Burst)`,
+        executionType: 'BURST_5_LAYERS',
+        probabilityLabel: burst.tier,
+        confidenceScore: burst.confidenceScore,
+        marketCondition: `${snapshot.m5.features.trend} Trend / ${snapshot.m1.structure.structureType}`,
+        session: getCurrentSession(),
+        entryPrice: burst.entryPrice,
+        stopLoss: burst.stopLossPrice,
+        takeProfit1: burst.layers[0].tpPrice,
+        takeProfit2: burst.layers[4].tpPrice,
+        validTime: '30 Detik (TTL Scalp)',
+        estimatedTpTime: '1-3 Menit',
+        timestamp: new Date().toISOString(),
+        reason: burst.reasons.join('\n'),
+        strategy: 'HYPER_SCALPER',
+        entryZone: `${burst.entryZoneMin} - ${burst.entryZoneMax}`,
+      };
+
+      telegramBot.sendSignal(legacySignal);
+      insertSignal(legacySignal).then((dbId) => {
+        if (dbId) {
+          insertSystemLog('INFO', 'RealTimeEngine', `⚡ Early Sinyal M1: ${burst.direction} @ ${burst.entryPrice}`, {
+            id: burst.id,
+            score: burst.confidenceScore,
+            tier: burst.tier,
+            layers: burst.layers.length,
+          });
+        }
+      });
+    }
+  }
+});
+
 marketData.setOnM5Closed((data) => {
   // Cegah spam sinyal dari data masa lalu saat server baru menyala (restart)
   // currentM5 adalah candle yang BARU DITUTUP. Jika usianya lebih dari 15 menit lalu, abaikan.
@@ -276,6 +351,11 @@ marketData.setOnM5Closed((data) => {
         }
 
         if (shouldSend && signal.type !== 'WAIT') {
+          if (data.isStaleData) {
+             console.log(`[StaleDataGuard] ⛔ Sinyal ${signal.type} diblokir! Koneksi mati (message terakhir ${data.lastMessageAgeSec?.toFixed(1)}s lalu, tick terakhir ${data.lastTickAgeSec?.toFixed(1)}s lalu).`);
+             continue;
+          }
+
           const newTradeState: TradeState = { 
             id: signal.id, type: signal.type as 'BUY' | 'SELL', 
             entryPrice: signal.entryPrice, stopLoss: signal.stopLoss, takeProfit1: signal.takeProfit1, 
@@ -319,6 +399,11 @@ function getCurrentSession() {
 }
 
 news.start();
+
+// Pre-News Engine Scheduler (Check every 5 seconds)
+setInterval(() => {
+  preNewsEngine.checkSchedule(Date.now(), news, marketData, telegramBot);
+}, 5000);
 
 // === Wire Telegram Bot Commands ===
 telegramBot.setOnReset(() => {

@@ -56,6 +56,17 @@ export class TelegramService {
     this.getStatusCallback = cb;
   }
 
+  public async sendMessage(text: string) {
+    if (!this.bot || !config.TELEGRAM_CHAT_ID) {
+      console.log('[Telegram Mock Text]', text);
+      return;
+    }
+    try {
+      await this.bot.sendMessage(config.TELEGRAM_CHAT_ID, text, { parse_mode: 'Markdown' });
+    } catch (e) {
+      console.error('[Telegram] Failed to send text message', e);
+    }
+  }
 
   public async sendSignal(signal: Signal) {
     if (!this.bot || !config.TELEGRAM_CHAT_ID) {

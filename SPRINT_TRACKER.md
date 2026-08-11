@@ -87,48 +87,73 @@
 
 ---
 
-## 🚀 SPRINT 6 (Multi-Agent Quant Ensemble & Downstream LLM Explainer)
-**Status:** 📋 Backlog / Perencanaan Arsitektur
-**Fokus:** Mengadopsi arsitektur *Deterministic Quant Core + Generative Edge*. Memecah analisis menjadi 5 Micro-Engines modular + 1 Master Aggregator, serta memposisikan LLM murni di tahap akhir sebagai *Narrator & Explainer* (hemat biaya, 100% konsisten, anti-halusinasi).
+## 🚀 SPRINT 6 (Ultra-Fast Dual-Track Real-Time Engine & 5-Layer Burst Scalper)
+**Status:** ✅ Selesai (Completed)
+**Fokus:** Mengadopsi arsitektur *Deterministic Quant Core + Generative Edge* dan *Dual-Track Real-Time Pipeline* untuk mengeliminasi kelambatan entry (meninggalkan polling M5 close 300 detik) dan mengeksekusi *5-Layer Burst Scalping* (target akumulasi 40–50 pips).
 
-### 📐 Arsitektur Alur Sistem V2.0:
+### 📐 Arsitektur Dual-Track Real-Time Pipeline:
 ```
-Market Data (Tick / M5)
+Real-Time Market Data (M1 Ingestion & Tick Stream)
       │
       ▼
-[Quant Micro-Engines (AI 1-5)]
-(Market Structure, Liquidity SMC, Trend Quant, News Guard, Risk Engine)
-      │
-      ▼
-[Master AI Consensus & Scoring Matrix (AI 6)] ─── Skor < 50/70 ──► [WAIT / Filtered]
-      │ (Sinyal Valid Terbentuk)
-      ▼
-[Downstream LLM Explainer (AI 7)] ──(Fallback jika timeout)──► Template Bawaan
-      │
-      ▼
-Broadcast ke Telegram & Dashboard User
+┌─────────────────────────────────────────────────────────┐
+│ ⚡ CRITICAL PATH (< 100ms Target | Aktual: ~2.94ms)    │
+│  1. Incremental Feature Extraction (2.13ms)             │
+│     (EMA, RSI, ATR, MACD, Swing, BOS, CHoCH, Liquidity) │
+│  2. Deterministic Quant Confidence Scoring (0.81ms)     │
+│     (100-Point Scoring Matrix, Zero-LLM Blocking)       │
+│  3. Signal State Machine & 5-Layer Burst Generator      │
+│     (TTL 30s Guard, Entry Zone, Anti-Chasing Fibo Limit)│
+│  4. Instant Push to MT5 Bridge & Telegram Alert         │
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│ 🧠 ASYNC AI PATH (Background / Non-Blocking)            │
+│  - Downstream LLM Explainer & Education Reason          │
+│  - Asynchronous DB Persistence & Logging                │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### Backlog Sprint 6 (Multi-Agent Quant Ensemble)
-| ID | Agen / Tipe | Judul | Deskripsi Singkat | Prioritas |
-|----|-------------|-------|-------------------|-----------|
-| M-01 | AI 1 (Quant) | Market Structure Engine | Deteksi otomatis titik struktur: Higher High (HH), Higher Low (HL), Lower High (LH), Lower Low (LL), BOS (*Break of Structure*), dan CHoCH (*Change of Character*). | 🔴 Sangat Tinggi |
-| M-02 | AI 2 (Quant) | Liquidity & SMC Engine | Deteksi konsep *Smart Money*: Equal High/Low (EQH/EQL), Liquidity Sweep, Stop Hunt, Order Block (OB), dan Fair Value Gap (FVG). | 🔴 Sangat Tinggi |
-| M-03 | AI 3 (Quant) | Trend & Momentum Engine | Kalkulasi indikator kuantitatif cepat: Trend EMA, Volatilitas ATR, Dynamic RSI, MACD Histogram, dan ADX Strength. | 🔴 Sangat Tinggi |
-| M-04 | AI 4 (Quant) | Macro News & Impact Engine | Kalender makro otomatis (CPI, NFP, FOMC, Fed Rate, Powell) dengan filter waktu pra/saat rilis berita (*Emergency Lock Mode*). | 🟠 Tinggi |
-| M-05 | AI 5 (Quant) | Adaptive Risk Engine | Kalkulasi otomatis: Dynamic SL (Swing + ATR buffer), Multiple TP (1:1.8 & 1:2.5), Lot Size berbasis % Equity Modal, dan Drawdown Guard. | 🔴 Sangat Tinggi |
-| M-06 | AI 6 (Consensus) | Master AI Decision Aggregator | Menggabungkan data dari AI 1-5 dengan *Weighted Scoring Matrix* 100 Poin untuk menghasilkan keputusan final (BUY/SELL/WAIT) + Skor Confidence. | 🔴 Sangat Tinggi |
-| M-07 | AI 7 (LLM Edge) | Downstream LLM Explainer | LLM hanya dipanggil di hilir (saat sinyal valid) untuk menyusun narasi edukatif ke user (Reason, Setup Type, Risk context) + fail-safe template jika timeout. | 🟠 Tinggi |
+### Backlog Sprint 6 (Telah Diselesaikan)
+| ID | Tipe | Judul | Deskripsi Singkat | Status |
+|----|------|-------|-------------------|--------|
+| M-01 | Core | Incremental Feature Engine | Perhitungan rolling indikator (EMA 9/20/50/200, RSI 14, ATR 14, MACD) & scanner struktur SMC (Swing, BOS, CHoCH, FVG) per tick M1 (<2.13ms). | ✅ Selesai |
+| M-02 | Core | Deterministic Quant Scoring | Matriks kuantitatif 100-poin non-blocking (Trend 20%, Structure 20%, Momentum 15%, Liquidity 15%, Volatility 10%, Pattern 10%, R:R 10%) dengan klasifikasi Tier (<65% WAIT, 65-74% Quick Scalp, 75-84% Momentum, >=85% Super Trend). | ✅ Selesai |
+| M-03 | Core | Signal State Machine & TTL Guard | Manajemen siklus sinyal dengan masa kedaluwarsa ketat 30 detik (TTL), deteksi zona toleransi harga, dan kalkulator level Limit Pullback Fibo 50-61.8%. | ✅ Selesai |
+| M-04 | Core | M1 Intrabar Fast Trigger | Hooking callback `onM1Closed` untuk menangkap peluang di menit ke-1 atau ke-2 awal pergerakan candle tanpa menunggu penutupan M5 (300 detik). | ✅ Selesai |
+| M-05 | Core | 5-Layer Burst Scalper | Generator payload 5 layer serentak dengan micro-TP bertingkat (8, 9, 10, 11, 12 pips) dan SL mikro ketat 10 pips untuk mengunci total 40–50 pips profit instan. | ✅ Selesai |
+| M-06 | Core | Safe Trend Re-Entry Stacking | Pelacak status siklus re-entry bertingkat (hingga 3x siklus) jika trade sebelumnya sukses `HIT_TP` dan tren masih berlanjut kuat. Otomatis reset saat `HIT_SL`. | ✅ Selesai |
+| M-07 | MT5 | AurumAI_Executor.mq5 v4.20 | Upgrade EA MT5 dengan dukungan eksekusi 5 layer, konversi otomatis ke 5 Pending Limit jika harga melompat >15 pips (*Anti-Chasing*), validasi TTL, dan integrasi remote reset guard. | ✅ Selesai |
+| M-08 | Testing | Latency Benchmark & Unit Test | Verifikasi benchmark internal (<2.94ms) dan rangkaian unit test untuk feature extraction, quant scoring, TTL expiration, serta re-entry cycle tracker. | ✅ Selesai |
 
 ---
 
-## 💡 Masa Depan: SPRINT 7 (Ekosistem Lanjutan & Monetisasi)
+## 🚀 SPRINT 7 (Quant Engine v2.1 — Adaptive Risk, Feedback Engine & E2E Telemetry)
+**Status:** 📋 Backlog (Menunggu Observasi Live Market Saat Pasar Buka)
+**Fokus:** Mengintegrasikan umpan balik hasil trading (*Trade Outcome Feedback Engine*), kalkulasi Stop Loss adaptif berbasis volatilitas ATR & struktur pasar, mitigasi false breakout dengan klasifikasi sinyal *Early vs Confirmed*, serta pencatatan latensi *End-to-End* ($T_0 \rightarrow T_6$).
+
+### Backlog Sprint 7 (Rencana Implementasi Lanjutan)
+| ID | Tipe | Judul | Deskripsi Singkat | Prioritas |
+|----|------|-------|-------------------|-----------|
+| Q-01 | Core | Dynamic Volatility & Structural SL | Mengganti SL kaku 12 pips dengan formula dinamis `SL = min(25p, max(ATR * 1.2, Structural Swing + buffer))` untuk mencegah *premature stop-out* akibat noise wajar XAUUSD. | 🔴 Sangat Tinggi |
+| Q-02 | Core | Early vs Confirmed Signal Tiering | Membedakan sinyal `EARLY` (M1 Intrabar running, min Conf 85%, Lot 60%) dan `CONFIRMED` (M1 Close, min Conf 75%, Lot 100%) untuk kecepatan tanpa membayar mahal pada false breakout. | 🔴 Sangat Tinggi |
+| Q-03 | Core | Dual-Axis Quality Decay & Price Extension | Menolak/membatalkan sinyal seketika jika harga live melonjak keluar dari `Entry Zone` (*Price Extension Invalidation*) meskipun usia sinyal baru beberapa detik. | 🟠 Tinggi |
+| Q-04 | Core | Trade Outcome Feedback Engine | Menyimpan data kuantitatif komprehensif saat trade ditutup (MFE, MAE, holding time, slippage, distribusi layer TP/SL, cycle re-entry) ke tabel `trade_telemetry` untuk evaluasi statistik berkelanjutan. | 🔴 Sangat Tinggi |
+| Q-05 | Core | (PHASE 2) End-to-End (E2E) Latency Telemetry | Menghitung total latensi dari waktu event market ($T_0$), ekstraksi feature ($T_1$), kalkulasi skoring ($T_2$), push sinyal ($T_3$), terima EA ($T_4$), kirim order ($T_5$), hingga broker fill ($T_6$). Memvalidasi kecepatan eksekusi Phase 1. | 🟠 Tinggi |
+| Q-06 | MT5 | MT5 MFE/MAE & Telemetry Exporter | Peningkatan EA MT5 untuk merekam *peak profit* (MFE), *max adverse floating* (MAE), microsecond timestamps, dan mengirim laporan JSON Telemetry otomatis ke backend saat posisi selesai. | 🔴 Sangat Tinggi |
+| Q-07 | Core | (PHASE 1) Time-based Forced Close | ✅ **Selesai**: Menghilangkan delay statis (90 detik & 1 menit M5) dengan menyuntikkan boundary tick (dummy) pada detik `:00` secara paralel ke semua CandleBuilder. Dilengkapi dengan pelindung *Stale Data Guard* (`lastTickAgeSec`). | ✅ Selesai |
+| Q-08 | Arch | (PHASE 3) MT5 Tick-Driven Signal Pulling | Perombakan arsitektur akhir di mana MT5 menjadi penentu "KAPAN" dan "HARGA BERAPA" eksekusi dilakukan lewat event `isNewBar()` (Backend beralih menggunakan Signal Cache pasif). | 🟡 Menengah |
+
+---
+
+## 💡 Masa Depan: SPRINT 8 (Ekosistem Lanjutan & Monetisasi)
 **Status:** Perencanaan Panjang (Icebox)
 
 | ID | Tipe | Judul | Deskripsi Singkat |
 |----|------|-------|-------------------|
 | I-00 | Core | Mode Zikk Sniper (MTF Top-Down) | Tambah mode strategi ke-3 berbasis SOP Zikk: 4 anak tangga analisis (D1→H4→H1→M5). *High win-rate, low frequency.* Butuh data TF D1 & H4. |
-| I-01 | Feature | MetaTrader EA Integration | ✅ **Selesai (v3.2.0)**: REST Bridge `/api/mt5` + Multi-Layer Scalper `AurumAI_Executor.mq5` (3 Market + 2 Limit Pullback, Dynamic Lot Sizing up to 0.09 lot, CI/CD Windows Auto-Compile). |
+| I-01 | Feature | MetaTrader EA Integration | ✅ **Selesai (v4.20)**: REST Bridge `/api/mt5` + 5-Layer Burst Scalper `AurumAI_Executor.mq5` (Anti-Chasing Limit Pullback, 30s TTL, Re-Entry Stacking). |
 | I-02 | Feature | Payment Gateway | Integrasi Midtrans / Stripe untuk sistem berlangganan (Subscription) sinyal VIP. |
 | I-03 | Feature | Multi-Pair Support | Mengembangkan analisis untuk mata uang lain (EUR/USD, GBP/USD, dll). |
 | I-04 | Core | Multi-Timeframe Analysis | AI menganalisis keselarasan tren pada M5, H1, dan D1 sebelum memberikan sinyal. |

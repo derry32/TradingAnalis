@@ -44,7 +44,7 @@ export class CandleBuilder {
       this.currentCandle.low = Math.min(this.currentCandle.low, low);
       this.currentCandle.close = close;
       this.currentCandle.volume += volume;
-    } else {
+    } else if (periodStart > this.currentCandle.time) {
       const closedCandle = { ...this.currentCandle };
       this.allCandles.push(closedCandle);
       
@@ -62,6 +62,10 @@ export class CandleBuilder {
       if (this.onCandleClosed) this.onCandleClosed(closedCandle);
 
       this.currentCandle = { time: periodStart, open, high, low, close, volume, isDummy };
+    } else {
+      // periodStart < this.currentCandle.time
+      // Ignore late ticks from TwelveData API that arrive after we already forced a new candle
+      // console.warn(`[CandleBuilder] Ignored late tick for ${new Date(periodStart).toISOString()} (Current is ${new Date(this.currentCandle.time).toISOString()})`);
     }
   }
 
@@ -71,48 +75,88 @@ export class CandleBuilder {
 }
 
 export type MultiTimeframeData = {
+  m1: OHLCV[];
   m5: OHLCV[];
   m15: OHLCV[];
   h1: OHLCV[];
+  currentM1?: OHLCV;
   currentM5: OHLCV;
   currentM15: OHLCV;
   currentH1: OHLCV;
+  isStaleData?: boolean;
+  lastTickAgeSec?: number;
+  lastMessageAgeSec?: number;
 };
 
 export class MarketDataService {
   private ws: WebSocket | null = null;
   private onM5Closed: ((data: MultiTimeframeData) => void) | null = null;
+  private onM1Closed: ((data: MultiTimeframeData) => void) | null = null;
+  private onTickUpdate: ((price: number, timestamp: number) => void) | null = null;
   private watchdogTimer: NodeJS.Timeout | null = null;
+  private cronTimer: NodeJS.Timeout | null = null;
 
-  public m1 = new CandleBuilder(1);
+  public lastTickMs: number = Date.now();
+  public lastMessageMs: number = Date.now();
+  public lastTickAgeSec: number = 0;
+  public lastMessageAgeSec: number = 0;
+
+  public m1 = new CandleBuilder(1, 1000);
   public m5 = new CandleBuilder(5, 6000); // 6000 M5 candles = 500 hours (enough for 500 H1 candles)
   public m15 = new CandleBuilder(15);
   public h1 = new CandleBuilder(60);
 
   constructor() {
-    this.m1.onCandleClosed = (c) => this.m5.processCandle(c);
+    this.m1.onCandleClosed = (closedM1) => {
+      if (this.onM1Closed && this.m5.currentCandle && this.m15.currentCandle && this.h1.currentCandle) {
+        this.onM1Closed({
+          m1: this.m1.allCandles,
+          m5: this.m5.allCandles,
+          m15: this.m15.allCandles,
+          h1: this.h1.allCandles,
+          currentM1: closedM1,
+          currentM5: this.m5.currentCandle,
+          currentM15: this.m15.currentCandle,
+          currentH1: this.h1.currentCandle,
+          isStaleData: this.lastMessageAgeSec > 30, // HANYA block jika connection mati > 30s
+          lastTickAgeSec: this.lastTickAgeSec,
+          lastMessageAgeSec: this.lastMessageAgeSec
+        });
+      }
+    };
     this.m5.onCandleClosed = (closedM5) => {
-      this.m15.processCandle(closedM5);
       if (this.isBootstrapped) {
         this.saveHistory(); // Save real candles to disk whenever M5 closes
       }
       
       if (this.onM5Closed && this.m15.currentCandle && this.h1.currentCandle) {
         this.onM5Closed({
+          m1: this.m1.allCandles,
           m5: this.m5.allCandles,
           m15: this.m15.allCandles,
           h1: this.h1.allCandles,
           currentM5: closedM5,          // <-- gunakan candle yang BARU DITUTUP, bukan yang sedang terbuka
           currentM15: this.m15.currentCandle,
-          currentH1: this.h1.currentCandle
+          currentH1: this.h1.currentCandle,
+          isStaleData: this.lastMessageAgeSec > 30, // HANYA block jika connection mati > 30s
+          lastTickAgeSec: this.lastTickAgeSec,
+          lastMessageAgeSec: this.lastMessageAgeSec
         });
       }
     };
-    this.m15.onCandleClosed = (c) => this.h1.processCandle(c);
+    this.m15.onCandleClosed = (c) => {};
   }
 
   public setOnM5Closed(callback: (data: MultiTimeframeData) => void) {
     this.onM5Closed = callback;
+  }
+
+  public setOnM1Closed(callback: (data: MultiTimeframeData) => void) {
+    this.onM1Closed = callback;
+  }
+
+  public setOnTickUpdate(callback: (price: number, timestamp: number) => void) {
+    this.onTickUpdate = callback;
   }
 
   public getCandles(): OHLCV[] {
@@ -130,9 +174,50 @@ export class MarketDataService {
       insertSystemLog('WARN', 'MarketData', msg);
       this.startSimulation();
     }
+    this.startCronTimer();
   }
 
   private simulationInterval: NodeJS.Timeout | null = null;
+  private lastMinuteFired: number = -1;
+
+  private startCronTimer() {
+    if (this.cronTimer) clearInterval(this.cronTimer);
+    
+    // Inisialisasi lastMinuteFired ke menit saat ini agar tidak langsung fire saat start
+    this.lastMinuteFired = new Date().getUTCMinutes();
+    
+    this.cronTimer = setInterval(() => {
+      if (!this.isBootstrapped) return;
+      
+      const now = Date.now();
+      const currentMinute = new Date(now).getUTCMinutes();
+      
+      // Menggunakan boundary crossing daripada pengecekan == 0 untuk mencegah skip akibat event loop lag
+      if (currentMinute !== this.lastMinuteFired) {
+         this.lastMinuteFired = currentMinute;
+         
+         this.lastTickAgeSec = (now - this.lastTickMs) / 1000;
+         this.lastMessageAgeSec = (now - this.lastMessageMs) / 1000;
+         const lastPrice = this.m1.currentCandle?.close || 0;
+         
+         if (this.lastMessageAgeSec > 30) {
+             console.warn(`[MarketData] 🔴 STALE/DISCONNECTED: No WebSocket message for ${this.lastMessageAgeSec.toFixed(1)}s! Blocking signals.`);
+         } else if (this.lastTickAgeSec > 10) {
+             console.log(`[MarketData] 🟡 WARNING: Market quiet. No tick for ${this.lastTickAgeSec.toFixed(1)}s, but connection is healthy (${this.lastMessageAgeSec.toFixed(1)}s). Signals ALLOWED.`);
+         }
+         
+         // Inject a dummy tick with the current clock time to force close exactly on schedule
+         this.processAllTicks(lastPrice, 0, now, true);
+      }
+    }, 200); // Check setiap 200ms agar sangat presisi saat perpindahan menit
+  }
+
+  private processAllTicks(price: number, volume: number, timestamp: number, isDummy = false) {
+     this.m1.processTick(price, volume, timestamp, isDummy);
+     this.m5.processTick(price, volume, timestamp, isDummy);
+     this.m15.processTick(price, volume, timestamp, isDummy);
+     this.h1.processTick(price, volume, timestamp, isDummy);
+  }
 
   private connectTwelveData() {
     this.ws = new WebSocket(`wss://ws.twelvedata.com/v1/quotes/price?apikey=${config.TWELVEDATA_API_KEY}`);
@@ -156,6 +241,7 @@ export class MarketDataService {
     });
 
     this.ws.on('message', async (data: WebSocket.Data) => {
+      this.lastMessageMs = Date.now();
       try {
         const parsed = JSON.parse(data.toString());
         
@@ -186,7 +272,8 @@ export class MarketDataService {
           // TwelveData format: price, day_volume (optional), timestamp (unix seconds)
           const volume = parsed.day_volume ? parsed.day_volume / 1000 : 10; // dummy volume if zero
           const timestampMs = parsed.timestamp * 1000;
-          this.m1.processTick(parsed.price, volume, timestampMs);
+          this.lastTickMs = Date.now();
+          this.processAllTicks(parsed.price, volume, timestampMs);
         }
       } catch (e) {
         console.error('[MarketData] WebSocket Parse Error', e);
@@ -324,6 +411,8 @@ export class MarketDataService {
     // Process real candles
     for (const c of savedRealCandles) {
       this.m5.processCandle(c);
+      this.m15.processCandle(c);
+      this.h1.processCandle(c);
       currentPrice = c.close; // update current price to the last real candle
     }
     
@@ -386,7 +475,9 @@ export class MarketDataService {
       const pull = (mean - basePrice) * 0.05;
       const change = (Math.random() - 0.5) * 5 + pull; 
       basePrice += change;
-      this.m1.processTick(basePrice, 10, virtualTime);
+      this.lastTickMs = Date.now();
+      this.lastMessageMs = Date.now();
+      this.processAllTicks(basePrice, 10, virtualTime);
     }, 50); // Emit tick very fast to test engine quickly
   }
 }
