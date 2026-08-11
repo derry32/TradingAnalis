@@ -12,6 +12,8 @@ Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Anal
 - **NFP & CPI Promotion:** Status berita Non-Farm Payroll, CPI, dan Inflasi dinaikkan ke level `EXTREME`, memaksa `Normal Quant Engine` masuk mode *Lock* dan menyerahkan kendali sepenuhnya pada `Pre-News Engine`.
 
 ### Diperbaiki
+- **Stale Data Guard (2-Level Validation):** Memperbaiki sistem pelindung data macet yang sebelumnya terlalu agresif (langsung memblokir sinyal jika telat 5 detik). Kini dipisah menjadi 2 level: Peringatan (usia harga > 10 detik) dan Pemblokiran ketat (koneksi mati > 30 detik). Sinyal M5 kini berhasil lolos persis di detik `:00`.
+- **Server Clock Drift Resolution (70s Delay Fix):** Menyelesaikan anomali sinyal yang terasa telat 70-80 detik di layar pengguna. Investigasi membuktikan *latency* bukan berasal dari *bottleneck* algoritma, melainkan murni akibat jam internal VPS (NTP OS) yang tertinggal 75 detik dari jam dunia. Diperbaiki dengan instalasi `chrony` di VPS host.
 - **Signal Timing Bug (90-Second Delay Fix):** Mengganti sistem penutupan *candle* yang bergantung pada *tick arrival* (Tick-driven) menjadi sistem *Polling* berbasis jam internal server yang berjalan setiap 200ms. *Candle* M1 kini dipaksa tutup persis di detik `:00` tanpa peduli apakah broker mengirimkan *tick* tepat waktu atau tidak, menyelesaikan masalah sinyal yang sering *delay* hingga 1 menit.
 - **Time-Travel Bug Fix:** Memperbaiki insiden di mana WebSocket yang macet dan mengirim data *tick* usang (masa lalu) berhasil "membatalkan" *candle* yang sudah sah ditutup oleh sistem. Filter waktu kini mengabaikan *tick* yang *timestamp*-nya tertinggal.
 
