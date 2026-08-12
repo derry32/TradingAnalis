@@ -243,7 +243,7 @@ marketData.setOnM1Closed((data) => {
   const DRAWDOWN_LIMIT = 10;
   const isGuardActive = dailySLCount >= DRAWDOWN_LIMIT;
 
-  if (evaluation.direction !== 'WAIT' && evaluation.totalScore >= 65 && !isGuardActive) {
+  if (evaluation.direction !== 'WAIT' && evaluation.totalScore >= 55 && !isGuardActive) {
     if (data.isStaleData) {
        console.log(`[StaleDataGuard] ⛔ Sinyal ${evaluation.direction} diblokir! Koneksi mati (message terakhir ${data.lastMessageAgeSec?.toFixed(1)}s lalu, tick terakhir ${data.lastTickAgeSec?.toFixed(1)}s lalu).`);
        return;

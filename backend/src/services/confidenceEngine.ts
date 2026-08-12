@@ -264,19 +264,19 @@ export class ConfidenceEngine {
     let tier: SignalTier = 'WAIT';
     let maxReEntryCycles = 0;
 
-    if (totalScore >= 85) {
+    if (totalScore >= 80) {
       tier = 'SUPER_TREND';
       maxReEntryCycles = 3;
-    } else if (totalScore >= 75) {
+    } else if (totalScore >= 65) {
       tier = 'MOMENTUM_SCALP';
       maxReEntryCycles = 1;
-    } else if (totalScore >= 65) {
+    } else if (totalScore >= 55) {
       tier = 'QUICK_SCALP';
       maxReEntryCycles = 0;
     }
 
     return {
-      direction: totalScore >= 65 ? direction : 'WAIT',
+      direction: totalScore >= 55 ? direction : 'WAIT',
       totalScore,
       tier,
       maxReEntryCycles,
