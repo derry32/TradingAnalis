@@ -27,6 +27,23 @@ export class ConfidenceEngine {
    * Evaluasi Skor 100 Poin Deterministik secara Kuantitatif (<5ms)
    */
   public evaluate(snapshot: LiveMarketSnapshot): ConfidenceEvaluation {
+    const atrM5 = snapshot.m5.features.atr;
+    
+    // 1. Volatility Regime Check
+    if (atrM5 >= 4.5) {
+      return {
+        direction: 'WAIT',
+        totalScore: 0,
+        tier: 'WAIT',
+        maxReEntryCycles: 0,
+        targetTpPips: [10, 10, 10, 10, 10],
+        slPips: 10,
+        breakdown: { trendScore: 0, structureScore: 0, momentumScore: 0, liquidityScore: 0, volatilityScore: 0, timingScore: 0, riskRewardScore: 0 },
+        reasons: ['Market diabaikan karena EXTREME Volatility (ATR >= 4.5). Resiko terlalu tinggi.'],
+        warnings: ['EXTREME Volatility: NO TRADE.'],
+      };
+    }
+
     const buyEval = this.calculateDirectionalScore('BUY', snapshot);
     const sellEval = this.calculateDirectionalScore('SELL', snapshot);
 
@@ -167,14 +184,17 @@ export class ConfidenceEngine {
 
     // 5. Volatility & ATR Range (10 Poin)
     const atrM5 = s.m5.features.atr;
-    if (atrM5 >= 1.2 && atrM5 <= 6.5) {
+    
+    // Regimes: LOW (< 1.5), NORMAL (1.5 - 3.0), HIGH (3.0 - 4.5). EXTREME handled above.
+    if (atrM5 < 1.5) {
+      volatilityScore += 5;
+      reasons.push(`✔ Volatility Regime: LOW (${atrM5.toFixed(2)} pips).`);
+    } else if (atrM5 <= 3.0) {
       volatilityScore += 10;
-      reasons.push(`✔ Volatilitas XAUUSD Ideal untuk Scalping (${atrM5.toFixed(2)} pips) (+10)`);
-    } else if (atrM5 > 10.0) {
-      volatilityScore += 4;
-      warnings.push(`⚠ Volatilitas Sangat Tinggi (${atrM5.toFixed(2)} pips), spread rawan melebar`);
+      reasons.push(`✔ Volatility Regime: NORMAL (${atrM5.toFixed(2)} pips) - Ideal Scalping. (+10)`);
     } else {
       volatilityScore += 5;
+      reasons.push(`✔ Volatility Regime: HIGH (${atrM5.toFixed(2)} pips). SL dilebarkan.`);
     }
 
     // 6. Entry Timing & Intrabar Micro Trigger (10 Poin)
@@ -196,7 +216,7 @@ export class ConfidenceEngine {
 
     // 7. Risk / Reward & Room to Move (10 Poin)
     riskRewardScore += 10;
-    reasons.push(`✔ Target R:R Scalping 1:1 Terpenuhi (+10)`);
+    reasons.push(`✔ Dynamic R-Multiple TP digunakan (+10)`);
 
     const totalScore = Math.min(
       100,
@@ -209,27 +229,50 @@ export class ConfidenceEngine {
         riskRewardScore
     );
 
-    // Tentukan Tiering & Parameter Eksekusi 5 Layer
+    // --- DYNAMIC STOP LOSS CALCULATION ---
+    // 1 pip = 0.1 di XAUUSD (jika harga 2400.15 ke 2400.25 = 10 pips = $1.0)
+    const atrPips = Math.round(atrM5 * 10);
+    const atrBasedSL = Math.round(atrPips * 1.2);
+    
+    let swingDistPrice = 0;
+    if (direction === 'BUY') {
+      swingDistPrice = s.currentPrice - s.m5.structure.swingLow;
+    } else {
+      swingDistPrice = s.m5.structure.swingHigh - s.currentPrice;
+    }
+    const swingDistPips = Math.max(0, Math.round(swingDistPrice * 10));
+
+    // Ambil max antara ATR dan Swing Invalidation
+    let slPips = Math.max(atrBasedSL, swingDistPips);
+    
+    // Hard Caps
+    slPips = Math.min(slPips, 25); // Max SL 25 pips ($2.5)
+    slPips = Math.max(slPips, 10); // Min SL 10 pips ($1.0)
+    
+    reasons.push(`🛡 Dynamic SL: ${slPips} pips (ATR base: ${atrBasedSL}, Swing base: ${swingDistPips})`);
+
+    // --- DYNAMIC TAKE PROFIT CALCULATION (R-MULTIPLES) ---
+    const targetTpPips = [
+      Math.round(slPips * 1.0), // TP1 = 1.0R
+      Math.round(slPips * 1.2), // TP2 = 1.2R
+      Math.round(slPips * 1.5), // TP3 = 1.5R
+      Math.round(slPips * 2.0), // TP4 = 2.0R
+      Math.round(slPips * 2.5)  // TP5 = 2.5R Runner
+    ];
+
+    // Tentukan Tiering
     let tier: SignalTier = 'WAIT';
     let maxReEntryCycles = 0;
-    let targetTpPips = [8, 8, 10, 10, 12];
-    let slPips = 10;
 
     if (totalScore >= 85) {
       tier = 'SUPER_TREND';
       maxReEntryCycles = 3;
-      targetTpPips = [10, 12, 14, 16, 20]; // 5 Layer Staggered + Runner
-      slPips = 12;
     } else if (totalScore >= 75) {
       tier = 'MOMENTUM_SCALP';
       maxReEntryCycles = 1;
-      targetTpPips = [8, 9, 10, 12, 15]; // 5 Layer Staggered
-      slPips = 10;
     } else if (totalScore >= 65) {
       tier = 'QUICK_SCALP';
-      maxReEntryCycles = 0; // No re-entry, hit & run
-      targetTpPips = [8, 8, 9, 10, 10]; // 5 Layer Micro TP
-      slPips = 10;
+      maxReEntryCycles = 0;
     }
 
     return {

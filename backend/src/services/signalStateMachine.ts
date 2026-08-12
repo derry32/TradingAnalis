@@ -41,6 +41,7 @@ export interface BurstSignalPayload {
   reasons: string[];
   warnings: string[];
   aiExplanation?: string;
+  recommendedLot?: number; // Dynamically calculated total basket lot
 }
 
 export class SignalStateMachine {
@@ -68,12 +69,14 @@ export class SignalStateMachine {
   }
 
   /**
-   * Bangun payload 5 Layer Burst Scalping yang siap ditembakkan ke MT5 & Telegram (<5ms)
+   * Bangun payload Burst Scalping dengan Dynamic TP & Lot Sizing yang siap ditembakkan ke MT5 & Telegram (<5ms)
    */
   public createBurstSignal(
     evaluation: ConfidenceEvaluation,
     snapshot: LiveMarketSnapshot,
-    ttlSeconds: number = 30
+    ttlSeconds: number = 30,
+    accountBalance: number = 1000,
+    riskPercent: number = 1.0
   ): BurstSignalPayload | null {
     if (evaluation.direction === 'WAIT' || evaluation.totalScore < 65) {
       this.currentState = 'WAITING';
@@ -87,75 +90,95 @@ export class SignalStateMachine {
 
     // Check if we have an active cycle
     if (this.activeCycle) {
-      // Reset cycle if direction changes or it's been more than 2 hours since the first signal
       if (this.activeCycle.direction !== dir || (now - this.activeCycle.lastSignalTime) > 2 * 60 * 60 * 1000) {
         this.activeCycle = null;
       }
     }
 
     let currentEntryCycle = 1;
-    // Normalized Risk Budget (Total 100% / 1.0)
-    let lotRatioPerLayer = 0.1052; // Entry 1: 52.6% total (0.1052 * 5)
 
     if (this.activeCycle) {
-      // Cooldown check: minimal 15 detik dari sinyal sebelumnya agar tidak spam
       if (now - this.activeCycle.lastSignalTime < 15000) {
         return null;
       }
 
       if (this.activeCycle.entriesCount >= 3) {
-        return null; // Max 3 entries reached for this cycle
+        return null;
       }
 
-      // Calculate Pullback Distance: MAX(5 pips, ATR_M5 * 0.25)
-      // Since 1 pip = 0.1 in price (XAUUSD), 5 pips = 0.5 price diff
       const atrM5 = snapshot.m5.features.atr || atr;
       const minPullbackPoints = Math.max(0.5, atrM5 * 0.25);
 
-      // Anti-chasing check
       if (dir === 'BUY') {
         if (price > this.activeCycle.lastEntryPrice - minPullbackPoints) {
-           return null; // Must be lower by minPullbackPoints
+           return null;
         }
       } else {
         if (price < this.activeCycle.lastEntryPrice + minPullbackPoints) {
-           return null; // Must be higher by minPullbackPoints
+           return null;
         }
       }
 
       currentEntryCycle = this.activeCycle.entriesCount + 1;
-      
-      // Update lot ratios for re-entries
-      if (currentEntryCycle === 2) {
-        lotRatioPerLayer = 0.0632; // Entry 2: 31.6% total (0.0632 * 5)
-      } else if (currentEntryCycle === 3) {
-        lotRatioPerLayer = 0.0316; // Entry 3: 15.8% total (0.0316 * 5)
-      }
     }
 
-    // Hitung Entry Zone Toleransi (0.5x ATR M1, misal +/- $0.8 Gold)
+    // --- Dynamic Lot Sizing & Basket Risk (1% Risk Cap) ---
+    const slPips = evaluation.slPips;
+    const slDistancePrice = slPips * 0.1; // Convert pips to price distance
+    
+    // Total risk dollar amount
+    const riskAmount = accountBalance * (riskPercent / 100);
+    const lossPerLot = slDistancePrice * 100; 
+    const calculatedTotalLot = Math.floor((riskAmount / lossPerLot) * 100) / 100;
+
+    // Update lot size for re-entries (scale down)
+    let finalTotalLot = calculatedTotalLot;
+    if (currentEntryCycle === 2) {
+      finalTotalLot = Math.floor(calculatedTotalLot * 0.6 * 100) / 100;
+    } else if (currentEntryCycle === 3) {
+      finalTotalLot = Math.floor(calculatedTotalLot * 0.3 * 100) / 100;
+    }
+
+    if (finalTotalLot < 0.01) {
+      evaluation.warnings.push(`⚠ NO TRADE: Resiko total melampaui batas (Lot < 0.01). SL: $${slDistancePrice.toFixed(2)}`);
+      return null;
+    }
+
+    // --- Layer Condensation Logic ---
+    const maxLayers = 5;
+    // Determine how many 0.01 lots we have, up to maxLayers
+    const numLayers = Math.min(maxLayers, Math.floor(finalTotalLot / 0.01));
+    const lotRatioPerLayer = 1.0 / numLayers; // Spread evenly among active layers
+    const actualBasketLot = numLayers * 0.01; // e.g. if numLayers=3, we only send 0.03 total to MT5
+
     const zoneTolerance = Math.max(0.5, atr * 0.5);
     const entryZoneMin = dir === 'BUY' ? price - zoneTolerance : price - zoneTolerance * 1.5;
     const entryZoneMax = dir === 'BUY' ? price + zoneTolerance * 1.5 : price + zoneTolerance;
 
-    // Pullback Limit Price (Retest level / Fibo 50%)
     const pullbackLimitPrice =
       dir === 'BUY'
         ? Number((price - atr * 0.8).toFixed(2))
         : Number((price + atr * 0.8).toFixed(2));
 
-    const slPips = evaluation.slPips;
     const slPrice =
       dir === 'BUY'
         ? Number((price - slPips * 0.1).toFixed(2))
         : Number((price + slPips * 0.1).toFixed(2));
 
-    // Bangun 5 Layer dengan TP bertingkat
+    // Bangun Layer yang diringkas (Condense) jika lot < 0.05
     const layers: BurstLayer[] = [];
-    const targetTps = evaluation.targetTpPips; // e.g. [8, 9, 10, 11, 12]
+    const targetTps = evaluation.targetTpPips; // e.g. [1R, 1.2R, 1.5R, 2.0R, 2.5R]
+    
+    // Spread the targets depending on numLayers
+    // Example: If 3 layers -> we pick indices [0, 2, 4] from targetTps (TP1, TP3, TP5)
+    for (let i = 0; i < numLayers; i++) {
+      let tpIndex = i;
+      if (numLayers === 1) tpIndex = 2; // TP3
+      else if (numLayers === 2) tpIndex = i === 0 ? 1 : 4; // TP2, TP5
+      else if (numLayers === 3) tpIndex = i === 0 ? 0 : (i === 1 ? 2 : 4); // TP1, TP3, TP5
+      else if (numLayers === 4) tpIndex = i === 3 ? 4 : i; // TP1, TP2, TP3, TP5
 
-    for (let i = 0; i < 5; i++) {
-      const tpPips = targetTps[i] || 10;
+      const tpPips = targetTps[tpIndex] || 10;
       const tpPrice =
         dir === 'BUY'
           ? Number((price + tpPips * 0.1).toFixed(2))
@@ -194,6 +217,9 @@ export class SignalStateMachine {
       layers,
       reasons: evaluation.reasons,
       warnings: evaluation.warnings,
+      // We attach the dynamically calculated total lot to the payload
+      // We will override recommendedLot in MT5Bridge
+      recommendedLot: actualBasketLot 
     };
 
     // Update active cycle state

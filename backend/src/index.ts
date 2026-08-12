@@ -13,6 +13,7 @@ import { featureEngine } from './services/featureEngine';
 import { confidenceEngine } from './services/confidenceEngine';
 import { signalStateMachine, BurstSignalPayload } from './services/signalStateMachine';
 import { preNewsEngine } from './services/preNewsEngine';
+import { riskEngine } from './services/riskEngine';
 
 const app = express();
 app.use(cors());
@@ -134,16 +135,7 @@ function checkAndResetDailyDrawdown() {
 }
 
 // === S5-B: Capital Risk Engine ===
-let accountBalance = 0;
-let riskPercent = 1;
-
-function calculateLotSize(balance: number, riskPct: number, slPips: number): number {
-  if (balance <= 0 || slPips <= 0) return 0;
-  const riskAmount = balance * (riskPct / 100);
-  // XAU/USD: 1 pip ≈ $1 per 0.01 lot. Pip value = slPips * 1 per 0.01 lot
-  const lot = riskAmount / (slPips * 1);
-  return Math.round(lot * 100) / 100; // Round to 2 decimal places
-}
+// Logic has been moved to riskEngine.ts
 
 function updateTradeState(trade: TradeState | null, currentM5: any, strategy: string): TradeState | null {
   if (!trade || trade.status !== 'ACTIVE') {
@@ -256,8 +248,14 @@ marketData.setOnM1Closed((data) => {
        console.log(`[StaleDataGuard] ⛔ Sinyal ${evaluation.direction} diblokir! Koneksi mati (message terakhir ${data.lastMessageAgeSec?.toFixed(1)}s lalu, tick terakhir ${data.lastTickAgeSec?.toFixed(1)}s lalu).`);
        return;
     }
-    // 4. Create 5-Layer Burst Signal Payload with TTL (30s)
-    const burst = signalStateMachine.createBurstSignal(evaluation, snapshot, 30);
+    // 4. Create Burst Signal Payload with Dynamic TP & Lot Sizing
+    const burst = signalStateMachine.createBurstSignal(
+      evaluation, 
+      snapshot, 
+      30, 
+      riskEngine.getBalance(), 
+      riskEngine.getRiskPercent()
+    );
     if (burst) {
       console.log(`[Critical Path ⚡] Micro-Burst Sinyal M1 Generated: ${burst.direction} @ ${burst.entryPrice} (Skor: ${burst.confidenceScore}%, Tier: ${burst.tier})`);
 
@@ -450,17 +448,18 @@ app.post('/api/risk/reset-drawdown', (req, res) => {
 // === S5-B: Capital Risk Engine Endpoints ===
 app.get('/api/risk/capital', (req, res) => {
   const slPips = config.STOP_LOSS_PIPS;
-  const suggestedLot = calculateLotSize(accountBalance, riskPercent, slPips);
-  res.json({ balance: accountBalance, riskPercent, suggestedLot, slPips });
+  const suggestedLot = riskEngine.calculateLotSize(slPips * 0.1);
+  res.json({ balance: riskEngine.getBalance(), riskPercent: riskEngine.getRiskPercent(), suggestedLot, slPips });
 });
 
 app.post('/api/risk/capital', (req, res) => {
   const { balance, riskPercent: rp } = req.body;
-  if (typeof balance === 'number' && balance >= 0) accountBalance = balance;
-  if (typeof rp === 'number' && rp >= 0.1 && rp <= 10) riskPercent = rp;
-  const suggestedLot = calculateLotSize(accountBalance, riskPercent, config.STOP_LOSS_PIPS);
-  console.log(`[CapitalRisk] Modal diupdate: $${accountBalance}, Risk: ${riskPercent}%, Lot: ${suggestedLot}`);
-  res.json({ success: true, balance: accountBalance, riskPercent, suggestedLot });
+  if (typeof balance === 'number' && balance >= 0) riskEngine.setBalance(balance);
+  if (typeof rp === 'number' && rp >= 0.1 && rp <= 10) riskEngine.setRiskPercent(rp);
+  
+  const suggestedLot = riskEngine.calculateLotSize(config.STOP_LOSS_PIPS * 0.1);
+  console.log(`[CapitalRisk] Modal diupdate: $${riskEngine.getBalance()}, Risk: ${riskEngine.getRiskPercent()}%, Lot: ${suggestedLot}`);
+  res.json({ success: true, balance: riskEngine.getBalance(), riskPercent: riskEngine.getRiskPercent(), suggestedLot });
 });
 
 app.get('/api/settings/strategy', (req, res) => {

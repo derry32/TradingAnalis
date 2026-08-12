@@ -85,7 +85,7 @@ export class MT5BridgeService {
         entryZoneMin: currentBurst.entryZoneMin,
         entryZoneMax: currentBurst.entryZoneMax,
         pullbackLimitPrice: currentBurst.pullbackLimitPrice,
-        recommendedLot: currentBurst.confidenceScore >= 85 ? 0.05 : 0.03,
+        recommendedLot: currentBurst.recommendedLot || (currentBurst.confidenceScore >= 85 ? 0.05 : 0.03),
         executionMode: 'BURST_5_LAYERS',
         tier: currentBurst.tier,
         currentReEntryCycle: currentBurst.currentReEntryCycle,
