@@ -2,6 +2,16 @@
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
 
+## [1.7.0] - Dynamic Risk & Volatility Engine (v4.40)
+### Ditambahkan
+- **Dynamic Risk Engine (Capital-Based Lot Sizing):** Modul baru (`riskEngine.ts`) terdedikasi untuk manajemen uang. AI sekarang menghitung ukuran lot (lot size) yang sangat presisi berdasarkan jarak Stop Loss (SL) aktual dan persentase risiko maksimum (misal: 1% dari modal) sehingga total kerugian dalam dolar selalu konstan (terbatas).
+- **Volatility Regimes (Pendeteksi Badai):** AI kini sanggup membaca rezim volatilitas market lewat indikator ATR M5 (LOW, NORMAL, HIGH, EXTREME). Apabila pasar sedang di fase `EXTREME` (ATR >= 4.5), robot akan otomatis memblokir semua sinyal (*NO TRADE*) untuk menghindari risiko sapuan harga (*whipsaw*).
+- **Dynamic Stop Loss & Target Profit (R-Multiples):** 
+  - **Dynamic SL:** Tidak lagi statis 10 pips. Jarak SL sekarang dihitung cerdas dari nilai `MAX(ATR x 1.2, Jarak Swing Invalidation)` dan dibatasi pada batas aman 25 pips maksimum.
+  - **Dynamic TP:** Jarak Take Profit tak lagi statis (8-12 pips) melainkan terskala otomatis dalam rasio R-Multiples mengikuti jarak SL (1R, 1.2R, 1.5R, 2R, 2.5R Runner).
+- **Basket Condensation (Peringkas Layer):** Resolusi dari masalah limit minimum lot MT5 (0.01). Apabila total anggaran risiko menghasilkan perhitungan lot tanggung (misal: 0.03 lot) yang tidak bisa dibagi rata ke 5 layer (0.006 lot = invalid di MT5), sistem akan otomatis "meringkas" order menjadi 3 layer saja (masing-masing 0.01 lot) dan memprioritaskan penyebaran pada TP1, TP3, dan TP5 tanpa membulatkan ke atas (*no over-risking*).
+- **A/B Backtesting Simulator:** Penambahan kerangka kerja uji skrip (`test_engine_v2.ts`) yang memungkinkan developer membandingkan perilaku mesin lama (SL statis) dan mesin baru (SL dinamis) pada simulasi data harga yang bergejolak keras.
+
 ## [1.6.0] - Pre-News Prediction Engine & Signal Timing Reform (v4.30)
 ### Ditambahkan
 - **Pre-News Prediction Engine (Institutional Anticipatory Model):**
