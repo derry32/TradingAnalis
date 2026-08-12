@@ -68,7 +68,7 @@ export class MT5BridgeService {
     if (currentBurst && signalStateMachine.isSignalValid(currentBurst) && currentBurst.state !== 'EXPIRED') {
       const isAlreadyAcked = this.acknowledgedSignals.has(currentBurst.id);
       
-      const burstPayload: MT5SignalPayload = {
+      const burstPayload: any = {
         id: currentBurst.id,
         symbol: 'XAUUSD',
         type: currentBurst.direction,
@@ -76,7 +76,7 @@ export class MT5BridgeService {
         price: currentBurst.entryPrice,
         stopLoss: currentBurst.stopLossPrice,
         takeProfit1: currentBurst.layers[0]?.tpPrice || currentBurst.entryPrice + 1.0,
-        takeProfit2: currentBurst.layers[4]?.tpPrice || currentBurst.entryPrice + 1.5,
+        takeProfit2: currentBurst.layers[currentBurst.layers.length - 1]?.tpPrice || currentBurst.entryPrice + 1.5,
         strategy: currentBurst.tier,
         confidence: currentBurst.confidenceScore,
         validSeconds: currentBurst.ttlSeconds,
@@ -90,8 +90,15 @@ export class MT5BridgeService {
         tier: currentBurst.tier,
         currentReEntryCycle: currentBurst.currentReEntryCycle,
         maxReEntryCycles: currentBurst.maxReEntryCycles,
-        layers: currentBurst.layers,
+        layerCount: currentBurst.layers.length,
       };
+
+      currentBurst.layers.forEach((layer, idx) => {
+        burstPayload[`layer${idx+1}_tpPrice`] = layer.tpPrice;
+        burstPayload[`layer${idx+1}_tpPips`] = layer.tpPips;
+        burstPayload[`layer${idx+1}_slPrice`] = layer.slPrice;
+        burstPayload[`layer${idx+1}_lotRatio`] = layer.lotRatio;
+      });
 
       return {
         success: true,

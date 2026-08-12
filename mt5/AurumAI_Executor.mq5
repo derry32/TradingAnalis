@@ -1,4 +1,4 @@
-﻿//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
 //|                                          AurumAI_Executor.mq5    |
 //|                                 Copyright 2026, Aurum AI Quant   |
 //|                                            https://aurum-ai.io   |
@@ -449,7 +449,12 @@ void OnTimer()
       return;
    }
 
-   double lot = LotByConf(conf);
+   double recommendedLot = GetJsonDouble(json, "recommendedLot");
+   double lot = (recommendedLot > 0.0) ? recommendedLot : LotByConf(conf);
+   
+   int layerCount = (int)GetJsonDouble(json, "layerCount");
+   if(layerCount <= 0 || layerCount > InpMultiLayerCount) layerCount = InpMultiLayerCount;
+
    int opened = 0;
    ulong firstTicket = 0;
 
@@ -458,12 +463,16 @@ void OnTimer()
 
    if(!isChasing)
    {
-      // 5 Market Layers with Staggered TP (8-12 pips)
-      for(int layer = 1; layer <= InpMultiLayerCount; layer++)
+      for(int layer = 1; layer <= layerCount; layer++)
       {
-         double tpPips  = InpMicroTPMin + (layer - 1) * InpMicroTPStep;
-         double tpPrice = (dir == "BUY") ? (livePrice + tpPips * 0.1) : (livePrice - tpPips * 0.1);
-         double slPrice = (sl > 0.0) ? sl : ((dir == "BUY") ? (livePrice - InpDynamicMicroSL * 0.1) : (livePrice + InpDynamicMicroSL * 0.1));
+         string prefix = "layer" + IntegerToString(layer) + "_";
+         double dynamicTpPx = GetJsonDouble(json, prefix + "tpPrice");
+         double dynamicSlPx = GetJsonDouble(json, prefix + "slPrice");
+         double dynamicTpPips = GetJsonDouble(json, prefix + "tpPips");
+         
+         double tpPips  = (dynamicTpPips > 0.0) ? dynamicTpPips : (InpMicroTPMin + (layer - 1) * InpMicroTPStep);
+         double tpPrice = (dynamicTpPx > 0.0) ? dynamicTpPx : ((dir == "BUY") ? (livePrice + tpPips * 0.1) : (livePrice - tpPips * 0.1));
+         double slPrice = (dynamicSlPx > 0.0) ? dynamicSlPx : ((sl > 0.0) ? sl : ((dir == "BUY") ? (livePrice - InpDynamicMicroSL * 0.1) : (livePrice + InpDynamicMicroSL * 0.1)));
 
          ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
          string comment = "Aurum-L" + IntegerToString(layer) + " " + signalId;
@@ -480,17 +489,24 @@ void OnTimer()
    }
    else if(InpAutoPullbackLimit)
    {
-      // 5 Limit Pullback Layers in Golden Zone
-      PrintFormat("[ANTI-CHASING] Price chased %.1fp -> Stacking 5 Limit Orders @ %.2f",
-                  priceDiffPips, pullbackLimit);
+      PrintFormat("[ANTI-CHASING] Price chased %.1fp -> Stacking %d Limit Orders @ %.2f",
+                  priceDiffPips, layerCount, pullbackLimit);
 
-      for(int layer = 1; layer <= InpMultiLayerCount; layer++)
+      for(int layer = 1; layer <= layerCount; layer++)
       {
          double offset  = (layer - 1) * 0.20;
          double limitPx = (dir == "BUY") ? (pullbackLimit - offset) : (pullbackLimit + offset);
-         double tpPips  = InpMicroTPMin + (layer - 1) * InpMicroTPStep;
-         double tpPrice = (dir == "BUY") ? (limitPx + tpPips * 0.1) : (limitPx - tpPips * 0.1);
-         double slPrice = (sl > 0.0) ? sl : ((dir == "BUY") ? (limitPx - InpDynamicMicroSL * 0.1) : (limitPx + InpDynamicMicroSL * 0.1));
+         
+         string prefix = "layer" + IntegerToString(layer) + "_";
+         double dynamicTpPx = GetJsonDouble(json, prefix + "tpPrice");
+         double dynamicSlPx = GetJsonDouble(json, prefix + "slPrice");
+         double dynamicTpPips = GetJsonDouble(json, prefix + "tpPips");
+         
+         double tpPips  = (dynamicTpPips > 0.0) ? dynamicTpPips : (InpMicroTPMin + (layer - 1) * InpMicroTPStep);
+         // Note: For limit orders, recalculate TP from limit price if dynamic TP is absolute, but actually limit orders would hit the absolute TP anyway. 
+         // But for safety, we recalculate based on pips so it's accurate from the limit price
+         double tpPrice = (dynamicTpPips > 0.0) ? ((dir == "BUY") ? (limitPx + tpPips * 0.1) : (limitPx - tpPips * 0.1)) : ((dir == "BUY") ? (limitPx + tpPips * 0.1) : (limitPx - tpPips * 0.1));
+         double slPrice = (dynamicSlPx > 0.0) ? dynamicSlPx : ((sl > 0.0) ? sl : ((dir == "BUY") ? (limitPx - InpDynamicMicroSL * 0.1) : (limitPx + InpDynamicMicroSL * 0.1)));
 
          ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY_LIMIT : ORDER_TYPE_SELL_LIMIT;
          string comment = "Aurum-Lmt" + IntegerToString(layer) + " " + signalId;

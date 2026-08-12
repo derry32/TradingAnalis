@@ -145,7 +145,13 @@ export class SignalStateMachine {
     }
 
     // --- Layer Condensation Logic ---
-    const maxLayers = 5;
+    let maxLayers = 5;
+    if (evaluation.tier === 'QUICK_SCALP') {
+      maxLayers = 2; // "Tes Ombak"
+    } else if (evaluation.tier === 'MOMENTUM_SCALP') {
+      maxLayers = 3;
+    }
+
     // Determine how many 0.01 lots we have, up to maxLayers
     const numLayers = Math.min(maxLayers, Math.floor(finalTotalLot / 0.01));
     const lotRatioPerLayer = 1.0 / numLayers; // Spread evenly among active layers
