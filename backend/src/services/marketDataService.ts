@@ -221,14 +221,6 @@ export class MarketDataService {
 
   private connectTwelveData() {
     this.ws = new WebSocket(`wss://ws.twelvedata.com/v1/quotes/price?apikey=${config.TWELVEDATA_API_KEY}`);
-    
-    let fallbackTimeout: NodeJS.Timeout | null = setTimeout(() => {
-      const msg = '[MarketData] No ticks received from TwelveData within 20s. Falling back to Simulation Mode.';
-      console.warn(msg);
-      insertSystemLog('CRITICAL', 'MarketData', msg);
-      this.startSimulation();
-      fallbackTimeout = null;
-    }, 20000);
 
     this.ws.on('open', () => {
       console.log('[MarketData] Connected to TwelveData WebSocket.');
@@ -253,10 +245,6 @@ export class MarketDataService {
 
         // Handle price events
         if (parsed.event === 'price' && parsed.price) {
-          if (fallbackTimeout) {
-            clearTimeout(fallbackTimeout);
-            fallbackTimeout = null;
-          }
           if (this.simulationInterval) {
              clearInterval(this.simulationInterval);
              this.simulationInterval = null;
