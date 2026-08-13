@@ -2,6 +2,17 @@
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
 
+## [1.8.0] - Anti-Slippage & Smart Fakeout Engine (v4.50)
+### Ditambahkan
+- **Anti-Falling Knife & Shooting Rocket Filter:** Pelindung (*VETO guard*) untuk mencegah AI menangkap "pisau jatuh". Walaupun tren makro (H1/M15) sedang kuat (misal: Bullish), jika momentum jangka pendek (M1/M5) sedang dibanting berlawanan (harga jatuh di bawah EMA20 dan MACD merah tajam), AI akan menjatuhkan penalti ekstrim (-50 poin) untuk menahan sinyal hingga badai mikro mereda.
+- **Smart Fakeout Detection (Pre-News):** Logika pencegahan jebakan pancingan Ritail (Classic Fakeout / Buy The Rumor, Sell The News) menjelang rilis berita *High-Impact*. Jika teknikal terindikasi dipompa (*pump*) berlawanan dengan arah makro sesaat sebelum berita keluar, AI akan memprioritaskan fundamental makro dan mengabaikan jebakan teknikal.
+- **100% Binary Pre-News Execution:** Sinyal `WAIT` telah dihapus sepenuhnya dari mesin *Pre-News*. Kini AI akan mengeksekusi secara biner (BUY atau SELL) pada momen *News* dengan batas toleransi probabilitas >50%.
+- **Transparansi Target Harga T-5:** Pesan Telegram kini menyertakan estimasi Harga *Entry*, target TP, dan batas SL persis 5 menit (T-5) sebelum rilis data ekonomi.
+
+### Diperbaiki
+- **MT5 EA Anti-Slippage SL/TP Fix (Kritis):** Memperbaiki celah *slippage* parah saat volatilitas tinggi (seperti *news*) di mana EA masih memakai harga SL statis dari kalkulasi awal *backend*. Kini EA MT5 mandiri 100% mengkalkulasi ulang SL/TP secara dinamis diukur murni dari harga eksekusi final (`livePrice`). Efek domino kerugian bengkak akibat *slippage* telah dihentikan total karena jarak rasio *Risk/Reward* selalu dipertahankan.
+- **MT5 Bridge Payload Sync Fix:** Menyelesaikan *bug* di mana *backend* gagal menempelkan variabel `slPips` ke *payload* MT5, yang membuat EA kembali ke *fallback* (SL statis basi).
+- **Spam Notifikasi Telegram (News Engine):** Menyempurnakan *State Management* (LOCKED, PREPARE) agar notifikasi hitung mundur tidak lagi dikirim secara *spam* puluhan kali per detik oleh *chron job*.
 ## [1.7.0] - Dynamic Risk & Volatility Engine (v4.40)
 ### Ditambahkan
 - **Dynamic Risk Engine (Capital-Based Lot Sizing):** Modul baru (`riskEngine.ts`) terdedikasi untuk manajemen uang. AI sekarang menghitung ukuran lot (lot size) yang sangat presisi berdasarkan jarak Stop Loss (SL) aktual dan persentase risiko maksimum (misal: 1% dari modal) sehingga total kerugian dalam dolar selalu konstan (terbatas).
