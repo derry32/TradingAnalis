@@ -469,10 +469,13 @@ void OnTimer()
          double dynamicTpPx = GetJsonDouble(json, prefix + "tpPrice");
          double dynamicSlPx = GetJsonDouble(json, prefix + "slPrice");
          double dynamicTpPips = GetJsonDouble(json, prefix + "tpPips");
+         double dynamicSlPips = GetJsonDouble(json, prefix + "slPips");
          
          double tpPips  = (dynamicTpPips > 0.0) ? dynamicTpPips : (InpMicroTPMin + (layer - 1) * InpMicroTPStep);
-         double tpPrice = (dynamicTpPx > 0.0) ? dynamicTpPx : ((dir == "BUY") ? (livePrice + tpPips * 0.1) : (livePrice - tpPips * 0.1));
-         double slPrice = (dynamicSlPx > 0.0) ? dynamicSlPx : ((sl > 0.0) ? sl : ((dir == "BUY") ? (livePrice - InpDynamicMicroSL * 0.1) : (livePrice + InpDynamicMicroSL * 0.1)));
+         double slPips  = (dynamicSlPips > 0.0) ? dynamicSlPips : InpDynamicMicroSL;
+         
+         double tpPrice = (dynamicTpPips > 0.0) ? ((dir == "BUY") ? (livePrice + tpPips * 0.1) : (livePrice - tpPips * 0.1)) : ((dynamicTpPx > 0.0) ? dynamicTpPx : ((dir == "BUY") ? (livePrice + tpPips * 0.1) : (livePrice - tpPips * 0.1)));
+         double slPrice = (dynamicSlPips > 0.0) ? ((dir == "BUY") ? (livePrice - slPips * 0.1) : (livePrice + slPips * 0.1)) : ((dynamicSlPx > 0.0) ? dynamicSlPx : ((sl > 0.0) ? sl : ((dir == "BUY") ? (livePrice - InpDynamicMicroSL * 0.1) : (livePrice + InpDynamicMicroSL * 0.1))));
 
          ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
          string comment = "Aurum-L" + IntegerToString(layer) + " " + signalId;
@@ -501,12 +504,13 @@ void OnTimer()
          double dynamicTpPx = GetJsonDouble(json, prefix + "tpPrice");
          double dynamicSlPx = GetJsonDouble(json, prefix + "slPrice");
          double dynamicTpPips = GetJsonDouble(json, prefix + "tpPips");
+         double dynamicSlPips = GetJsonDouble(json, prefix + "slPips");
          
          double tpPips  = (dynamicTpPips > 0.0) ? dynamicTpPips : (InpMicroTPMin + (layer - 1) * InpMicroTPStep);
-         // Note: For limit orders, recalculate TP from limit price if dynamic TP is absolute, but actually limit orders would hit the absolute TP anyway. 
-         // But for safety, we recalculate based on pips so it's accurate from the limit price
-         double tpPrice = (dynamicTpPips > 0.0) ? ((dir == "BUY") ? (limitPx + tpPips * 0.1) : (limitPx - tpPips * 0.1)) : ((dir == "BUY") ? (limitPx + tpPips * 0.1) : (limitPx - tpPips * 0.1));
-         double slPrice = (dynamicSlPx > 0.0) ? dynamicSlPx : ((sl > 0.0) ? sl : ((dir == "BUY") ? (limitPx - InpDynamicMicroSL * 0.1) : (limitPx + InpDynamicMicroSL * 0.1)));
+         double slPips  = (dynamicSlPips > 0.0) ? dynamicSlPips : InpDynamicMicroSL;
+         
+         double tpPrice = (dynamicTpPips > 0.0) ? ((dir == "BUY") ? (limitPx + tpPips * 0.1) : (limitPx - tpPips * 0.1)) : ((dynamicTpPx > 0.0) ? dynamicTpPx : ((dir == "BUY") ? (limitPx + tpPips * 0.1) : (limitPx - tpPips * 0.1)));
+         double slPrice = (dynamicSlPips > 0.0) ? ((dir == "BUY") ? (limitPx - slPips * 0.1) : (limitPx + slPips * 0.1)) : ((dynamicSlPx > 0.0) ? dynamicSlPx : ((sl > 0.0) ? sl : ((dir == "BUY") ? (limitPx - InpDynamicMicroSL * 0.1) : (limitPx + InpDynamicMicroSL * 0.1))));
 
          ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY_LIMIT : ORDER_TYPE_SELL_LIMIT;
          string comment = "Aurum-Lmt" + IntegerToString(layer) + " " + signalId;

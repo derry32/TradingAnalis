@@ -23,6 +23,7 @@ export class PreNewsEngine {
   private state: PreNewsState = 'IDLE';
   private targetNews: NewsEvent | null = null;
   private lockedPrediction: PreNewsPrediction | null = null;
+  private lastNotifiedPhase: number | null = null;
   private technical = new TechnicalAnalysis();
 
   private constructor() {}
@@ -55,13 +56,17 @@ export class PreNewsEngine {
     this.targetNews = upcoming;
     const diffMins = Math.floor((upcoming.parsedDate! - currentTimestamp) / (60 * 1000));
 
-    if (diffMins === 30) {
+    if (diffMins === 30 && this.lastNotifiedPhase !== 30) {
+      this.lastNotifiedPhase = 30;
       await this.runPreparationPhase(30, telegramBot, marketDataService);
-    } else if (diffMins === 15) {
+    } else if (diffMins === 15 && this.lastNotifiedPhase !== 15) {
+      this.lastNotifiedPhase = 15;
       await this.runPreparationPhase(15, telegramBot, marketDataService);
-    } else if (diffMins === 5) {
+    } else if (diffMins === 5 && this.lastNotifiedPhase !== 5) {
+      this.lastNotifiedPhase = 5;
       await this.runLockPhase(telegramBot, marketDataService);
-    } else if (diffMins === 0) {
+    } else if (diffMins === 0 && this.lastNotifiedPhase !== 0) {
+      this.lastNotifiedPhase = 0;
       await this.runExecutionPhase(telegramBot, marketDataService);
     } else if (diffMins < -5) {
       // Clean up setelah news lewat 5 menit
@@ -73,6 +78,7 @@ export class PreNewsEngine {
     this.state = 'IDLE';
     this.targetNews = null;
     this.lockedPrediction = null;
+    this.lastNotifiedPhase = null;
     console.log('[PreNewsEngine] Reset to IDLE');
   }
 
@@ -106,9 +112,20 @@ export class PreNewsEngine {
     await macroData.fetchMacroData();
     this.lockedPrediction = this.generatePrediction(marketDataService);
 
+    const currentM5 = marketDataService.getCandles();
+    let priceInfo = '';
+    if (currentM5.length > 0) {
+      const currentPrice = currentM5[currentM5.length - 1].close;
+      const stopLossDist = 3.0; 
+      const tpDist = 6.0;
+      const tpPrice = this.lockedPrediction.bias === 'BUY' ? currentPrice + tpDist : currentPrice - tpDist;
+      const slPrice = this.lockedPrediction.bias === 'BUY' ? currentPrice - stopLossDist : currentPrice + stopLossDist;
+      priceInfo = `\n*Est. Entry:* ${currentPrice.toFixed(2)} | *SL:* ${slPrice.toFixed(2)} | *TP:* ${tpPrice.toFixed(2)}\n`;
+    }
+
     const msg = `🔒 *PRE-NEWS LOCKED [T-5m]*\n` +
       `Engine locked prediction for ${this.targetNews?.title}.\n` +
-      `*Locked Bias:* ${this.lockedPrediction.bias} (${this.lockedPrediction.confidence}%)\n\n` +
+      `*Locked Bias:* ${this.lockedPrediction.bias} (${this.lockedPrediction.confidence}%)\n` + priceInfo +
       `Menunggu T=0 untuk eksekusi. Normal Quant Engine DIHENTIKAN sementara.`;
 
     telegramBot.sendMessage(msg);
@@ -120,13 +137,7 @@ export class PreNewsEngine {
     
     if (!this.lockedPrediction || this.lockedPrediction.bias === 'WAIT') {
       console.log('[PreNewsEngine] Prediction is WAIT or missing. Execution aborted.');
-      telegramBot.sendMessage(`⏳ *PRE-NEWS T=0 ABORTED*\nBias is WAIT. No execution triggered.`);
-      return;
-    }
-
-    if (this.lockedPrediction.confidence < 60) {
-      console.log('[PreNewsEngine] Confidence too low for execution. Aborted.');
-      telegramBot.sendMessage(`📉 *PRE-NEWS T=0 ABORTED*\nConfidence ${this.lockedPrediction.confidence}% < 60%. Too risky.`);
+      telegramBot.sendMessage(`⏳ *PRE-NEWS T=0 ABORTED*\nBias is WAIT or prediction is missing. No execution triggered.`);
       return;
     }
 
@@ -184,36 +195,36 @@ export class PreNewsEngine {
 
   private generatePrediction(marketDataService: MarketDataService): PreNewsPrediction {
     const md = macroData.getMacroState();
-    let buyProb = 33;
-    let sellProb = 33;
-    let waitProb = 34;
+    let buyProb = 50;
+    let sellProb = 50;
     const reasons: string[] = [];
 
-    // 1. DXY & US10Y Correlation (Max 30% shift)
-    // Jika DXY Bearish -> USD Lemah -> Gold Bullish (BUY += 15)
-    // Jika Yield Bearish -> Gold Bullish (BUY += 15)
-    if (md.trendDxy === 'BEARISH') {
-      buyProb += 15; sellProb -= 15;
-      reasons.push('DXY Trend is Bearish -> Gold Bullish Bias');
-    } else if (md.trendDxy === 'BULLISH') {
-      sellProb += 15; buyProb -= 15;
-      reasons.push('DXY Trend is Bullish -> Gold Bearish Bias');
+    let macroBias: 'BULLISH' | 'BEARISH' | 'NEUTRAL' = 'NEUTRAL';
+    let macroScore = 0;
+
+    // 1. DXY & US10Y Correlation
+    if (md.trendDxy === 'BEARISH') { macroScore += 15; }
+    else if (md.trendDxy === 'BULLISH') { macroScore -= 15; }
+
+    if (md.trendYield === 'BEARISH') { macroScore += 15; }
+    else if (md.trendYield === 'BULLISH') { macroScore -= 15; }
+
+    if (macroScore > 0) {
+      macroBias = 'BULLISH';
+      buyProb += macroScore;
+      sellProb -= macroScore;
+      reasons.push(`Macro Alignment is Bullish (+${macroScore})`);
+    } else if (macroScore < 0) {
+      macroBias = 'BEARISH';
+      buyProb += macroScore;
+      sellProb -= macroScore;
+      reasons.push(`Macro Alignment is Bearish (${macroScore})`);
     }
 
-    if (md.trendYield === 'BEARISH') {
-      buyProb += 15; sellProb -= 15;
-      reasons.push('US10Y Yield is Bearish -> Gold Bullish Bias');
-    } else if (md.trendYield === 'BULLISH') {
-      sellProb += 15; buyProb -= 15;
-      reasons.push('US10Y Yield is Bullish -> Gold Bearish Bias');
-    }
-
-    // 2. Technical Alignment H1 (Max 30% shift)
-    // Fetch data multi-timeframe
+    // 2. Technical Alignment & Fakeout Detection
     const m5 = marketDataService.getCandles();
     const h1 = marketDataService.h1.allCandles;
     
-    // We construct a fake MultiTimeframeData just to feed into TechnicalAnalysis
     if (h1.length > 5 && m5.length > 5) {
       const taResult = this.technical.analyze({
         m1: [], m5: m5, m15: marketDataService.m15.allCandles, h1: h1,
@@ -222,54 +233,45 @@ export class PreNewsEngine {
         currentH1: marketDataService.h1.currentCandle || m5[m5.length - 1],
       });
 
-      if (taResult.trendH1 === 'BULLISH') {
-        buyProb += 20; sellProb -= 20;
-        reasons.push('Technical H1 is Bullish');
-      } else if (taResult.trendH1 === 'BEARISH') {
-        sellProb += 20; buyProb -= 20;
-        reasons.push('Technical H1 is Bearish');
+      let isFakeout = false;
+      // Fakeout Detection: If Macro is Bearish, but Technical H1/M15 is heavily pumping Bullish right before news
+      if (macroBias === 'BEARISH' && taResult.trendM15 === 'BULLISH' && taResult.trendH1 === 'BULLISH') {
+         isFakeout = true;
+         reasons.push(`⚠️ CLASSIC FAKEOUT DETECTED: Technical is PUMPING (Bullish) but Macro is Bearish. Reverting Tech Bias!`);
+         buyProb -= 25; // Heavily penalize the fake pump
+         sellProb += 25;
+      } else if (macroBias === 'BULLISH' && taResult.trendM15 === 'BEARISH' && taResult.trendH1 === 'BEARISH') {
+         isFakeout = true;
+         reasons.push(`⚠️ CLASSIC FAKEOUT DETECTED: Technical is DUMPING (Bearish) but Macro is Bullish. Reverting Tech Bias!`);
+         buyProb += 25;
+         sellProb -= 25;
       }
 
-      if (taResult.trendM15 === 'BULLISH') {
-        buyProb += 10; sellProb -= 10;
-        reasons.push('Technical M15 is Bullish');
-      } else if (taResult.trendM15 === 'BEARISH') {
-        sellProb += 10; buyProb -= 10;
-        reasons.push('Technical M15 is Bearish');
+      if (!isFakeout) {
+         if (taResult.trendH1 === 'BULLISH') { buyProb += 20; sellProb -= 20; reasons.push('Technical H1 is Bullish'); }
+         else if (taResult.trendH1 === 'BEARISH') { sellProb += 20; buyProb -= 20; reasons.push('Technical H1 is Bearish'); }
+
+         if (taResult.trendM15 === 'BULLISH') { buyProb += 10; sellProb -= 10; reasons.push('Technical M15 is Bullish'); }
+         else if (taResult.trendM15 === 'BEARISH') { sellProb += 10; buyProb -= 10; reasons.push('Technical M15 is Bearish'); }
       }
     }
 
-    // 3. Forecast vs Previous Data (20% shift)
+    // 3. Forecast vs Previous Data
     if (this.targetNews && this.targetNews.forecast && this.targetNews.previous) {
-       // A very naive heuristic: if forecast > previous, USD stronger, Gold weaker. 
-       // This heavily depends on the data type (NFP vs Jobless Claims).
-       // We'll just note it in reasons for now since parsing string values accurately is tricky without event context.
        reasons.push(`Forecast (${this.targetNews.forecast}) vs Prev (${this.targetNews.previous}) factored qualitatively`);
     }
 
     // Normalize probabilities (cap between 5 and 95)
     buyProb = Math.max(5, Math.min(95, buyProb));
-    sellProb = Math.max(5, Math.min(95, sellProb));
+    sellProb = 100 - buyProb;
     
-    // Re-adjust waitProb
-    waitProb = 100 - buyProb - sellProb;
-    if (waitProb < 5) waitProb = 5;
-
-    let bias: 'BUY' | 'SELL' | 'WAIT' = 'WAIT';
-    let confidence = 0;
-
-    if (buyProb > sellProb && buyProb > waitProb) {
-      bias = 'BUY';
-      confidence = buyProb;
-    } else if (sellProb > buyProb && sellProb > waitProb) {
-      bias = 'SELL';
-      confidence = sellProb;
-    }
+    let bias: 'BUY' | 'SELL' = buyProb > sellProb ? 'BUY' : 'SELL';
+    let confidence = Math.max(buyProb, sellProb);
 
     return {
       buyProbability: buyProb,
       sellProbability: sellProb,
-      waitProbability: waitProb,
+      waitProbability: 0,
       bias,
       confidence,
       reasons
