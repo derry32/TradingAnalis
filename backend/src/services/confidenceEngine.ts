@@ -218,16 +218,40 @@ export class ConfidenceEngine {
     riskRewardScore += 10;
     reasons.push(`✔ Dynamic R-Multiple TP digunakan (+10)`);
 
-    const totalScore = Math.min(
-      100,
-      trendScore +
+    // 8. Anti-Falling Knife (VETO)
+    let isFallingKnife = false;
+    if (direction === 'BUY') {
+      const isDeepPullback = s.currentPrice < s.m5.features.ema20 && s.m1.features.trend === 'BEARISH';
+      const isMacdDumping = s.m1.features.macd.histogram < 0;
+      
+      if (isDeepPullback && isMacdDumping) {
+         isFallingKnife = true;
+         warnings.push(`🛑 VETO: Pisau Jatuh (Falling Knife)! Harga sedang dibanting ke bawah.`);
+      }
+    } else if (direction === 'SELL') {
+      const isDeepPump = s.currentPrice > s.m5.features.ema20 && s.m1.features.trend === 'BULLISH';
+      const isMacdPumping = s.m1.features.macd.histogram > 0;
+      
+      if (isDeepPump && isMacdPumping) {
+         isFallingKnife = true;
+         warnings.push(`🛑 VETO: Roket Naik (Shooting Rocket)! Harga sedang ditarik kencang ke atas.`);
+      }
+    }
+
+    let rawScore = trendScore +
         structureScore +
         momentumScore +
         liquidityScore +
         volatilityScore +
         timingScore +
-        riskRewardScore
-    );
+        riskRewardScore;
+
+    if (isFallingKnife) {
+      rawScore = Math.max(0, rawScore - 50); // Massive penalty
+      reasons.push(`❌ Penalti -50: Melawan momentum short-term (M1/M5 berlawanan tajam).`);
+    }
+
+    const totalScore = Math.min(100, rawScore);
 
     // --- DYNAMIC STOP LOSS CALCULATION ---
     // 1 pip = 0.1 di XAUUSD (jika harga 2400.15 ke 2400.25 = 10 pips = $1.0)
