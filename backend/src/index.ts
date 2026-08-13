@@ -374,7 +374,10 @@ marketData.setOnM5Closed((data) => {
           });
           
           telegramBot.sendSignal(signal);
-          mt5Bridge.setLatestSignal(signal);
+          
+          // CRITICAL FIX: Do NOT send this legacy signal to mt5Bridge! 
+          // MT5 Bridge is now exclusively powered by the high-frequency M1 ConfidenceEngine Burst signals.
+          // mt5Bridge.setLatestSignal(signal as any);
         } else if (signal.type === 'WAIT') {
           console.log(`[Agent Derry][${strategy}] Decision: WAIT. Reason: ${signal.reason.split('\n')[0]}`);
         }
@@ -609,6 +612,28 @@ app.get('/api/mt5/history', (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   res.json(mt5Bridge.getHistory());
+});
+
+app.get('/test_signal', (req, res) => {
+  const testSignal = {
+    id: 'TEST-' + Date.now(),
+    direction: 'BUY',
+    tier: 'MOMENTUM_SCALP',
+    confidenceScore: 85,
+    entryPrice: 4000,
+    pullbackLimitPrice: 3995,
+    stopLossPrice: 3990,
+    timestampMs: Date.now(),
+    ttlSeconds: 60,
+    currentReEntryCycle: 1,
+    maxReEntryCycles: 1,
+    layers: [
+      { layerIndex: 1, orderType: 'BUY_MARKET', suggestedPrice: 4000, tpPrice: 4010, tpPips: 10, slPrice: 3990, slPips: 11, lotRatio: 1 }
+    ],
+    reasons: [], warnings: []
+  };
+  mt5Bridge.setLatestSignal(testSignal as any);
+  res.json({ success: true, signalId: testSignal.id });
 });
 
 app.listen(config.PORT, () => {

@@ -427,6 +427,8 @@ void OnTimer()
    double sl     = GetJsonDouble(json, "stopLoss");
    double conf   = GetJsonDouble(json, "confidence");
    if(conf <= 0.0) conf = 70.0;
+   
+   Print("JSON RECEIVED: ", json);
 
    double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);

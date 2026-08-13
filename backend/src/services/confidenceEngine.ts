@@ -221,20 +221,20 @@ export class ConfidenceEngine {
     // 8. Anti-Falling Knife (VETO)
     let isFallingKnife = false;
     if (direction === 'BUY') {
-      const isDeepPullback = s.currentPrice < s.m5.features.ema20 && s.m1.features.trend === 'BEARISH';
-      const isMacdDumping = s.m1.features.macd.histogram < 0;
+      const isM5Bearish = s.currentPrice < s.m5.features.ema20 || s.m5.features.trend === 'BEARISH';
+      const isM1Bearish = s.m1.features.ema9 < s.m1.features.ema20 && s.m1.features.macd.histogram < 0 && s.currentPrice < s.m1.features.ema9;
       
-      if (isDeepPullback && isMacdDumping) {
+      if (isM5Bearish && isM1Bearish) {
          isFallingKnife = true;
-         warnings.push(`🛑 VETO: Pisau Jatuh (Falling Knife)! Harga sedang dibanting ke bawah.`);
+         warnings.push(`🛑 VETO: Pisau Jatuh (Falling Knife)! Belum ada konfirmasi pantulan (reversal) di M1.`);
       }
     } else if (direction === 'SELL') {
-      const isDeepPump = s.currentPrice > s.m5.features.ema20 && s.m1.features.trend === 'BULLISH';
-      const isMacdPumping = s.m1.features.macd.histogram > 0;
+      const isM5Bullish = s.currentPrice > s.m5.features.ema20 || s.m5.features.trend === 'BULLISH';
+      const isM1Bullish = s.m1.features.ema9 > s.m1.features.ema20 && s.m1.features.macd.histogram > 0 && s.currentPrice > s.m1.features.ema9;
       
-      if (isDeepPump && isMacdPumping) {
+      if (isM5Bullish && isM1Bullish) {
          isFallingKnife = true;
-         warnings.push(`🛑 VETO: Roket Naik (Shooting Rocket)! Harga sedang ditarik kencang ke atas.`);
+         warnings.push(`🛑 VETO: Roket Naik (Shooting Rocket)! Belum ada konfirmasi pantulan turun di M1.`);
       }
     }
 
