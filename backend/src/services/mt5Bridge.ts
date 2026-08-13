@@ -97,6 +97,7 @@ export class MT5BridgeService {
         burstPayload[`layer${idx+1}_tpPrice`] = layer.tpPrice;
         burstPayload[`layer${idx+1}_tpPips`] = layer.tpPips;
         burstPayload[`layer${idx+1}_slPrice`] = layer.slPrice;
+        burstPayload[`layer${idx+1}_slPips`] = layer.slPips;
         burstPayload[`layer${idx+1}_lotRatio`] = layer.lotRatio;
       });
 
