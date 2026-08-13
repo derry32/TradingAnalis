@@ -48,9 +48,9 @@ export class ConfidenceEngine {
     const sellEval = this.calculateDirectionalScore('SELL', snapshot);
 
     // Ambil skor tertinggi jika di atas batas minimum
-    if (buyEval.totalScore >= 65 && buyEval.totalScore >= sellEval.totalScore) {
+    if (buyEval.totalScore >= 55 && buyEval.totalScore >= sellEval.totalScore) {
       return buyEval;
-    } else if (sellEval.totalScore >= 65 && sellEval.totalScore > buyEval.totalScore) {
+    } else if (sellEval.totalScore >= 55 && sellEval.totalScore > buyEval.totalScore) {
       return sellEval;
     }
 
@@ -62,7 +62,7 @@ export class ConfidenceEngine {
       targetTpPips: [8, 8, 10, 10, 12],
       slPips: 10,
       breakdown: buyEval.breakdown,
-      reasons: ['Pasar belum memenuhi threshold minimum konfirmasi (Skor < 65).'],
+      reasons: ['Pasar belum memenuhi threshold minimum konfirmasi (Skor < 55).'],
       warnings: ['Kondisi chop / sideways. Menunggu momentum valid.'],
     };
   }
