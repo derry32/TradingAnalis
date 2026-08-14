@@ -115,8 +115,9 @@ export class ConfidenceEngine {
       return this.createWaitEval(`Pasar belum memenuhi threshold.${crashInfo}`);
     }
 
-    // GATE 5: Extension Guard (tetap 2.0x ATR — belum ada bukti ini yang memblok SELL)
-    const isExtended = this.checkExtensionGuard(bestEval.direction, snapshot);
+    // GATE 5: Extension Guard
+    // Saat CRASH, batas dilonggarkan ke 4.0x ATR agar bisa ikut momentum tajam tanpa harus menunggu pullback
+    const isExtended = this.checkExtensionGuard(bestEval.direction, snapshot, bestEval.mode);
     if (isExtended) {
       bestEval.direction = 'WAIT';
       bestEval.tier = 'WAIT';
@@ -287,13 +288,17 @@ export class ConfidenceEngine {
     return { isVetoed: false, reason: '' };
   }
 
-  // ─── Extension Guard (kembali ke 2.0x ATR) ──────────────────────────────────
-  private checkExtensionGuard(direction: 'BUY' | 'SELL' | 'WAIT', s: LiveMarketSnapshot): boolean {
+  // ─── Extension Guard ────────────────────────────────────────────────────────
+  private checkExtensionGuard(direction: 'BUY' | 'SELL' | 'WAIT', s: LiveMarketSnapshot, mode: string = 'NORMAL'): boolean {
     if (direction === 'WAIT') return false;
     const atrM5 = s.m5.features.atr;
     const distToEma20 = Math.abs(s.currentPrice - s.m5.features.ema20);
-    // Kembali ke 2.0x ATR — belum ada bukti bahwa guard ini yang memblok SELL
-    return distToEma20 > atrM5 * 2.0;
+    
+    // Saat CRASH, batas dilonggarkan ke 4.0x ATR karena harga bergerak sangat cepat menjauhi EMA.
+    // Jika Normal / Counter-Trend, batas tetap ketat 2.0x ATR untuk mencegah fomo (anti-chasing).
+    const maxAtrMultiplier = mode === 'CRASH' ? 4.0 : 2.0;
+    
+    return distToEma20 > atrM5 * maxAtrMultiplier;
   }
 
   // ─── Normal Score ────────────────────────────────────────────────────────────
