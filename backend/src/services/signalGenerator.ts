@@ -296,7 +296,7 @@ export class SignalGenerator {
       setupType: string;
     } | null = null;
 
-    let lastRejectionReason = "Skor probabilitas di bawah ambang batas minimal kelulusan (Minimal 50 Poin).";
+    let lastRejectionReason = "Skor probabilitas di bawah ambang batas minimal kelulusan (Minimal 65 Poin).";
 
     for (const dir of possibleDirections) {
       // Dynamic Stop Loss Calculation: Swing Point + ATR Buffer dengan Smart Cap
@@ -393,10 +393,10 @@ export class SignalGenerator {
       }
     }
 
-    // 9. Strict Threshold Filter: Skor < 50 LANGSUNG WAIT (Blokir Sinyal Lemah!)
-    if (!bestTrade || bestTrade.score < 50) {
+    // 9. Strict Threshold Filter: Skor < 65 LANGSUNG WAIT (Blokir Sinyal Lemah!)
+    if (!bestTrade || bestTrade.score < 65) {
       if (bestTrade) {
-        return this.createWaitSignal(`Skor probabilitas (${bestTrade.score}/100) di bawah ambang batas minimal kelulusan (Minimal 50 Poin).`, activeStrategy);
+        return this.createWaitSignal(`Skor probabilitas (${bestTrade.score}/100) di bawah ambang batas minimal kelulusan (Minimal 65 Poin).`, activeStrategy);
       }
       return this.createWaitSignal(lastRejectionReason, activeStrategy);
     }
@@ -408,7 +408,7 @@ export class SignalGenerator {
     if (score >= 90) probabilityLabel = '⭐⭐⭐⭐⭐ Very High';
     else if (score >= 80) probabilityLabel = '⭐⭐⭐⭐ High';
     else if (score >= 65) probabilityLabel = '⭐⭐⭐ Medium';
-    else if (score >= 50) probabilityLabel = '⭐⭐ Low';
+    else if (score >= 65) probabilityLabel = '⭐⭐ Low';
 
     let reasonString = reasons.join('\n') + (warnings.length > 0 ? '\n' + warnings.join('\n') : '');
     if (newsWarning) reasonString = newsWarning + '\n\n' + reasonString;
