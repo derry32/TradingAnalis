@@ -7,6 +7,10 @@ Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Anal
 - **Anti-Falling Knife & Shooting Rocket Filter:** Pelindung (*VETO guard*) untuk mencegah AI menangkap "pisau jatuh". Walaupun tren makro (H1/M15) sedang kuat (misal: Bullish), jika momentum jangka pendek (M1/M5) sedang dibanting berlawanan (harga jatuh di bawah EMA20 dan MACD merah tajam), AI akan menjatuhkan penalti ekstrim (-50 poin) untuk menahan sinyal hingga badai mikro mereda.
 - **Smart Fakeout Detection (Pre-News):** Logika pencegahan jebakan pancingan Ritail (Classic Fakeout / Buy The Rumor, Sell The News) menjelang rilis berita *High-Impact*. Jika teknikal terindikasi dipompa (*pump*) berlawanan dengan arah makro sesaat sebelum berita keluar, AI akan memprioritaskan fundamental makro dan mengabaikan jebakan teknikal.
 - **100% Binary Pre-News Execution:** Sinyal `WAIT` telah dihapus sepenuhnya dari mesin *Pre-News*. Kini AI akan mengeksekusi secara biner (BUY atau SELL) pada momen *News* dengan batas toleransi probabilitas >50%.
+## [1.9.1] - 2026-08-14
+### Diperbaiki
+- **Telegram Spam Fix:** Mencabut hak akses `signalGenerator` (mesin M5 lama) untuk mengirim pesan sinyal ke Telegram Bot. Hal ini menyelesaikan kebingungan *User* di mana Telegram terus menembakkan sinyal BUY saat harga anjlok (mesin lama tidak punya *Regime Shift*). Kini Telegram hanya menyiarkan sinyal murni dan valid dari `ConfidenceEngine`.
+
 ## [1.9.0] - 2026-08-13
 ### Ditambahkan
 - **Regime-Based Decision Engine:** Menambahkan dua mesin penilai terpisah, `Normal Score` (threshold 55) dan `Counter-Trend Score` (threshold 75). Robot kini berani masuk posisi melawan arus (*Counter-Trend*) dengan syarat momentum mikro yang diuji jauh lebih ketat tanpa memerlukan persetujuan tren makro (H1/M15).

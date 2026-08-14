@@ -373,7 +373,7 @@ marketData.setOnM5Closed((data) => {
               }
           });
           
-          telegramBot.sendSignal(signal);
+          // telegramBot.sendSignal(signal); // Dihapus karena menyiarkan sinyal usang
           
           // CRITICAL FIX: Do NOT send this legacy signal to mt5Bridge! 
           // MT5 Bridge is now exclusively powered by the high-frequency M1 ConfidenceEngine Burst signals.
