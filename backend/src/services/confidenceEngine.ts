@@ -115,8 +115,9 @@ export class ConfidenceEngine {
     if (direction === 'WAIT') return false;
     const atrM5 = s.m5.features.atr;
     const distToEma20 = Math.abs(s.currentPrice - s.m5.features.ema20);
-    // Jika harga lebih dari 2.0x ATR jaraknya dari EMA20 M5, dilarang entry (rawan ditarik balik)
-    return distToEma20 > atrM5 * 2.0;
+    // Jika harga lebih dari 4.0x ATR jaraknya dari EMA20 M5, dilarang entry (rawan ditarik balik)
+    // Dinaikkan dari 2.0x -> 4.0x agar robot berani mengejar momentum Crash/Breakout masif
+    return distToEma20 > atrM5 * 4.0;
   }
 
   private createWaitEval(reason: string): ConfidenceEvaluation {
