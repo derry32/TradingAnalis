@@ -164,6 +164,7 @@ export class MarketDataService {
   }
 
   private isBootstrapped = false;
+  private isBootstrapping = false;
 
   public async start() {
     if (config.TWELVEDATA_API_KEY) {
@@ -251,10 +252,12 @@ export class MarketDataService {
              console.log('[MarketData] Real tick received. Stopping simulation mode.');
           }
           
-          if (!this.isBootstrapped) {
+          if (!this.isBootstrapped && !this.isBootstrapping) {
+            this.isBootstrapping = true;
             console.log(`[MarketData] First tick received: ${parsed.price}. Bootstrapping history...`);
             await this.generateFallbackCandles(parsed.price); // callback is muted inside here
             this.isBootstrapped = true;
+            this.isBootstrapping = false;
           }
           
           // TwelveData format: price, day_volume (optional), timestamp (unix seconds)
