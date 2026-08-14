@@ -37,9 +37,14 @@ export class ConfidenceEngine {
     const atrM5 = snapshot.m5.features.atr;
 
     // GATE 1: Extreme Volatility
-    if (atrM5 >= 4.5) {
-      return this.createWaitEval('EXTREME Volatility (ATR >= 4.5). Resiko terlalu tinggi.');
+    // ATR dihitung dalam satuan harga raw XAUUSD. 1 pip = 0.1 jadi ATR 15.0 = 150 pips per M5 candle.
+    // Threshold 4.5 (= 45 pips) terlalu rendah untuk hari-hari volatile XAUUSD.
+    // Dinaikkan ke 15.0 (= 150 pips) agar hanya memblok kondisi benar-benar ekstrem (misal: news NFP crash 1500 pips).
+    if (atrM5 >= 15.0) {
+      console.log(`[CE] GATE1 BLOCK: ATR M5 = ${atrM5.toFixed(4)} >= 15.0 (EXTREME). Resiko terlalu tinggi.`);
+      return this.createWaitEval(`EXTREME Volatility (ATR M5=${atrM5.toFixed(4)} >= 15.0). Resiko terlalu tinggi.`);
     }
+    console.log(`[CE] GATE1 PASS: ATR M5 = ${atrM5.toFixed(4)}`);
 
     // GATE 2: Detect Fast Regime (M1+M5 only, tidak menunggu H1/M15)
     const crashRegime = this.detectCrashRegime(snapshot);
