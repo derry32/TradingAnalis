@@ -341,14 +341,7 @@ marketData.setOnM5Closed((data) => {
         let activeTrade = strategy === 'SNIPER' ? activeTradeSniper : activeTradeScalper;
         
         if (activeTrade && activeTrade.status === 'ACTIVE') {
-           if (activeTrade.type === signal.type) {
-              shouldSend = false; // Cooldown for same direction
-              if (score > activeTrade.score + 10) {
-                 shouldSend = true; // Allow if score is significantly higher
-              } else {
-                 console.log(`[Agent Derry][${strategy}] Ignored duplicate ${signal.type} signal (Score: ${score}%) due to Active Trade Cooldown.`);
-              }
-           } else {
+           if (activeTrade.type !== signal.type) {
               console.log(`[Agent Derry][${strategy}] REVERSAL DETECTED! Closing previous ${activeTrade.type} and opening ${signal.type}.`);
               activeTrade.status = 'EXPIRED'; // Close previous
            }
