@@ -20,7 +20,7 @@ export interface Signal {
   timeStopLoss?: string | undefined;
   timestamp: string;
   reason: string;
-  strategy: 'SNIPER' | 'HYPER_SCALPER';
+  strategy: string;
   entryZone: string;
 }
 
@@ -71,11 +71,54 @@ export class SignalGenerator {
     sessionType: string,
     isNewsMode: boolean,
     strategy: 'SNIPER' | 'HYPER_SCALPER',
-    roomPenalty: number
+    roomPenalty: number,
+    currentPrice: number
   ) {
     let score = 0;
     let reasons: string[] = [];
     let warnings: string[] = [];
+
+    // --- WEIGHTED PENALTY GUARDS ---
+
+    // 1. RSI Exhaustion Guard
+    if (direction === 'BUY') {
+      if (analysis.rsiM15 > 80) return { score: 0, reasons: [], warnings: ['VETO: RSI M15 > 80 (Extreme Overbought). Blokir BUY.'] };
+      if (analysis.rsiM15 > 75) { score -= 20; warnings.push(`⚠️ Penalti RSI > 75 (-20 Poin)`); }
+      else if (analysis.rsiM15 > 70) { score -= 10; warnings.push(`⚠️ Penalti RSI > 70 (-10 Poin)`); }
+    } else {
+      if (analysis.rsiM15 < 20) return { score: 0, reasons: [], warnings: ['VETO: RSI M15 < 20 (Extreme Oversold). Blokir SELL.'] };
+      if (analysis.rsiM15 < 25) { score -= 20; warnings.push(`⚠️ Penalti RSI < 25 (-20 Poin)`); }
+      else if (analysis.rsiM15 < 30) { score -= 10; warnings.push(`⚠️ Penalti RSI < 30 (-10 Poin)`); }
+    }
+
+    // 2. Premium / Discount Zone Filter
+    const m15Range = analysis.closestSwingHighM5 - analysis.closestSwingLowM5;
+    if (m15Range > 0) {
+      const pricePosition = (currentPrice - analysis.closestSwingLowM5) / m15Range; 
+      if (direction === 'BUY') {
+        if (pricePosition > 0.8) return { score: 0, reasons: [], warnings: ['VETO: Extreme Premium Zone (>80%). Blokir BUY FOMO.'] };
+        else if (pricePosition > 0.6) { score -= 10; warnings.push(`⚠️ Premium Zone (>60%): -10 Poin`); }
+        else if (pricePosition < 0.4) { score += 10; reasons.push(`✔ Discount Zone (<40%): +10 Poin`); }
+      } else {
+        if (pricePosition < 0.2) return { score: 0, reasons: [], warnings: ['VETO: Extreme Discount Zone (<20%). Blokir SELL FOMO.'] };
+        else if (pricePosition < 0.4) { score -= 10; warnings.push(`⚠️ Discount Zone (<40%): -10 Poin`); }
+        else if (pricePosition > 0.6) { score += 10; reasons.push(`✔ Premium Zone (>60%): +10 Poin`); }
+      }
+    }
+
+    // 3. M5 Rubber-Band Guard (Extension Filter)
+    const distToEMA = Math.abs(currentPrice - analysis.ema20M5);
+    if (distToEMA > analysis.atr_M15 * 1.5) {
+      const isExtremeBreakout = analysis.strongVolumeM5 || ['MARUBOZU_BULL', 'MARUBOZU_BEAR', 'THREE_WHITE_SOLDIERS', 'THREE_BLACK_CROWS'].includes(analysis.patternM5);
+      if (isExtremeBreakout) {
+        score -= 10;
+        warnings.push(`⚠️ Rubber Band Extension > 1.5 ATR tapi Breakout Kuat: -10 Poin`);
+      } else {
+        return { score: 0, reasons: [], warnings: ['VETO: Rubber Band Extension > 1.5 ATR tanpa konfirmasi kuat. Blokir.'] };
+      }
+    }
+
+    // --- END WEIGHTED PENALTY GUARDS ---
 
     // 100-Point Institutional Scoring Matrix (Adaptive for Scalper & Sniper)
     // 1. Trend H1 & M15 Structure (30 Poin total)
@@ -371,7 +414,7 @@ export class SignalGenerator {
       }
 
       // Hitung Skor 100-Point Matrix
-      const scoreResult = this.calculateScoreV2(dir, analysis, sessionInfo.type, isNewsMode, activeStrategy, roomPenalty);
+      const scoreResult = this.calculateScoreV2(dir, analysis, sessionInfo.type, isNewsMode, activeStrategy, roomPenalty, currentPrice);
       
       const setupType = this.determineSetupType(dir, analysis, isNewsBreakout);
 

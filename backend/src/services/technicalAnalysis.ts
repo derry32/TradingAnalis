@@ -39,6 +39,8 @@ export interface AnalysisResult {
   fibonacciZoneM15: 'GOLDEN_BULL' | 'GOLDEN_BEAR' | 'NONE';
   fvgM5: FVGZone;
   triggerCandleM5: { open: number; high: number; low: number; close: number };
+  rsiM15: number;
+  ema20M5: number;
 }
 
 export class TechnicalAnalysis {
@@ -213,6 +215,46 @@ export class TechnicalAnalysis {
       trSum += tr;
     }
     return trSum / period;
+  }
+
+  private calculateRSI(closes: number[], period: number = 14): number {
+    if (closes.length < period + 1) return 50;
+    let gains = 0;
+    let losses = 0;
+
+    for (let i = 1; i <= period; i++) {
+      const diff = closes[i] - closes[i - 1];
+      if (diff >= 0) gains += diff;
+      else losses -= diff;
+    }
+
+    let avgGain = gains / period;
+    let avgLoss = losses / period;
+
+    for (let i = period + 1; i < closes.length; i++) {
+      const diff = closes[i] - closes[i - 1];
+      if (diff >= 0) {
+        avgGain = (avgGain * (period - 1) + diff) / period;
+        avgLoss = (avgLoss * (period - 1)) / period;
+      } else {
+        avgGain = (avgGain * (period - 1)) / period;
+        avgLoss = (avgLoss * (period - 1) - diff) / period;
+      }
+    }
+
+    if (avgLoss === 0) return 100;
+    const rs = avgGain / avgLoss;
+    return 100 - 100 / (1 + rs);
+  }
+
+  private calculateEMA(closes: number[], period: number): number {
+    if (closes.length === 0) return 0;
+    const k = 2 / (period + 1);
+    let ema = closes[0];
+    for (let i = 1; i < closes.length; i++) {
+      ema = closes[i] * k + ema * (1 - k);
+    }
+    return ema;
   }
 
   private detectBOSCHoCH(currentPrice: number, swings: SwingPoint[], trendH1: 'BULLISH' | 'BEARISH' | 'NEUTRAL', trendM15: 'BULLISH' | 'BEARISH' | 'NEUTRAL', hasVolumeSpike: boolean, atr: number): AnalysisResult['marketStructureM15'] {
@@ -401,6 +443,12 @@ export class TechnicalAnalysis {
       lastM5High
     );
 
+    const m15Closes = data.m15.map(c => c.close);
+    const rsiM15 = this.calculateRSI(m15Closes, 14);
+    
+    const m5Closes = data.m5.map(c => c.close);
+    const ema20M5 = this.calculateEMA(m5Closes, 20);
+
     return {
       trendH1,
       structureH1,
@@ -424,12 +472,9 @@ export class TechnicalAnalysis {
       consecutiveCandlesM5,
       fibonacciZoneM15,
       fvgM5,
-      triggerCandleM5: {
-        open: data.currentM5.open,
-        high: data.currentM5.high,
-        low: data.currentM5.low,
-        close: data.currentM5.close
-      }
+      triggerCandleM5: data.currentM5,
+      rsiM15,
+      ema20M5
     };
   }
 }
