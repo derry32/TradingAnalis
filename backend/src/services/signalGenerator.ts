@@ -95,12 +95,30 @@ export class SignalGenerator {
     const m15Range = analysis.closestSwingHighM5 - analysis.closestSwingLowM5;
     if (m15Range > 0) {
       const pricePosition = (currentPrice - analysis.closestSwingLowM5) / m15Range; 
+      const isExtremeBreakout = analysis.strongVolumeM5 || ['MARUBOZU_BULL', 'MARUBOZU_BEAR', 'THREE_WHITE_SOLDIERS', 'THREE_BLACK_CROWS'].includes(analysis.patternM5);
+      
       if (direction === 'BUY') {
-        if (pricePosition > 0.8) { console.log(`[M5 DEBUG] VETO BUY: Extreme Premium Zone. Pos=${pricePosition}`); return { score: 0, reasons: [], warnings: ['VETO: Extreme Premium Zone (>80%). Blokir BUY FOMO.'] }; }
+        if (pricePosition > 0.8) {
+          if (isExtremeBreakout) {
+            score -= 10;
+            warnings.push(`⚠️ Extreme Premium Zone (>80%) tapi Breakout Kuat: -10 Poin`);
+          } else {
+            console.log(`[M5 DEBUG] VETO BUY: Extreme Premium Zone. Pos=${pricePosition}`); 
+            return { score: 0, reasons: [], warnings: ['VETO: Extreme Premium Zone (>80%). Blokir BUY FOMO.'] };
+          }
+        }
         else if (pricePosition > 0.6) { score -= 10; warnings.push(`⚠️ Premium Zone (>60%): -10 Poin`); }
         else if (pricePosition < 0.4) { score += 10; reasons.push(`✔ Discount Zone (<40%): +10 Poin`); }
       } else {
-        if (pricePosition < 0.2) { console.log(`[M5 DEBUG] VETO SELL: Extreme Discount Zone. Pos=${pricePosition}`); return { score: 0, reasons: [], warnings: ['VETO: Extreme Discount Zone (<20%). Blokir SELL FOMO.'] }; }
+        if (pricePosition < 0.2) { 
+          if (isExtremeBreakout) {
+            score -= 10;
+            warnings.push(`⚠️ Extreme Discount Zone (<20%) tapi Breakout Kuat: -10 Poin`);
+          } else {
+            console.log(`[M5 DEBUG] VETO SELL: Extreme Discount Zone. Pos=${pricePosition}`); 
+            return { score: 0, reasons: [], warnings: ['VETO: Extreme Discount Zone (<20%). Blokir SELL FOMO.'] };
+          }
+        }
         else if (pricePosition < 0.4) { score -= 10; warnings.push(`⚠️ Discount Zone (<40%): -10 Poin`); }
         else if (pricePosition > 0.6) { score += 10; reasons.push(`✔ Premium Zone (>60%): +10 Poin`); }
       }
