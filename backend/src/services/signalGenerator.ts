@@ -82,11 +82,11 @@ export class SignalGenerator {
 
     // 1. RSI Exhaustion Guard
     if (direction === 'BUY') {
-      if (analysis.rsiM15 > 80) return { score: 0, reasons: [], warnings: ['VETO: RSI M15 > 80 (Extreme Overbought). Blokir BUY.'] };
+      if (analysis.rsiM15 > 80) { console.log(`[M5 DEBUG] VETO BUY: RSI M15 > 80`); return { score: 0, reasons: [], warnings: ['VETO: RSI M15 > 80 (Extreme Overbought). Blokir BUY.'] }; }
       if (analysis.rsiM15 > 75) { score -= 20; warnings.push(`⚠️ Penalti RSI > 75 (-20 Poin)`); }
       else if (analysis.rsiM15 > 70) { score -= 10; warnings.push(`⚠️ Penalti RSI > 70 (-10 Poin)`); }
     } else {
-      if (analysis.rsiM15 < 20) return { score: 0, reasons: [], warnings: ['VETO: RSI M15 < 20 (Extreme Oversold). Blokir SELL.'] };
+      if (analysis.rsiM15 < 20) { console.log(`[M5 DEBUG] VETO SELL: RSI M15 < 20`); return { score: 0, reasons: [], warnings: ['VETO: RSI M15 < 20 (Extreme Oversold). Blokir SELL.'] }; }
       if (analysis.rsiM15 < 25) { score -= 20; warnings.push(`⚠️ Penalti RSI < 25 (-20 Poin)`); }
       else if (analysis.rsiM15 < 30) { score -= 10; warnings.push(`⚠️ Penalti RSI < 30 (-10 Poin)`); }
     }
@@ -96,11 +96,11 @@ export class SignalGenerator {
     if (m15Range > 0) {
       const pricePosition = (currentPrice - analysis.closestSwingLowM5) / m15Range; 
       if (direction === 'BUY') {
-        if (pricePosition > 0.8) return { score: 0, reasons: [], warnings: ['VETO: Extreme Premium Zone (>80%). Blokir BUY FOMO.'] };
+        if (pricePosition > 0.8) { console.log(`[M5 DEBUG] VETO BUY: Extreme Premium Zone. Pos=${pricePosition}`); return { score: 0, reasons: [], warnings: ['VETO: Extreme Premium Zone (>80%). Blokir BUY FOMO.'] }; }
         else if (pricePosition > 0.6) { score -= 10; warnings.push(`⚠️ Premium Zone (>60%): -10 Poin`); }
         else if (pricePosition < 0.4) { score += 10; reasons.push(`✔ Discount Zone (<40%): +10 Poin`); }
       } else {
-        if (pricePosition < 0.2) return { score: 0, reasons: [], warnings: ['VETO: Extreme Discount Zone (<20%). Blokir SELL FOMO.'] };
+        if (pricePosition < 0.2) { console.log(`[M5 DEBUG] VETO SELL: Extreme Discount Zone. Pos=${pricePosition}`); return { score: 0, reasons: [], warnings: ['VETO: Extreme Discount Zone (<20%). Blokir SELL FOMO.'] }; }
         else if (pricePosition < 0.4) { score -= 10; warnings.push(`⚠️ Discount Zone (<40%): -10 Poin`); }
         else if (pricePosition > 0.6) { score += 10; reasons.push(`✔ Premium Zone (>60%): +10 Poin`); }
       }
@@ -114,6 +114,7 @@ export class SignalGenerator {
         score -= 10;
         warnings.push(`⚠️ Rubber Band Extension > 1.5 ATR tapi Breakout Kuat: -10 Poin`);
       } else {
+        console.log(`[M5 DEBUG] VETO ${direction}: Rubber Band Ext > 1.5 ATR (${distToEMA.toFixed(2)} > ${(analysis.atr_M15 * 1.5).toFixed(2)})`);
         return { score: 0, reasons: [], warnings: ['VETO: Rubber Band Extension > 1.5 ATR tanpa konfirmasi kuat. Blokir.'] };
       }
     }
