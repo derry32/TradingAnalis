@@ -7,6 +7,11 @@ Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Anal
 - **Anti-Falling Knife & Shooting Rocket Filter:** Pelindung (*VETO guard*) untuk mencegah AI menangkap "pisau jatuh". Walaupun tren makro (H1/M15) sedang kuat (misal: Bullish), jika momentum jangka pendek (M1/M5) sedang dibanting berlawanan (harga jatuh di bawah EMA20 dan MACD merah tajam), AI akan menjatuhkan penalti ekstrim (-50 poin) untuk menahan sinyal hingga badai mikro mereda.
 - **Smart Fakeout Detection (Pre-News):** Logika pencegahan jebakan pancingan Ritail (Classic Fakeout / Buy The Rumor, Sell The News) menjelang rilis berita *High-Impact*. Jika teknikal terindikasi dipompa (*pump*) berlawanan dengan arah makro sesaat sebelum berita keluar, AI akan memprioritaskan fundamental makro dan mengabaikan jebakan teknikal.
 - **100% Binary Pre-News Execution:** Sinyal `WAIT` telah dihapus sepenuhnya dari mesin *Pre-News*. Kini AI akan mengeksekusi secara biner (BUY atau SELL) pada momen *News* dengan batas toleransi probabilitas >50%.
+## [1.9.4] - 2026-08-14
+### Diperbaiki
+- **Kalibrasi Ekstrem Volatility (GATE 1):** Mengubah threshold ATR dari 4.5 menjadi 15.0. Akar masalahnya adalah ATR dihitung dalam satuan harga XAUUSD (bukan *pips*), sehingga nilai 4.5 (= 45 *pips*) terlalu sering tersentuh saat market sedang bergejolak dan mengakibatkan **semua sinyal terblokir**. Threshold 15.0 (= 150 *pips*) lebih realistis untuk kondisi ekstrem sesungguhnya (seperti CPI/NFP crash).
+- **Bug Stale Trade Cooldown:** Menambahkan `expiry check` pada saat server melakukan *resume* posisi trading yang sedang berjalan. Trade lama yang sudah melebihi batas waktu (Sniper >4 jam, Scalper >1.5 jam) akan otomatis dilewati dan ditandai sebagai `EXPIRED`, sehingga tidak lagi memblokir sinyal baru secara permanen.
+
 ## [1.9.3] - 2026-08-14
 ### Ditambahkan
 - **Fast Crash Regime Detector:** Menambahkan fungsi `detectCrashRegime()` yang murni membaca M1+M5 (tidak bergantung H1/M15 yang lambat). Crash Mode aktif jika minimal 3 dari 4 kondisi M1 terpenuhi: Price breakdown dual EMA, MACD acceleration, M1 BOS, dan displacement candle kuat.
