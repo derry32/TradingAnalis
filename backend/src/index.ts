@@ -292,7 +292,7 @@ marketData.setOnM1Closed((data) => {
         entryPrice: burst.entryPrice,
         stopLoss: burst.stopLossPrice,
         takeProfit1: burst.layers[0].tpPrice,
-        takeProfit2: burst.layers[4].tpPrice,
+        takeProfit2: burst.layers[burst.layers.length - 1].tpPrice,
         validTime: '30 Detik (TTL Scalp)',
         estimatedTpTime: '1-3 Menit',
         timestamp: new Date().toISOString(),
