@@ -83,19 +83,30 @@ async function resumeActiveTrades() {
     console.log(`[Main] Found ${v2ActiveSignals.length} active V2 signal(s) to resume.`);
     
     for (const sig of v2ActiveSignals) {
+      const tradeTimeMs = new Date(sig.timestamp).getTime();
+      const strategy = sig.reason?.strategy;
+      
+      // Cek apakah trade sudah kedaluwarsa sebelum di-resume
+      const maxHoldTime = strategy === 'SNIPER' ? 4 * 60 * 60 * 1000 : 90 * 60 * 1000;
+      if (Date.now() - tradeTimeMs > maxHoldTime) {
+        console.log(`[Main] Skipping expired trade ${sig.id} (age: ${Math.floor((Date.now() - tradeTimeMs) / 60000)} menit > max ${maxHoldTime / 60000} menit)`);
+        // Update status di DB menjadi EXPIRED
+        if (sig.id) updateSignalStatus(sig.id, 'EXPIRED', new Date().toISOString(), Math.floor((Date.now() - tradeTimeMs) / 60000), 0, 0);
+        continue;
+      }
+
       const state: TradeState = {
         id: sig.reason?.id || `RESUMED-${sig.id}`,
         type: sig.type as 'BUY' | 'SELL',
         entryPrice: sig.entryPrice,
         stopLoss: sig.stopLoss,
         takeProfit1: sig.takeProfit1,
-        timeMs: new Date(sig.timestamp).getTime(),
+        timeMs: tradeTimeMs,
         status: 'ACTIVE',
         score: sig.reason?.confidence || 50,
         dbId: sig.id
       };
 
-      const strategy = sig.reason?.strategy;
       if (strategy === 'SNIPER') {
         if (!activeTradeSniper) {
            activeTradeSniper = state;
@@ -242,6 +253,12 @@ marketData.setOnM1Closed((data) => {
   checkAndResetDailyDrawdown();
   const DRAWDOWN_LIMIT = 10;
   const isGuardActive = dailySLCount >= DRAWDOWN_LIMIT;
+
+  // DEBUG LOG UNTUK MELIHAT EVALUASI M1
+  console.log(`[M1 DEBUG] Score: ${evaluation.totalScore}, Dir: ${evaluation.direction}`);
+  if (evaluation.reasons.length > 0) {
+      console.log(`[M1 DEBUG] Reasons:`, evaluation.reasons);
+  }
 
   if (evaluation.direction !== 'WAIT' && evaluation.totalScore >= 55 && !isGuardActive) {
     if (data.isStaleData) {
