@@ -1,13 +1,15 @@
 import { LiveMarketSnapshot } from './featureEngine';
 
 export type SignalTier = 'WAIT' | 'QUICK_SCALP' | 'MOMENTUM_SCALP' | 'SUPER_TREND';
+export type EvalMode = 'NORMAL' | 'COUNTER_TREND' | 'CRASH';
 
 export interface ConfidenceEvaluation {
   direction: 'BUY' | 'SELL' | 'WAIT';
   totalScore: number;
   tier: SignalTier;
+  mode: EvalMode;
   maxReEntryCycles: number;
-  targetTpPips: number[]; 
+  targetTpPips: number[];
   slPips: number;
   breakdown: {
     trendScore: number;
@@ -22,45 +24,77 @@ export interface ConfidenceEvaluation {
   warnings: string[];
 }
 
+interface CrashRegime {
+  isCrashBearish: boolean;
+  isCrashBullish: boolean;
+  bearishConditionsMet: number;
+  bullishConditionsMet: number;
+}
+
 export class ConfidenceEngine {
-  
+
   public evaluate(snapshot: LiveMarketSnapshot): ConfidenceEvaluation {
     const atrM5 = snapshot.m5.features.atr;
-    
-    // 1. Volatility Regime Check
+
+    // GATE 1: Extreme Volatility
     if (atrM5 >= 4.5) {
       return this.createWaitEval('EXTREME Volatility (ATR >= 4.5). Resiko terlalu tinggi.');
     }
 
-    // 2. Check Regime Shift / Veto (Falling Knife & Shooting Rocket)
+    // GATE 2: Detect Fast Regime (M1+M5 only, tidak menunggu H1/M15)
+    const crashRegime = this.detectCrashRegime(snapshot);
+
+    // GATE 3: Veto Check (Falling Knife & Shooting Rocket)
     const buyVeto = this.checkVeto('BUY', snapshot);
     const sellVeto = this.checkVeto('SELL', snapshot);
 
     let bestEval: ConfidenceEvaluation | null = null;
     let maxScore = -1;
 
-    // 3. Evaluate BUY
+    // GATE 4a: Evaluate BUY
     if (!buyVeto.isVetoed) {
       const isMacroBuy = snapshot.h1.features.trend === 'BULLISH' && snapshot.m15.features.trend !== 'BEARISH';
-      const evalResult = isMacroBuy
-        ? this.calculateNormalScore('BUY', snapshot)
-        : this.calculateCounterTrendScore('BUY', snapshot);
-      
-      const threshold = isMacroBuy ? 55 : 75;
+      const isCrashBuy = crashRegime.isCrashBullish;
+
+      let evalResult: ConfidenceEvaluation;
+      let threshold: number;
+
+      if (isCrashBuy) {
+        evalResult = this.calculateCrashScore('BUY', snapshot, crashRegime);
+        threshold = 60; // Crash Mode threshold
+      } else if (isMacroBuy) {
+        evalResult = this.calculateNormalScore('BUY', snapshot);
+        threshold = 55;
+      } else {
+        evalResult = this.calculateCounterTrendScore('BUY', snapshot);
+        threshold = 75;
+      }
+
       if (evalResult.totalScore > maxScore && evalResult.totalScore >= threshold) {
         bestEval = evalResult;
         maxScore = evalResult.totalScore;
       }
     }
 
-    // 4. Evaluate SELL
+    // GATE 4b: Evaluate SELL
     if (!sellVeto.isVetoed) {
       const isMacroSell = snapshot.h1.features.trend === 'BEARISH' && snapshot.m15.features.trend !== 'BULLISH';
-      const evalResult = isMacroSell
-        ? this.calculateNormalScore('SELL', snapshot)
-        : this.calculateCounterTrendScore('SELL', snapshot);
-      
-      const threshold = isMacroSell ? 55 : 75;
+      const isCrashSell = crashRegime.isCrashBearish;
+
+      let evalResult: ConfidenceEvaluation;
+      let threshold: number;
+
+      if (isCrashSell) {
+        evalResult = this.calculateCrashScore('SELL', snapshot, crashRegime);
+        threshold = 60; // Crash Mode threshold (lebih ketat dari normal 55, tapi tidak seketat counter-trend 75)
+      } else if (isMacroSell) {
+        evalResult = this.calculateNormalScore('SELL', snapshot);
+        threshold = 55;
+      } else {
+        evalResult = this.calculateCounterTrendScore('SELL', snapshot);
+        threshold = 75;
+      }
+
       if (evalResult.totalScore > maxScore && evalResult.totalScore >= threshold) {
         bestEval = evalResult;
         maxScore = evalResult.totalScore;
@@ -68,25 +102,163 @@ export class ConfidenceEngine {
     }
 
     if (!bestEval) {
-       return this.createWaitEval('Pasar belum memenuhi threshold konfirmasi untuk Normal maupun Counter-Trend.');
+      const crashInfo = crashRegime.isCrashBearish
+        ? ` [Crash Bearish: ${crashRegime.bearishConditionsMet}/4 conds]`
+        : crashRegime.isCrashBullish
+        ? ` [Crash Bullish: ${crashRegime.bullishConditionsMet}/4 conds]`
+        : '';
+      return this.createWaitEval(`Pasar belum memenuhi threshold.${crashInfo}`);
     }
 
-    // 5. Extension Guard (Don't Sell the Bottom, Don't Buy the Top)
+    // GATE 5: Extension Guard (tetap 2.0x ATR — belum ada bukti ini yang memblok SELL)
     const isExtended = this.checkExtensionGuard(bestEval.direction, snapshot);
     if (isExtended) {
-       bestEval.direction = 'WAIT';
-       bestEval.reasons.push(`⛔ EXTENSION GUARD: Harga terlalu jauh dari EMA20 M5 (Chasing). Menunggu pullback.`);
-       bestEval.tier = 'WAIT';
+      bestEval.direction = 'WAIT';
+      bestEval.tier = 'WAIT';
+      bestEval.reasons.push(`⛔ EXTENSION GUARD: Harga > 2.0x ATR dari EMA20 M5. Menunggu pullback.`);
     }
+
+    // Decision Trace Log
+    console.log(
+      `[CE] Dir=${bestEval.direction} Score=${bestEval.totalScore} Mode=${bestEval.mode}` +
+      ` Crash={B:${crashRegime.bearishConditionsMet}/4 U:${crashRegime.bullishConditionsMet}/4}` +
+      ` ExtGuard=${isExtended} BuyVeto=${buyVeto.isVetoed} SellVeto=${sellVeto.isVetoed}`
+    );
 
     return bestEval;
   }
 
+  // ─── Fast Regime Detector (M1 + M5 only, tidak bergantung H1/M15) ───────────
+  private detectCrashRegime(s: LiveMarketSnapshot): CrashRegime {
+    const m1Candle = s.m1.candle;
+    const atrM1 = s.m1.features.atr;
+
+    // --- Bearish Crash Conditions ---
+    const bearishCond1 = s.currentPrice < s.m1.features.ema20 && s.currentPrice < s.m5.features.ema20;
+    const bearishCond2 = s.m1.features.macd.histogram < 0 && s.m1.features.macd.histogram < s.m1.features.macd.signal;
+    const bearishCond3 = s.m1.structure.lastBOS === 'BEARISH_BOS';
+    const bearishCond4 = m1Candle.close < m1Candle.open && (m1Candle.open - m1Candle.close) > atrM1 * 0.5;
+
+    const bearishConditionsMet = [bearishCond1, bearishCond2, bearishCond3, bearishCond4].filter(Boolean).length;
+
+    // --- Bullish Crash Conditions ---
+    const bullishCond1 = s.currentPrice > s.m1.features.ema20 && s.currentPrice > s.m5.features.ema20;
+    const bullishCond2 = s.m1.features.macd.histogram > 0 && s.m1.features.macd.histogram > s.m1.features.macd.signal;
+    const bullishCond3 = s.m1.structure.lastBOS === 'BULLISH_BOS';
+    const bullishCond4 = m1Candle.close > m1Candle.open && (m1Candle.close - m1Candle.open) > atrM1 * 0.5;
+
+    const bullishConditionsMet = [bullishCond1, bullishCond2, bullishCond3, bullishCond4].filter(Boolean).length;
+
+    return {
+      isCrashBearish: bearishConditionsMet >= 3,
+      isCrashBullish: bullishConditionsMet >= 3,
+      bearishConditionsMet,
+      bullishConditionsMet,
+    };
+  }
+
+  // ─── Crash Mode Scoring (H1 bias dikurangi, M1 structure & momentum naik) ──
+  private calculateCrashScore(
+    direction: 'BUY' | 'SELL',
+    s: LiveMarketSnapshot,
+    crash: CrashRegime
+  ): ConfidenceEvaluation {
+    const reasons: string[] = [];
+    const warnings: string[] = [];
+    const m1Candle = s.m1.candle;
+    const atrM1 = s.m1.features.atr;
+
+    reasons.push(`🔥 Mode CRASH REGIME (${direction === 'SELL' ? `Bearish: ${crash.bearishConditionsMet}/4` : `Bullish: ${crash.bullishConditionsMet}/4`} conds). Threshold 60.`);
+
+    // 1. Crash Regime Strength (25 pts)
+    const condsMet = direction === 'SELL' ? crash.bearishConditionsMet : crash.bullishConditionsMet;
+    const crashStrengthScore = condsMet === 4 ? 25 : condsMet === 3 ? 18 : 10;
+    reasons.push(`✔ Crash Strength: ${condsMet}/4 kondisi terpenuhi (+${crashStrengthScore})`);
+
+    // 2. M1 Structure — early confirmation, M5 BOS bukan prerequisite (20 pts)
+    const isBOSMatch =
+      (direction === 'BUY' && (s.m1.structure.lastBOS === 'BULLISH_BOS' || s.m5.structure.lastBOS === 'BULLISH_BOS')) ||
+      (direction === 'SELL' && (s.m1.structure.lastBOS === 'BEARISH_BOS' || s.m5.structure.lastBOS === 'BEARISH_BOS'));
+    const isCHoCHMatch =
+      (direction === 'BUY' && (s.m1.structure.lastCHoCH === 'BULLISH_CHOCH' || s.m5.structure.lastCHoCH === 'BULLISH_CHOCH')) ||
+      (direction === 'SELL' && (s.m1.structure.lastCHoCH === 'BEARISH_CHOCH' || s.m5.structure.lastCHoCH === 'BEARISH_CHOCH'));
+    const structureScore = (isBOSMatch || isCHoCHMatch) ? 20 : 8; // partial credit even without BOS
+    if (isBOSMatch) reasons.push(`✔ BOS Terkonfirmasi M1/M5 (+20)`);
+    else if (isCHoCHMatch) reasons.push(`✔ CHoCH M1/M5 Terkonfirmasi (+20)`);
+    else reasons.push(`○ Tidak ada BOS/CHoCH, partial score (+8)`);
+
+    // 3. MACD Acceleration (15 pts)
+    const macdAcc =
+      (direction === 'SELL' && s.m1.features.macd.histogram < 0 && s.m1.features.macd.histogram < s.m1.features.macd.signal) ||
+      (direction === 'BUY' && s.m1.features.macd.histogram > 0 && s.m1.features.macd.histogram > s.m1.features.macd.signal);
+    const macdScore = macdAcc ? 15 : (
+      (direction === 'SELL' && s.m1.features.macd.histogram < 0) ||
+      (direction === 'BUY' && s.m1.features.macd.histogram > 0)
+    ) ? 8 : 0;
+    if (macdScore > 0) reasons.push(`✔ MACD Acceleration (+${macdScore})`);
+
+    // 4. EMA Breakdown Score (15 pts)
+    const emaBelowBoth =
+      (direction === 'SELL' && s.currentPrice < s.m1.features.ema20 && s.currentPrice < s.m5.features.ema20) ||
+      (direction === 'BUY' && s.currentPrice > s.m1.features.ema20 && s.currentPrice > s.m5.features.ema20);
+    const emaScore = emaBelowBoth ? 15 : 5;
+    if (emaBelowBoth) reasons.push(`✔ Price Breakdown Dual EMA (M1+M5) (+15)`);
+
+    // 5. Volatility (10 pts) — lebih longgar di crash mode
+    const atrM5 = s.m5.features.atr;
+    const volatilityScore = (atrM5 >= 1.5 && atrM5 <= 4.5) ? 10 : 5;
+    reasons.push(`✔ Volatility ATR=${atrM5.toFixed(2)} (+${volatilityScore})`);
+
+    // 6. M5 BOS Bonus — confirmation, bukan prerequisite (0 atau 10 pts)
+    const m5BOSBonus =
+      (direction === 'SELL' && s.m5.structure.lastBOS === 'BEARISH_BOS') ||
+      (direction === 'BUY' && s.m5.structure.lastBOS === 'BULLISH_BOS');
+    const m5BonusScore = m5BOSBonus ? 10 : 0;
+    if (m5BonusScore > 0) reasons.push(`✔ Bonus: M5 BOS sudah konfirmasi (+10)`);
+
+    // 7. RSI Context-Aware (dynamic, bukan batas bawah = 0)
+    const rsi = s.m5.features.rsi;
+    let rsiScore = 0;
+    if (direction === 'SELL') {
+      if (rsi < 32) {
+        rsiScore = 5;
+        reasons.push(`✔ RSI Oversold Extreme (${rsi.toFixed(1)}) — bearish momentum kuat (+5)`);
+      } else if (rsi >= 32 && rsi <= 55) {
+        rsiScore = 5;
+        reasons.push(`✔ RSI Sehat (${rsi.toFixed(1)}) (+5)`);
+      }
+    } else {
+      if (rsi > 68) {
+        rsiScore = 5;
+        reasons.push(`✔ RSI Overbought Extreme (${rsi.toFixed(1)}) — bullish momentum kuat (+5)`);
+      } else if (rsi >= 45 && rsi <= 68) {
+        rsiScore = 5;
+        reasons.push(`✔ RSI Sehat (${rsi.toFixed(1)}) (+5)`);
+      }
+    }
+
+    // R/R (5 pts)
+    const rrScore = 5;
+    reasons.push(`✔ Dynamic R-Multiple (+5)`);
+
+    const rawScore = crashStrengthScore + structureScore + macdScore + emaScore + volatilityScore + m5BonusScore + rsiScore + rrScore;
+
+    return this.finalizeEvaluation(direction, Math.min(100, rawScore), s, reasons, warnings, 'CRASH', {
+      trendScore: 0,
+      structureScore,
+      momentumScore: macdScore + rsiScore,
+      liquidityScore: m5BonusScore,
+      volatilityScore,
+      timingScore: crashStrengthScore,
+      riskRewardScore: rrScore + emaScore,
+    });
+  }
+
+  // ─── Veto Check ──────────────────────────────────────────────────────────────
   private checkVeto(direction: 'BUY' | 'SELL', s: LiveMarketSnapshot): { isVetoed: boolean; reason: string } {
     if (direction === 'BUY') {
       const priceBelowM1Ema = s.currentPrice < s.m1.features.ema20;
       const priceBelowM5Ema = s.currentPrice < s.m5.features.ema20;
-      
       const m1Displacement = s.currentPrice < s.m1.features.ema9 && s.m1.features.macd.histogram < -0.1;
       const m5BearishBOS = s.m5.structure.lastBOS === 'BEARISH_BOS';
       const macdBearish = s.m1.features.macd.histogram < 0 && s.m1.features.macd.histogram < s.m1.features.macd.signal;
@@ -98,7 +270,6 @@ export class ConfidenceEngine {
     } else {
       const priceAboveM1Ema = s.currentPrice > s.m1.features.ema20;
       const priceAboveM5Ema = s.currentPrice > s.m5.features.ema20;
-
       const m1Displacement = s.currentPrice > s.m1.features.ema9 && s.m1.features.macd.histogram > 0.1;
       const m5BullishBOS = s.m5.structure.lastBOS === 'BULLISH_BOS';
       const macdBullish = s.m1.features.macd.histogram > 0 && s.m1.features.macd.histogram > s.m1.features.macd.signal;
@@ -111,35 +282,21 @@ export class ConfidenceEngine {
     return { isVetoed: false, reason: '' };
   }
 
+  // ─── Extension Guard (kembali ke 2.0x ATR) ──────────────────────────────────
   private checkExtensionGuard(direction: 'BUY' | 'SELL' | 'WAIT', s: LiveMarketSnapshot): boolean {
     if (direction === 'WAIT') return false;
     const atrM5 = s.m5.features.atr;
     const distToEma20 = Math.abs(s.currentPrice - s.m5.features.ema20);
-    // Jika harga lebih dari 4.0x ATR jaraknya dari EMA20 M5, dilarang entry (rawan ditarik balik)
-    // Dinaikkan dari 2.0x -> 4.0x agar robot berani mengejar momentum Crash/Breakout masif
-    return distToEma20 > atrM5 * 4.0;
+    // Kembali ke 2.0x ATR — belum ada bukti bahwa guard ini yang memblok SELL
+    return distToEma20 > atrM5 * 2.0;
   }
 
-  private createWaitEval(reason: string): ConfidenceEvaluation {
-    return {
-      direction: 'WAIT',
-      totalScore: 0,
-      tier: 'WAIT',
-      maxReEntryCycles: 0,
-      targetTpPips: [10, 10, 10, 10, 10],
-      slPips: 10,
-      breakdown: { trendScore: 0, structureScore: 0, momentumScore: 0, liquidityScore: 0, volatilityScore: 0, timingScore: 0, riskRewardScore: 0 },
-      reasons: [reason],
-      warnings: [],
-    };
-  }
-
+  // ─── Normal Score ────────────────────────────────────────────────────────────
   private calculateNormalScore(direction: 'BUY' | 'SELL', s: LiveMarketSnapshot): ConfidenceEvaluation {
     let trendScore = 0; let structureScore = 0; let momentumScore = 0; let liquidityScore = 0;
     let volatilityScore = 0; let timingScore = 0; let riskRewardScore = 0;
     const reasons: string[] = []; const warnings: string[] = [];
 
-    // 1. Trend (20)
     if ((direction === 'BUY' && s.h1.features.trend === 'BULLISH') || (direction === 'SELL' && s.h1.features.trend === 'BEARISH')) {
       trendScore += 10; reasons.push(`✔ Trend H1 Selaras (+10)`);
     }
@@ -147,23 +304,25 @@ export class ConfidenceEngine {
       trendScore += 10; reasons.push(`✔ Trend M15 Selaras (+10)`);
     }
 
-    // 2. Structure (20)
-    const isStructMatch = (direction === 'BUY' && (s.m5.structure.structureType === 'HH_HL' || s.m1.structure.structureType === 'HH_HL')) ||
-                          (direction === 'SELL' && (s.m5.structure.structureType === 'LH_LL' || s.m1.structure.structureType === 'LH_LL'));
+    const isStructMatch =
+      (direction === 'BUY' && (s.m5.structure.structureType === 'HH_HL' || s.m1.structure.structureType === 'HH_HL')) ||
+      (direction === 'SELL' && (s.m5.structure.structureType === 'LH_LL' || s.m1.structure.structureType === 'LH_LL'));
     if (isStructMatch) { structureScore += 10; reasons.push(`✔ Struktur Market Selaras (+10)`); }
-    
-    const isBOSMatch = (direction === 'BUY' && (s.m1.structure.lastBOS === 'BULLISH_BOS' || s.m5.structure.lastBOS === 'BULLISH_BOS')) ||
-                       (direction === 'SELL' && (s.m1.structure.lastBOS === 'BEARISH_BOS' || s.m5.structure.lastBOS === 'BEARISH_BOS'));
-    const isCHoCHMatch = (direction === 'BUY' && s.m1.structure.lastCHoCH === 'BULLISH_CHOCH') ||
-                         (direction === 'SELL' && s.m1.structure.lastCHoCH === 'BEARISH_CHOCH');
+
+    const isBOSMatch =
+      (direction === 'BUY' && (s.m1.structure.lastBOS === 'BULLISH_BOS' || s.m5.structure.lastBOS === 'BULLISH_BOS')) ||
+      (direction === 'SELL' && (s.m1.structure.lastBOS === 'BEARISH_BOS' || s.m5.structure.lastBOS === 'BEARISH_BOS'));
+    const isCHoCHMatch =
+      (direction === 'BUY' && s.m1.structure.lastCHoCH === 'BULLISH_CHOCH') ||
+      (direction === 'SELL' && s.m1.structure.lastCHoCH === 'BEARISH_CHOCH');
     if (isBOSMatch) { structureScore += 10; reasons.push(`✔ BOS Terkonfirmasi (+10)`); }
     else if (isCHoCHMatch) { structureScore += 10; reasons.push(`✔ CHoCH Terkonfirmasi (+10)`); }
 
-    // 3. Momentum (15)
-    const isEmaMatch = (direction === 'BUY' && s.m1.features.ema9 >= s.m1.features.ema20) ||
-                       (direction === 'SELL' && s.m1.features.ema9 <= s.m1.features.ema20);
+    const isEmaMatch =
+      (direction === 'BUY' && s.m1.features.ema9 >= s.m1.features.ema20) ||
+      (direction === 'SELL' && s.m1.features.ema9 <= s.m1.features.ema20);
     if (isEmaMatch) { momentumScore += 5; reasons.push(`✔ Fast EMA Selaras (+5)`); }
-    
+
     const rsi = s.m5.features.rsi;
     if (direction === 'BUY' && rsi >= 45 && rsi <= 68) { momentumScore += 5; reasons.push(`✔ RSI Sehat (+5)`); }
     else if (direction === 'SELL' && rsi >= 32 && rsi <= 55) { momentumScore += 5; reasons.push(`✔ RSI Sehat (+5)`); }
@@ -172,25 +331,22 @@ export class ConfidenceEngine {
       momentumScore += 5; reasons.push(`✔ MACD Selaras (+5)`);
     }
 
-    // 4. Liquidity (15)
     if ((direction === 'BUY' && s.m1.structure.fvgZone?.type === 'BULLISH') || (direction === 'SELL' && s.m1.structure.fvgZone?.type === 'BEARISH')) {
       liquidityScore += 10; reasons.push(`✔ FVG Imbalance (+10)`);
     }
     const distToEma20 = Math.abs(s.currentPrice - s.m1.features.ema20);
     if (distToEma20 <= s.m1.features.atr * 0.8) { liquidityScore += 5; reasons.push(`✔ Retest Golden Zone (+5)`); }
 
-    // 5. Volatility (10)
     if (s.m5.features.atr <= 3.0) { volatilityScore += 10; reasons.push(`✔ Normal Volatility (+10)`); }
     else { volatilityScore += 5; }
 
-    // 6. Timing (10)
     const m1Candle = s.m1.candle;
-    const isM1Momentum = (direction === 'BUY' && m1Candle.close > m1Candle.open && m1Candle.close >= s.m1.structure.swingHigh) ||
-                         (direction === 'SELL' && m1Candle.close < m1Candle.open && m1Candle.close <= s.m1.structure.swingLow);
+    const isM1Momentum =
+      (direction === 'BUY' && m1Candle.close > m1Candle.open && m1Candle.close >= s.m1.structure.swingHigh) ||
+      (direction === 'SELL' && m1Candle.close < m1Candle.open && m1Candle.close <= s.m1.structure.swingLow);
     if (isM1Momentum || isBOSMatch) { timingScore += 10; reasons.push(`✔ Intrabar Breakout (+10)`); }
     else { timingScore += 5; }
 
-    // 7. R/R (10)
     riskRewardScore += 10; reasons.push(`✔ Dynamic R-Multiple (+10)`);
 
     const rawScore = trendScore + structureScore + momentumScore + liquidityScore + volatilityScore + timingScore + riskRewardScore;
@@ -199,101 +355,113 @@ export class ConfidenceEngine {
     });
   }
 
+  // ─── Counter-Trend Score ─────────────────────────────────────────────────────
   private calculateCounterTrendScore(direction: 'BUY' | 'SELL', s: LiveMarketSnapshot): ConfidenceEvaluation {
     let momentumScore = 0; let structureScore = 0; let emaDisplacementScore = 0; let macdScore = 0;
     let volatilityScore = 0; let liquidityScore = 0; let riskRewardScore = 5;
     const reasons: string[] = []; const warnings: string[] = [];
-    
-    reasons.push(`⚡ Mode COUNTER-TREND (Melawan arah Makro H1/M15). Syarat skor kelulusan lebih ketat (>= 75).`);
+
+    reasons.push(`⚡ Mode COUNTER-TREND. Threshold >= 75.`);
 
     const m1Candle = s.m1.candle;
-    const isStrongMomentum = (direction === 'BUY' && m1Candle.close > m1Candle.open + s.m1.features.atr * 0.5) ||
-                             (direction === 'SELL' && m1Candle.close < m1Candle.open - s.m1.features.atr * 0.5);
+    const isStrongMomentum =
+      (direction === 'BUY' && m1Candle.close > m1Candle.open + s.m1.features.atr * 0.5) ||
+      (direction === 'SELL' && m1Candle.close < m1Candle.open - s.m1.features.atr * 0.5);
     if (isStrongMomentum) { momentumScore += 25; reasons.push(`✔ Momentum Counter-Trend Ekstrem (+25)`); }
     else { momentumScore += 10; }
 
-    const isBOSMatch = (direction === 'BUY' && (s.m1.structure.lastBOS === 'BULLISH_BOS' || s.m5.structure.lastBOS === 'BULLISH_BOS')) ||
-                       (direction === 'SELL' && (s.m1.structure.lastBOS === 'BEARISH_BOS' || s.m5.structure.lastBOS === 'BEARISH_BOS'));
-    const isCHoCHMatch = (direction === 'BUY' && (s.m1.structure.lastCHoCH === 'BULLISH_CHOCH' || s.m5.structure.lastCHoCH === 'BULLISH_CHOCH')) ||
-                         (direction === 'SELL' && (s.m1.structure.lastCHoCH === 'BEARISH_CHOCH' || s.m5.structure.lastCHoCH === 'BEARISH_CHOCH'));
-    if (isBOSMatch || isCHoCHMatch) { structureScore += 25; reasons.push(`✔ Structure Shift / BOS / CHoCH mendukung (+25)`); }
+    const isBOSMatch =
+      (direction === 'BUY' && (s.m1.structure.lastBOS === 'BULLISH_BOS' || s.m5.structure.lastBOS === 'BULLISH_BOS')) ||
+      (direction === 'SELL' && (s.m1.structure.lastBOS === 'BEARISH_BOS' || s.m5.structure.lastBOS === 'BEARISH_BOS'));
+    const isCHoCHMatch =
+      (direction === 'BUY' && (s.m1.structure.lastCHoCH === 'BULLISH_CHOCH' || s.m5.structure.lastCHoCH === 'BULLISH_CHOCH')) ||
+      (direction === 'SELL' && (s.m1.structure.lastCHoCH === 'BEARISH_CHOCH' || s.m5.structure.lastCHoCH === 'BEARISH_CHOCH'));
+    if (isBOSMatch || isCHoCHMatch) { structureScore += 25; reasons.push(`✔ BOS/CHoCH mendukung (+25)`); }
 
-    const isEmaDisplaced = (direction === 'BUY' && s.currentPrice > s.m1.features.ema20 && s.currentPrice > s.m5.features.ema20) ||
-                           (direction === 'SELL' && s.currentPrice < s.m1.features.ema20 && s.currentPrice < s.m5.features.ema20);
-    if (isEmaDisplaced) { emaDisplacementScore += 15; reasons.push(`✔ Displacement Harga dari EMA20 (+15)`); }
+    const isEmaDisplaced =
+      (direction === 'BUY' && s.currentPrice > s.m1.features.ema20 && s.currentPrice > s.m5.features.ema20) ||
+      (direction === 'SELL' && s.currentPrice < s.m1.features.ema20 && s.currentPrice < s.m5.features.ema20);
+    if (isEmaDisplaced) { emaDisplacementScore += 15; reasons.push(`✔ Displacement dari EMA20 (+15)`); }
 
     if ((direction === 'BUY' && s.m1.features.macd.histogram > 0) || (direction === 'SELL' && s.m1.features.macd.histogram < 0)) {
-       macdScore += 10; reasons.push(`✔ MACD Histogram sejalan (+10)`);
+      macdScore += 10; reasons.push(`✔ MACD sejalan (+10)`);
     }
 
     if (s.m5.features.atr > 1.5 && s.m5.features.atr <= 4.0) {
-       volatilityScore += 10; reasons.push(`✔ Volatilitas ideal Counter-Trend (+10)`);
+      volatilityScore += 10; reasons.push(`✔ Volatilitas ideal (+10)`);
     }
 
     if ((direction === 'BUY' && s.m1.structure.liquiditySweep === 'SWEEP_LOW') || (direction === 'SELL' && s.m1.structure.liquiditySweep === 'SWEEP_HIGH')) {
-       liquidityScore += 10; reasons.push(`✔ Konfirmasi Liquidity Sweep (+10)`);
+      liquidityScore += 10; reasons.push(`✔ Liquidity Sweep (+10)`);
     }
 
     const rawScore = momentumScore + structureScore + emaDisplacementScore + macdScore + volatilityScore + liquidityScore + riskRewardScore;
-    
-    // Map scores to breakdown (reuse fields appropriately)
     return this.finalizeEvaluation(direction, Math.min(100, rawScore), s, reasons, warnings, 'COUNTER_TREND', {
-      trendScore: 0, structureScore, momentumScore: momentumScore + macdScore, 
+      trendScore: 0, structureScore, momentumScore: momentumScore + macdScore,
       liquidityScore, volatilityScore, timingScore: emaDisplacementScore, riskRewardScore
     });
   }
 
+  // ─── Finalize: SL/TP + Tier ──────────────────────────────────────────────────
   private finalizeEvaluation(
-    direction: 'BUY' | 'SELL', totalScore: number, s: LiveMarketSnapshot, reasons: string[], warnings: string[], mode: 'NORMAL' | 'COUNTER_TREND', breakdown: any
+    direction: 'BUY' | 'SELL', totalScore: number, s: LiveMarketSnapshot,
+    reasons: string[], warnings: string[], mode: EvalMode, breakdown: any
   ): ConfidenceEvaluation {
     const atrM5 = s.m5.features.atr;
     const atrPips = Math.round(atrM5 * 10);
     const atrBasedSL = Math.round(atrPips * 1.2);
-    
-    let swingDistPrice = 0;
-    if (direction === 'BUY') {
-      swingDistPrice = s.currentPrice - s.m5.structure.swingLow;
-    } else {
-      swingDistPrice = s.m5.structure.swingHigh - s.currentPrice;
-    }
+
+    let swingDistPrice = direction === 'BUY'
+      ? s.currentPrice - s.m5.structure.swingLow
+      : s.m5.structure.swingHigh - s.currentPrice;
     const swingDistPips = Math.max(0, Math.round(swingDistPrice * 10));
 
     let slPips = Math.max(atrBasedSL, swingDistPips);
     slPips = Math.min(slPips, 25);
     slPips = Math.max(slPips, 10);
-    
-    reasons.push(`🛡 Dynamic SL: ${slPips} pips (Base ATR/Swing)`);
+    reasons.push(`🛡 Dynamic SL: ${slPips} pips`);
 
     const targetTpPips = [
-      Math.round(slPips * 1.0), Math.round(slPips * 1.2), Math.round(slPips * 1.5), 
-      Math.round(slPips * 2.0), Math.round(slPips * 2.5)  
+      Math.round(slPips * 1.0), Math.round(slPips * 1.2), Math.round(slPips * 1.5),
+      Math.round(slPips * 2.0), Math.round(slPips * 2.5)
     ];
+
+    const thresholdBase = mode === 'NORMAL' ? 55 : mode === 'CRASH' ? 60 : 75;
+    const thresholdMid  = mode === 'NORMAL' ? 65 : mode === 'CRASH' ? 72 : 85;
+    const thresholdTop  = mode === 'NORMAL' ? 80 : mode === 'CRASH' ? 85 : 95;
 
     let tier: SignalTier = 'WAIT';
     let maxReEntryCycles = 0;
-    
-    const thresholdBase = mode === 'NORMAL' ? 55 : 75;
-    const thresholdMid = mode === 'NORMAL' ? 65 : 85;
-    const thresholdTop = mode === 'NORMAL' ? 80 : 95;
-
-    if (totalScore >= thresholdTop) {
-      tier = 'SUPER_TREND'; maxReEntryCycles = 3;
-    } else if (totalScore >= thresholdMid) {
-      tier = 'MOMENTUM_SCALP'; maxReEntryCycles = 1;
-    } else if (totalScore >= thresholdBase) {
-      tier = 'QUICK_SCALP'; maxReEntryCycles = 0;
-    }
+    if (totalScore >= thresholdTop) { tier = 'SUPER_TREND'; maxReEntryCycles = 3; }
+    else if (totalScore >= thresholdMid) { tier = 'MOMENTUM_SCALP'; maxReEntryCycles = 1; }
+    else if (totalScore >= thresholdBase) { tier = 'QUICK_SCALP'; maxReEntryCycles = 0; }
 
     return {
       direction: totalScore >= thresholdBase ? direction : 'WAIT',
       totalScore,
       tier,
+      mode,
       maxReEntryCycles,
       targetTpPips,
       slPips,
       breakdown,
       reasons,
       warnings,
+    };
+  }
+
+  private createWaitEval(reason: string): ConfidenceEvaluation {
+    return {
+      direction: 'WAIT',
+      totalScore: 0,
+      tier: 'WAIT',
+      mode: 'NORMAL',
+      maxReEntryCycles: 0,
+      targetTpPips: [10, 10, 10, 10, 10],
+      slPips: 10,
+      breakdown: { trendScore: 0, structureScore: 0, momentumScore: 0, liquidityScore: 0, volatilityScore: 0, timingScore: 0, riskRewardScore: 0 },
+      reasons: [reason],
+      warnings: [],
     };
   }
 }

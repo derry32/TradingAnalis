@@ -7,6 +7,16 @@ Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Anal
 - **Anti-Falling Knife & Shooting Rocket Filter:** Pelindung (*VETO guard*) untuk mencegah AI menangkap "pisau jatuh". Walaupun tren makro (H1/M15) sedang kuat (misal: Bullish), jika momentum jangka pendek (M1/M5) sedang dibanting berlawanan (harga jatuh di bawah EMA20 dan MACD merah tajam), AI akan menjatuhkan penalti ekstrim (-50 poin) untuk menahan sinyal hingga badai mikro mereda.
 - **Smart Fakeout Detection (Pre-News):** Logika pencegahan jebakan pancingan Ritail (Classic Fakeout / Buy The Rumor, Sell The News) menjelang rilis berita *High-Impact*. Jika teknikal terindikasi dipompa (*pump*) berlawanan dengan arah makro sesaat sebelum berita keluar, AI akan memprioritaskan fundamental makro dan mengabaikan jebakan teknikal.
 - **100% Binary Pre-News Execution:** Sinyal `WAIT` telah dihapus sepenuhnya dari mesin *Pre-News*. Kini AI akan mengeksekusi secara biner (BUY atau SELL) pada momen *News* dengan batas toleransi probabilitas >50%.
+## [1.9.3] - 2026-08-14
+### Ditambahkan
+- **Fast Crash Regime Detector:** Menambahkan fungsi `detectCrashRegime()` yang murni membaca M1+M5 (tidak bergantung H1/M15 yang lambat). Crash Mode aktif jika minimal 3 dari 4 kondisi M1 terpenuhi: Price breakdown dual EMA, MACD acceleration, M1 BOS, dan displacement candle kuat.
+- **Crash Mode Scoring:** Saat Crash Mode aktif, engine menggunakan bobot scoring yang berbeda — H1 bias dihilangkan, M1 structure & momentum dinaikkan. M1 BOS diterima sebagai early confirmation tanpa menunggu M5 BOS. Threshold 60 (lebih ketat dari Normal 55, tapi jauh lebih mudah dari Counter-Trend 75).
+- **RSI Context-Aware:** RSI < 32 tidak lagi otomatis memberi skor 0 saat Crash Mode. Sebaliknya, RSI oversold ekstrem dianggap sebagai konfirmasi bearish momentum kuat (+5).
+- **Decision Trace Log:** Setiap M1 evaluation kini mencetak log `[CE] Dir=X Score=X Mode=X Crash={B:X/4 U:X/4}` untuk memudahkan diagnosis tanpa harus menebak-nebak.
+
+### Diperbaiki  
+- **Extension Guard dikembalikan ke 2.0x ATR:** Perubahan ke 4.0x pada v1.9.2 terbukti prematur. Root cause sebenarnya ada di scoring architecture, bukan di guard threshold.
+
 ## [1.9.2] - 2026-08-14
 ### Diperbaiki
 - **Extension Guard Dilonggarkan (2.0x → 4.0x ATR):** Batas pelindung *anti-chasing* yang sebelumnya terlalu ketat (2.0x ATR) kini dinaikkan menjadi 4.0x ATR. Hal ini memungkinkan robot berani menembak SELL saat *Crash* atau *Breakout* momentum yang sangat masif, di mana harga terjun cepat jauh melampaui EMA20 sebelum robot sempat masuk.
