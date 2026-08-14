@@ -16,3 +16,10 @@ dist/
 readme.md
 check_candles.js
 test_timeout.js
+
+# Temporary debug scripts
+.exp/
+backend_logs_today.txt
+backend/test_debug.ts
+backend/test_payload.ts
+
