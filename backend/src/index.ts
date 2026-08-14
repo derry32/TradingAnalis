@@ -297,7 +297,7 @@ marketData.setOnM1Closed((data) => {
         estimatedTpTime: '1-3 Menit',
         timestamp: new Date().toISOString(),
         reason: burst.reasons.join('\n'),
-        strategy: 'HYPER_SCALPER',
+        strategy: 'HYPER_SCALPER (Analisis Candle M1)',
         entryZone: `${burst.entryZoneMin} - ${burst.entryZoneMax}`,
       };
 
@@ -390,11 +390,13 @@ marketData.setOnM5Closed((data) => {
               }
           });
           
-          // telegramBot.sendSignal(signal); // Dihapus karena menyiarkan sinyal usang
+          // Tambahkan label Analisis Candle M5 untuk membedakan dengan M1 di Telegram
+          const displaySignal = { ...signal, strategy: `${signal.strategy} (Analisis Candle M5)` };
+          telegramBot.sendSignal(displaySignal);
           
-          // CRITICAL FIX: Do NOT send this legacy signal to mt5Bridge! 
-          // MT5 Bridge is now exclusively powered by the high-frequency M1 ConfidenceEngine Burst signals.
-          // mt5Bridge.setLatestSignal(signal as any);
+          // CRITICAL FIX REVERTED: Mengirim kembali sinyal M5 ke MT5 sesuai permintaan user
+          // MT5 Bridge sekarang menerima kedua sinyal (M1 Burst dan M5 Legacy)
+          mt5Bridge.setLatestSignal(signal as any);
         } else if (signal.type === 'WAIT') {
           console.log(`[Agent Derry][${strategy}] Decision: WAIT. Reason: ${signal.reason.split('\n')[0]}`);
         }
