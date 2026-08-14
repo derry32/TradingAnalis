@@ -274,10 +274,13 @@ export class SignalGenerator {
 
     // 7. Evaluasi Arah Trade & Dynamic Stop Loss
     let possibleDirections: ('BUY' | 'SELL')[] = [];
-    if (analysis.patternM5.includes('BULL') || analysis.patternM5 === 'PIN_BAR' || analysis.marketStructureM15 === 'BOS_BULL' || analysis.marketStructureM15 === 'CHOCH_BULL' || analysis.marketStructureM15 === 'FAKE_BREAKOUT_BEAR' || (analysis.fibonacciZoneM15 === 'GOLDEN_BULL' && hasCandleTrigger) || analysis.trendM15 === 'BULLISH') {
+    const strongBearishPA = ['THREE_BLACK_CROWS', 'MARUBOZU_BEAR', 'BEARISH_ENGULFING'].includes(analysis.patternM5);
+    const strongBullishPA = ['THREE_WHITE_SOLDIERS', 'MARUBOZU_BULL', 'BULLISH_ENGULFING'].includes(analysis.patternM5);
+
+    if (!strongBearishPA && (analysis.patternM5.includes('BULL') || analysis.patternM5 === 'PIN_BAR' || analysis.marketStructureM15 === 'BOS_BULL' || analysis.marketStructureM15 === 'CHOCH_BULL' || analysis.marketStructureM15 === 'FAKE_BREAKOUT_BEAR' || (analysis.fibonacciZoneM15 === 'GOLDEN_BULL' && hasCandleTrigger) || analysis.trendM15 === 'BULLISH')) {
       possibleDirections.push('BUY');
     }
-    if (analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'PIN_BAR' || analysis.marketStructureM15 === 'BOS_BEAR' || analysis.marketStructureM15 === 'CHOCH_BEAR' || analysis.marketStructureM15 === 'FAKE_BREAKOUT_BULL' || (analysis.fibonacciZoneM15 === 'GOLDEN_BEAR' && hasCandleTrigger) || analysis.trendM15 === 'BEARISH') {
+    if (!strongBullishPA && (analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'PIN_BAR' || analysis.marketStructureM15 === 'BOS_BEAR' || analysis.marketStructureM15 === 'CHOCH_BEAR' || analysis.marketStructureM15 === 'FAKE_BREAKOUT_BULL' || (analysis.fibonacciZoneM15 === 'GOLDEN_BEAR' && hasCandleTrigger) || analysis.trendM15 === 'BEARISH')) {
       possibleDirections.push('SELL');
     }
 
