@@ -69,7 +69,7 @@ export class ConfidenceEngine {
         threshold = 60; // Crash Mode threshold
       } else if (isMacroBuy) {
         evalResult = this.calculateNormalScore('BUY', snapshot);
-        threshold = 55;
+        threshold = 65;
       } else {
         evalResult = this.calculateCounterTrendScore('BUY', snapshot);
         threshold = 75;
@@ -94,7 +94,7 @@ export class ConfidenceEngine {
         threshold = 60; // Crash Mode threshold (lebih ketat dari normal 55, tapi tidak seketat counter-trend 75)
       } else if (isMacroSell) {
         evalResult = this.calculateNormalScore('SELL', snapshot);
-        threshold = 55;
+        threshold = 65;
       } else {
         evalResult = this.calculateCounterTrendScore('SELL', snapshot);
         threshold = 75;
