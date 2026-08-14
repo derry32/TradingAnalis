@@ -441,11 +441,14 @@ export class SignalGenerator {
     }
 
     // 9. Strict Threshold Filter: Skor < 65 LANGSUNG WAIT (Blokir Sinyal Lemah!)
-    if (!bestTrade || bestTrade.score < 65) {
+    if (!bestTrade || bestTrade.score < (isNewsMode ? 60 : 65)) {
       if (bestTrade) {
-        return this.createWaitSignal(`Skor probabilitas (${bestTrade.score}/100) di bawah ambang batas minimal kelulusan (Minimal 65 Poin).`, activeStrategy);
+         console.log(`[M5 DEBUG] Setup ${bestTrade.dir} REJECTED. Score: ${bestTrade.score} < 65. Reasons: ${JSON.stringify(bestTrade.reasons)} Warnings: ${JSON.stringify(bestTrade.warnings)}`);
+         return this.createWaitSignal(`Skor probabilitas (${bestTrade.score}/100) di bawah ambang batas minimal kelulusan (Minimal 65 Poin).`, activeStrategy);
+      } else {
+         console.log(`[M5 DEBUG] All setups REJECTED. Last reason: ${lastRejectionReason}`);
+         return this.createWaitSignal(lastRejectionReason, activeStrategy);
       }
-      return this.createWaitSignal(lastRejectionReason, activeStrategy);
     }
 
     const { dir: tradeType, score, reasons, warnings, stopLoss, tp1, tp2, setupType } = bestTrade;
