@@ -34,6 +34,17 @@ interface CrashRegime {
 export class ConfidenceEngine {
 
   public evaluate(snapshot: LiveMarketSnapshot): ConfidenceEvaluation {
+    const now = new Date();
+    const currentHourUTC = now.getUTCHours();
+    const currentDayUTC = now.getUTCDay();
+
+    // 0. Weekend Guard (Sabtu 04:00 WIB s/d Senin 04:00 WIB)
+    // 04:00 WIB = 21:00 UTC (hari sebelumnya)
+    const isWeekend = (currentDayUTC === 5 && currentHourUTC >= 21) || (currentDayUTC === 6) || (currentDayUTC === 0 && currentHourUTC < 21);
+    if (isWeekend) {
+      return this.createWaitEval("Market sedang libur/tutup di akhir pekan.");
+    }
+
     const atrM5 = snapshot.m5.features.atr;
 
     // GATE 1: Extreme Volatility
