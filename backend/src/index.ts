@@ -14,6 +14,7 @@ import { confidenceEngine } from './services/confidenceEngine';
 import { signalStateMachine, BurstSignalPayload } from './services/signalStateMachine';
 import { preNewsEngine } from './services/preNewsEngine';
 import { riskEngine } from './services/riskEngine';
+import { pendingOrderEngine } from './services/pendingOrderEngine';
 
 const app = express();
 app.use(cors());
@@ -232,10 +233,53 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
   return trade;
 }
 
+// Wire pendingOrderEngine callbacks
+pendingOrderEngine.onExecuteMarketOrder = async (ps) => {
+  try {
+     const signal = ps.signal;
+     signal.executionType = '⚡ INSTANT ENTRY (Revalidated Market Order)';
+     signal.entryPrice = ps.executionSnapshot?.requestedPrice || signal.entryPrice;
+     
+     const score = signal.confidenceScore;
+     const newTradeState: TradeState = { 
+       id: signal.id, type: signal.type as 'BUY' | 'SELL', 
+       entryPrice: signal.entryPrice, stopLoss: signal.stopLoss, takeProfit1: signal.takeProfit1, 
+       timeMs: Date.now(), status: 'ACTIVE', score 
+     };
+     
+     if (signal.strategy.includes('SNIPER')) activeTradeSniper = newTradeState;
+     else activeTradeScalper = newTradeState;
+     
+     insertSignal(signal).then(dbId => {
+         if (dbId) {
+             insertSystemLog('INFO', 'AI_Agent', `Sinyal REVALIDASI SUKSES: ${signal.type} di ${signal.entryPrice}`, { id: signal.id, strategy: signal.strategy });
+             if (signal.strategy.includes('SNIPER') && activeTradeSniper && activeTradeSniper.id === signal.id) {
+                 activeTradeSniper.dbId = dbId;
+             } else if (signal.strategy.includes('SCALPER') && activeTradeScalper && activeTradeScalper.id === signal.id) {
+                 activeTradeScalper.dbId = dbId;
+             }
+         }
+     });
+
+     const displaySignal = { ...signal, strategy: `${signal.strategy} (EXECUTED - Validasi Ulang Sukses)` };
+     telegramBot.sendSignal(displaySignal);
+     mt5Bridge.setLatestSignal(signal as any);
+     return true;
+  } catch (err) {
+     return false;
+  }
+};
+
+pendingOrderEngine.onSignalCancelled = (ps, reason) => {
+  telegramBot.sendMessage(`❌ [CANCELLED] Signal ${ps.signal.id} dibatalkan.\nAlasan: ${reason}`);
+};
+
 // 2. Wire Market Data
 marketData.setOnM1Closed((data) => {
   if (data.m1.length < 10 || data.m5.length < 10) return;
   const currentPrice = data.currentM1?.close || data.m5[data.m5.length - 1].close;
+
+  pendingOrderEngine.onTick(currentPrice);
 
   // 1. Fast Incremental Feature Extraction (<15ms)
   const snapshot = featureEngine.generateSnapshot(
@@ -316,7 +360,7 @@ marketData.setOnM1Closed((data) => {
   }
 });
 
-marketData.setOnM5Closed((data) => {
+marketData.setOnM5Closed(async (data) => {
   // Cegah spam sinyal dari data masa lalu saat server baru menyala (restart)
   // currentM5 adalah candle yang BARU DITUTUP. Jika usianya lebih dari 15 menit lalu, abaikan.
   const candleAgeMs = Date.now() - data.currentM5.time;
@@ -324,6 +368,8 @@ marketData.setOnM5Closed((data) => {
 
   const techResult = technical.analyze(data);
   latestTechResult = techResult;
+  
+  await pendingOrderEngine.onM5Closed(data.currentM5.close, techResult);
   
   activeTradeSniper = updateTradeState(activeTradeSniper, data.currentM5, 'SNIPER');
   activeTradeScalper = updateTradeState(activeTradeScalper, data.currentM5, 'HYPER_SCALPER');
@@ -364,32 +410,38 @@ marketData.setOnM5Closed((data) => {
              continue;
           }
 
-          const newTradeState: TradeState = { 
-            id: signal.id, type: signal.type as 'BUY' | 'SELL', 
-            entryPrice: signal.entryPrice, stopLoss: signal.stopLoss, takeProfit1: signal.takeProfit1, 
-            timeMs: now, status: 'ACTIVE', score 
-          };
-          if (strategy === 'SNIPER') activeTradeSniper = newTradeState;
-          else activeTradeScalper = newTradeState;
-          
-          insertSignal(signal).then(dbId => {
-              if (dbId) {
-                  insertSystemLog('INFO', 'AI_Agent', `Sinyal baru: ${signal.type} di ${signal.entryPrice}`, { id: signal.id, strategy: signal.strategy });
-                  if (strategy === 'SNIPER' && activeTradeSniper && activeTradeSniper.id === signal.id) {
-                      activeTradeSniper.dbId = dbId;
-                  } else if (strategy === 'HYPER_SCALPER' && activeTradeScalper && activeTradeScalper.id === signal.id) {
-                      activeTradeScalper.dbId = dbId;
+          if (signal.executionType?.includes('PULLBACK')) {
+              pendingOrderEngine.add(signal, techResult);
+              const displaySignal = { ...signal, strategy: `${signal.strategy} (ARMED - Menunggu Zona)` };
+              telegramBot.sendSignal(displaySignal);
+          } else {
+              const newTradeState: TradeState = { 
+                id: signal.id, type: signal.type as 'BUY' | 'SELL', 
+                entryPrice: signal.entryPrice, stopLoss: signal.stopLoss, takeProfit1: signal.takeProfit1, 
+                timeMs: now, status: 'ACTIVE', score 
+              };
+              if (strategy === 'SNIPER') activeTradeSniper = newTradeState;
+              else activeTradeScalper = newTradeState;
+              
+              insertSignal(signal).then(dbId => {
+                  if (dbId) {
+                      insertSystemLog('INFO', 'AI_Agent', `Sinyal baru: ${signal.type} di ${signal.entryPrice}`, { id: signal.id, strategy: signal.strategy });
+                      if (strategy === 'SNIPER' && activeTradeSniper && activeTradeSniper.id === signal.id) {
+                          activeTradeSniper.dbId = dbId;
+                      } else if (strategy === 'HYPER_SCALPER' && activeTradeScalper && activeTradeScalper.id === signal.id) {
+                          activeTradeScalper.dbId = dbId;
+                      }
                   }
-              }
-          });
-          
-          // Tambahkan label Analisis Candle M5 untuk membedakan dengan M1 di Telegram
-          const displaySignal = { ...signal, strategy: `${signal.strategy} (Analisis Candle M5)` };
-          telegramBot.sendSignal(displaySignal);
-          
-          // CRITICAL FIX REVERTED: Mengirim kembali sinyal M5 ke MT5 sesuai permintaan user
-          // MT5 Bridge sekarang menerima kedua sinyal (M1 Burst dan M5 Legacy)
-          mt5Bridge.setLatestSignal(signal as any);
+              });
+              
+              // Tambahkan label Analisis Candle M5 untuk membedakan dengan M1 di Telegram
+              const displaySignal = { ...signal, strategy: `${signal.strategy} (Analisis Candle M5)` };
+              telegramBot.sendSignal(displaySignal);
+              
+              // CRITICAL FIX REVERTED: Mengirim kembali sinyal M5 ke MT5 sesuai permintaan user
+              // MT5 Bridge sekarang menerima kedua sinyal (M1 Burst dan M5 Legacy)
+              mt5Bridge.setLatestSignal(signal as any);
+          }
         } else if (signal.type === 'WAIT') {
           console.log(`[Agent Derry][${strategy}] Decision: WAIT. Reason: ${signal.reason.split('\n')[0]}`);
         }

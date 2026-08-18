@@ -22,6 +22,9 @@ export interface Signal {
   reason: string;
   strategy: string;
   entryZone: string;
+  entryZoneMin?: number;
+  entryZoneMax?: number;
+  entryZoneType?: string;
 }
 
 export class SignalGenerator {
@@ -95,29 +98,18 @@ export class SignalGenerator {
     const m15Range = analysis.closestSwingHighM5 - analysis.closestSwingLowM5;
     if (m15Range > 0) {
       const pricePosition = (currentPrice - analysis.closestSwingLowM5) / m15Range; 
-      const isExtremeBreakout = analysis.strongVolumeM5 || ['MARUBOZU_BULL', 'MARUBOZU_BEAR', 'THREE_WHITE_SOLDIERS', 'THREE_BLACK_CROWS'].includes(analysis.patternM5);
       
       if (direction === 'BUY') {
         if (pricePosition > 0.8) {
-          if (isExtremeBreakout) {
-            score -= 10;
-            warnings.push(`⚠️ Extreme Premium Zone (>80%) tapi Breakout Kuat: -10 Poin`);
-          } else {
-            console.log(`[M5 DEBUG] VETO BUY: Extreme Premium Zone. Pos=${pricePosition}`); 
-            return { score: 0, reasons: [], warnings: ['VETO: Extreme Premium Zone (>80%). Blokir BUY FOMO.'] };
-          }
+          console.log(`[M5 DEBUG] VETO BUY: Extreme Premium Zone. Pos=${pricePosition}`); 
+          return { score: 0, reasons: [], warnings: ['VETO: Extreme Premium Zone (>80%). Blokir BUY FOMO.'] };
         }
         else if (pricePosition > 0.6) { score -= 10; warnings.push(`⚠️ Premium Zone (>60%): -10 Poin`); }
         else if (pricePosition < 0.4) { score += 10; reasons.push(`✔ Discount Zone (<40%): +10 Poin`); }
       } else {
         if (pricePosition < 0.2) { 
-          if (isExtremeBreakout) {
-            score -= 10;
-            warnings.push(`⚠️ Extreme Discount Zone (<20%) tapi Breakout Kuat: -10 Poin`);
-          } else {
-            console.log(`[M5 DEBUG] VETO SELL: Extreme Discount Zone. Pos=${pricePosition}`); 
-            return { score: 0, reasons: [], warnings: ['VETO: Extreme Discount Zone (<20%). Blokir SELL FOMO.'] };
-          }
+          console.log(`[M5 DEBUG] VETO SELL: Extreme Discount Zone. Pos=${pricePosition}`); 
+          return { score: 0, reasons: [], warnings: ['VETO: Extreme Discount Zone (<20%). Blokir SELL FOMO.'] };
         }
         else if (pricePosition < 0.4) { score -= 10; warnings.push(`⚠️ Discount Zone (<40%): -10 Poin`); }
         else if (pricePosition > 0.6) { score += 10; reasons.push(`✔ Premium Zone (>60%): +10 Poin`); }
@@ -365,29 +357,23 @@ export class SignalGenerator {
 
     for (const dir of possibleDirections) {
       // Dynamic Stop Loss Calculation: Swing Point + ATR Buffer dengan Smart Cap
+      // Dynamic Stop Loss Calculation: Swing Point + ATR Buffer
       const atrBuffer = Math.max(0.6, atr * 0.5);
       let calculatedSL = 0;
-      const defaultRisk = activeStrategy === 'HYPER_SCALPER'
-        ? Math.max(1.8, Math.min(3.5, atr * 1.2))
-        : Math.max(2.0, Math.min(4.5, atr * 1.5));
 
       if (dir === 'BUY') {
         if (analysis.closestSwingLowM5 > 0 && analysis.closestSwingLowM5 < currentPrice) {
           calculatedSL = analysis.closestSwingLowM5 - atrBuffer;
-          if (currentPrice - calculatedSL > 4.5) {
-            calculatedSL = currentPrice - defaultRisk;
-          }
         } else {
+          const defaultRisk = activeStrategy === 'HYPER_SCALPER' ? Math.max(1.8, Math.min(3.5, atr * 1.2)) : Math.max(2.0, Math.min(4.5, atr * 1.5));
           calculatedSL = currentPrice - defaultRisk;
         }
         if (calculatedSL >= currentPrice - 1.5) calculatedSL = currentPrice - 1.5; // Jarak minimal $1.5 (15 pips)
       } else {
         if (analysis.closestSwingHighM5 > 0 && analysis.closestSwingHighM5 > currentPrice) {
           calculatedSL = analysis.closestSwingHighM5 + atrBuffer;
-          if (calculatedSL - currentPrice > 4.5) {
-            calculatedSL = currentPrice + defaultRisk;
-          }
         } else {
+          const defaultRisk = activeStrategy === 'HYPER_SCALPER' ? Math.max(1.8, Math.min(3.5, atr * 1.2)) : Math.max(2.0, Math.min(4.5, atr * 1.5));
           calculatedSL = currentPrice + defaultRisk;
         }
         if (calculatedSL <= currentPrice + 1.5) calculatedSL = currentPrice + 1.5; // Jarak minimal $1.5 (15 pips)
@@ -405,30 +391,32 @@ export class SignalGenerator {
         continue;
       }
 
-      // 8. 3-Tier Room to Target Calculation dengan Market Phase Intelligence
-      let targetPrice = 0;
-      if (analysis.marketPhase === 'RANGE' || analysis.structureH1 === 'EQUAL_RANGE') {
-        targetPrice = dir === 'BUY' ? analysis.nearestResistanceH1 : analysis.nearestSupportH1;
+      // 8. True Room to Target Calculation
+      let maxTargetPrice = 0;
+      if (dir === 'BUY') {
+         if (!analysis.nearestResistanceH1 || analysis.nearestResistanceH1 <= currentPrice + 0.5) {
+             lastRejectionReason = `Target resistance H1 tidak teridentifikasi atau terlalu dekat. Ruang gerak tidak valid.`;
+             continue;
+         }
+         maxTargetPrice = analysis.nearestResistanceH1;
       } else {
-        const rrMultiplier = activeStrategy === 'HYPER_SCALPER' ? 1.5 : 2.0;
-        if (dir === 'BUY') {
-          targetPrice = Math.max(analysis.nextResistanceH1, currentPrice + (riskDist * rrMultiplier));
-        } else {
-          targetPrice = Math.min(analysis.nextSupportH1, currentPrice - (riskDist * rrMultiplier));
-        }
+         if (!analysis.nearestSupportH1 || analysis.nearestSupportH1 >= currentPrice - 0.5) {
+             lastRejectionReason = `Target support H1 tidak teridentifikasi atau terlalu dekat. Ruang gerak tidak valid.`;
+             continue;
+         }
+         maxTargetPrice = analysis.nearestSupportH1;
       }
-
-      const roomDist = Math.abs(targetPrice - currentPrice);
-      const roomRatio = riskDist > 0 ? roomDist / riskDist : 0;
-
-      // Tier 3: Room < 1.3x SL -> Reject / WAIT
-      if (roomRatio < 1.3) {
-        lastRejectionReason = `Ruang gerak ke target terbatas (RR ${roomRatio.toFixed(1)}x < 1.3x). Tertahan level S/R terdekat.`;
-        continue; 
+      
+      const availableRoom = Math.abs(maxTargetPrice - currentPrice);
+      const trueRR = riskDist > 0 ? availableRoom / riskDist : 0;
+      
+      if (trueRR < 1.3) {
+        lastRejectionReason = `Ruang gerak tertahan S/R nyata (True RR ${trueRR.toFixed(1)}x < 1.3x). Hindari trading menabrak dinding.`;
+        continue;
       }
 
       let roomPenalty = 0;
-      if (roomRatio < 1.6) {
+      if (trueRR < 1.6) {
         roomPenalty = 6;
       }
 
@@ -442,7 +430,9 @@ export class SignalGenerator {
       const tp2Ratio = activeStrategy === 'HYPER_SCALPER' ? 2.0 : 2.5;
 
       const tp1 = dir === 'BUY' ? currentPrice + (riskDist * tp1Ratio) : currentPrice - (riskDist * tp1Ratio);
-      const tp2 = dir === 'BUY' ? currentPrice + (riskDist * tp2Ratio) : currentPrice - (riskDist * tp2Ratio);
+      let tp2 = dir === 'BUY' ? currentPrice + (riskDist * tp2Ratio) : currentPrice - (riskDist * tp2Ratio);
+      if (dir === 'BUY' && tp2 > maxTargetPrice) tp2 = maxTargetPrice;
+      if (dir === 'SELL' && tp2 < maxTargetPrice) tp2 = maxTargetPrice;
 
       if (!bestTrade || scoreResult.score > bestTrade.score) {
         bestTrade = {
@@ -493,53 +483,64 @@ export class SignalGenerator {
       : '⏳ PULLBACK / LIMIT ENTRY (Wait for Zone)';
 
     let entryZoneStr = '';
+    let entryZoneMin = 0;
+    let entryZoneMax = 0;
+    let entryZoneType = '';
+
     const candleRange = analysis.triggerCandleM5 ? Math.abs(analysis.triggerCandleM5.high - analysis.triggerCandleM5.low) : 0;
 
     if (tradeType === 'BUY') {
       if (isInstantMomentum) {
-        const zoneMin = (currentPrice - Math.min(0.8, atr * 0.25)).toFixed(2);
-        const zoneMax = currentPrice.toFixed(2);
-        entryZoneStr = `${zoneMin} - ${zoneMax} (Market)`;
+        entryZoneMin = currentPrice - Math.min(0.8, atr * 0.25);
+        entryZoneMax = currentPrice;
+        entryZoneType = 'MARKET';
       } else {
         // Pullback / Retracement Mode: Utamakan Bullish FVG atau 50% Candle Retrace
         if (analysis.fvgM5.type === 'BULLISH' && analysis.fvgM5.bottom > 0 && analysis.fvgM5.top <= currentPrice + 0.5) {
-          entryZoneStr = `${analysis.fvgM5.bottom.toFixed(2)} - ${analysis.fvgM5.top.toFixed(2)} (FVG Zone)`;
+          entryZoneMin = analysis.fvgM5.bottom;
+          entryZoneMax = analysis.fvgM5.top;
+          entryZoneType = 'FVG';
         } else if (candleRange >= 1.5) {
-          const discountTop = (currentPrice - (candleRange * 0.2)).toFixed(2);
-          const discountBottom = (currentPrice - (candleRange * 0.5)).toFixed(2);
-          entryZoneStr = `${discountBottom} - ${discountTop} (50% Retrace)`;
+          entryZoneMax = currentPrice - (candleRange * 0.2);
+          entryZoneMin = currentPrice - (candleRange * 0.5);
+          entryZoneType = 'RETRACE';
         } else if (analysis.isAtSupportH1 && analysis.nearestSupportH1 < currentPrice) {
-          const supMax = (analysis.nearestSupportH1 + Math.min(1.5, atr * 0.4)).toFixed(2);
-          entryZoneStr = `${analysis.nearestSupportH1.toFixed(2)} - ${supMax} (Support Base)`;
+          entryZoneMax = analysis.nearestSupportH1 + Math.min(1.5, atr * 0.4);
+          entryZoneMin = analysis.nearestSupportH1;
+          entryZoneType = 'SUPPORT';
         } else {
-          const zoneMin = (currentPrice - Math.min(2.0, Math.max(0.8, atr * 0.5))).toFixed(2);
-          const zoneMax = (currentPrice - 0.3).toFixed(2);
-          entryZoneStr = `${zoneMin} - ${zoneMax} (Discount Zone)`;
+          entryZoneMin = currentPrice - Math.min(2.0, Math.max(0.8, atr * 0.5));
+          entryZoneMax = currentPrice - 0.3;
+          entryZoneType = 'DISCOUNT';
         }
       }
     } else {
       if (isInstantMomentum) {
-        const zoneMin = currentPrice.toFixed(2);
-        const zoneMax = (currentPrice + Math.min(0.8, atr * 0.25)).toFixed(2);
-        entryZoneStr = `${zoneMin} - ${zoneMax} (Market)`;
+        entryZoneMin = currentPrice;
+        entryZoneMax = currentPrice + Math.min(0.8, atr * 0.25);
+        entryZoneType = 'MARKET';
       } else {
         // Bearish Pullback / Retracement Mode: Utamakan Bearish FVG atau 50% Candle Retrace
         if (analysis.fvgM5.type === 'BEARISH' && analysis.fvgM5.top > 0 && analysis.fvgM5.bottom >= currentPrice - 0.5) {
-          entryZoneStr = `${analysis.fvgM5.bottom.toFixed(2)} - ${analysis.fvgM5.top.toFixed(2)} (FVG Zone)`;
+          entryZoneMin = analysis.fvgM5.bottom;
+          entryZoneMax = analysis.fvgM5.top;
+          entryZoneType = 'FVG';
         } else if (candleRange >= 1.5) {
-          const premiumBottom = (currentPrice + (candleRange * 0.2)).toFixed(2);
-          const premiumTop = (currentPrice + (candleRange * 0.5)).toFixed(2);
-          entryZoneStr = `${premiumBottom} - ${premiumTop} (50% Retrace)`;
+          entryZoneMin = currentPrice + (candleRange * 0.2);
+          entryZoneMax = currentPrice + (candleRange * 0.5);
+          entryZoneType = 'RETRACE';
         } else if (analysis.isAtResistanceH1 && analysis.nearestResistanceH1 > currentPrice) {
-          const resMin = (analysis.nearestResistanceH1 - Math.min(1.5, atr * 0.4)).toFixed(2);
-          entryZoneStr = `${resMin} - ${analysis.nearestResistanceH1.toFixed(2)} (Resistance Base)`;
+          entryZoneMin = analysis.nearestResistanceH1 - Math.min(1.5, atr * 0.4);
+          entryZoneMax = analysis.nearestResistanceH1;
+          entryZoneType = 'RESISTANCE';
         } else {
-          const zoneMin = (currentPrice + 0.3).toFixed(2);
-          const zoneMax = (currentPrice + Math.min(2.0, Math.max(0.8, atr * 0.5))).toFixed(2);
-          entryZoneStr = `${zoneMin} - ${zoneMax} (Premium Zone)`;
+          entryZoneMin = currentPrice + 0.3;
+          entryZoneMax = currentPrice + Math.min(2.0, Math.max(0.8, atr * 0.5));
+          entryZoneType = 'PREMIUM';
         }
       }
     }
+    entryZoneStr = `${entryZoneMin.toFixed(2)} - ${entryZoneMax.toFixed(2)} (${entryZoneType} Zone)`;
 
     const wibDate = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' });
     const dateStr = wibDate.slice(0, 10).replace(/-/g, '');
@@ -565,7 +566,10 @@ export class SignalGenerator {
       timestamp: new Date().toISOString(),
       reason: reasonString,
       strategy: activeStrategy,
-      entryZone: entryZoneStr
+      entryZone: entryZoneStr,
+      entryZoneMin: Number(entryZoneMin.toFixed(2)),
+      entryZoneMax: Number(entryZoneMax.toFixed(2)),
+      entryZoneType
     };
   }
 
