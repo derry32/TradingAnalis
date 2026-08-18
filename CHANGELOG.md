@@ -2,6 +2,15 @@
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
 
+## [1.9.5] - 2026-08-18
+### Ditambahkan
+- **Pending Order Engine (Async State Machine):** Merombak total arsitektur eksekusi order (terutama mode PULLBACK). Sinyal tidak lagi langsung ditembak via Market Order, melainkan dimasukkan ke state `ARMED`. Engine akan memantau live price hingga harga benar-benar menyentuh *Entry Zone*, melakukan `REVALIDATING` terhadap struktur harga terbaru, lalu mengeksekusi ke *Market* jika masih valid (menyelesaikan masalah nyangkut sebelum zona entri).
+- **True RR & H1 Structure Guard:** Menambahkan lapisan pelindung *True Risk-to-Reward*. Bot kini secara aktif memetakan jarak antara *Entry Zone* dengan S/R H1 terdekat (Hambatan Aktual). Jika ruang lari (*available room*) terlalu sempit (True RR < 1.3), maka setup PULLBACK akan langsung di-VETO.
+- **Extreme Premium/Discount VETO:** Melarang keras *trend-following* di pucuk ekstrem. Robot tidak akan mengeksekusi sinyal BUY apabila harga berada di zona *Premium* absolut (>80%) dari struktur harga besar, begitu pun larangan mutlak SELL di zona *Discount* absolut (<20%).
+
+### Diperbaiki
+- **Artificial SL Capping Bug:** Menyelesaikan teka-teki tingginya kekalahan telak (`104 BUY SL`). Sebelumnya, apabila jarak *Swing Low* terlalu jauh, kode memaksakan SL rekaan / buatan. Hal ini menyebabkan SL sangat rawan tersentuh fluktuasi minor. Kini sistem murni bergantung pada S/R Struktural; jika jarak struktural SL terlalu jauh (riskDist > 5.5), setup lebih baik DIBUANG (*REJECT*) ketimbang memaksakan SL buatan.
+
 ## [1.8.0] - Anti-Slippage & Smart Fakeout Engine (v4.50)
 ### Ditambahkan
 - **Anti-Falling Knife & Shooting Rocket Filter:** Pelindung (*VETO guard*) untuk mencegah AI menangkap "pisau jatuh". Walaupun tren makro (H1/M15) sedang kuat (misal: Bullish), jika momentum jangka pendek (M1/M5) sedang dibanting berlawanan (harga jatuh di bawah EMA20 dan MACD merah tajam), AI akan menjatuhkan penalti ekstrim (-50 poin) untuk menahan sinyal hingga badai mikro mereda.
