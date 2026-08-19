@@ -362,17 +362,19 @@ export class SignalGenerator {
       let calculatedSL = 0;
 
       if (dir === 'BUY') {
-        if (analysis.closestSwingLowM5 > 0 && analysis.closestSwingLowM5 < currentPrice) {
+        if (analysis.closestSwingLowM5 > 0 && analysis.closestSwingLowM5 < currentPrice && (currentPrice - analysis.closestSwingLowM5) <= 5.5) {
           calculatedSL = analysis.closestSwingLowM5 - atrBuffer;
         } else {
+          // Swing terlalu jauh (> $5.5) atau tidak valid, fallback ke Micro-Structure / Default ATR Risk
           const defaultRisk = activeStrategy === 'HYPER_SCALPER' ? Math.max(1.8, Math.min(3.5, atr * 1.2)) : Math.max(2.0, Math.min(4.5, atr * 1.5));
           calculatedSL = currentPrice - defaultRisk;
         }
         if (calculatedSL >= currentPrice - 1.5) calculatedSL = currentPrice - 1.5; // Jarak minimal $1.5 (15 pips)
       } else {
-        if (analysis.closestSwingHighM5 > 0 && analysis.closestSwingHighM5 > currentPrice) {
+        if (analysis.closestSwingHighM5 > 0 && analysis.closestSwingHighM5 > currentPrice && (analysis.closestSwingHighM5 - currentPrice) <= 5.5) {
           calculatedSL = analysis.closestSwingHighM5 + atrBuffer;
         } else {
+          // Swing terlalu jauh (> $5.5) atau tidak valid, fallback ke Micro-Structure / Default ATR Risk
           const defaultRisk = activeStrategy === 'HYPER_SCALPER' ? Math.max(1.8, Math.min(3.5, atr * 1.2)) : Math.max(2.0, Math.min(4.5, atr * 1.5));
           calculatedSL = currentPrice + defaultRisk;
         }
