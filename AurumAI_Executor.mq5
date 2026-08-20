@@ -37,8 +37,9 @@ input bool   InpDemoOnlyGuard      = true;   // Demo Guard
 //=== Inputs: Smart Trailing & Break-Even ===
 input double InpBEMultiplier       = 0.6;    // BE Trigger at +6.0 pips profit
 input double InpTrailingStartPips  = 8.0;    // Trailing Start at +8.0 pips profit
-input double InpTrailingGapPips    = 5.0;    // Trailing Gap (5.0 pips)
-input int    InpMaxHoldMinutes     = 5;      // Max Hold Time for Scalp (minutes)
+input double InpTrailingGapPips       = 5.0;    // Trailing Gap (5.0 pips)
+input int    InpPendingExpireMinutes  = 5;      // Max Wait Time for Limit Orders (minutes)
+input int    InpPositionExpireMinutes = 20;     // Max Hold Time for Active Scalp (minutes)
 
 //--- State globals
 string   g_lastProcessedId   = "";
@@ -323,16 +324,17 @@ void CheckSmartExits()
    
    if(posCount == 0 && orderCount == 0) return;
 
-   int limitSeconds = InpMaxHoldMinutes * 60;
+   int limitPendingSeconds = InpPendingExpireMinutes * 60;
+   int limitPositionSeconds = InpPositionExpireMinutes * 60;
    
-   // 1. Time Stop for Pending Orders (Max 5 minutes)
+   // 1. Time Stop for Pending Orders
    for(int i = OrdersTotal() - 1; i >= 0; i--)
    {
       ulong t = OrderGetTicket(i);
       if(t > 0 && OrderGetString(ORDER_SYMBOL) == _Symbol && (ulong)OrderGetInteger(ORDER_MAGIC) == InpMagicNumber)
       {
          datetime orderTime = (datetime)OrderGetInteger(ORDER_TIME_SETUP);
-         if((TimeCurrent() - orderTime) >= limitSeconds)
+         if((TimeCurrent() - orderTime) >= limitPendingSeconds)
          {
             PrintFormat("[TIME STOP] Canceling expired pending order #%d (Age: %d sec)", t, (TimeCurrent() - orderTime));
             CancelOrderByTicket(t);
@@ -340,14 +342,14 @@ void CheckSmartExits()
       }
    }
 
-   // 2. Time Stop for Active Positions (Max 5 minutes)
+   // 2. Time Stop for Active Positions
    for(int i = PositionsTotal() - 1; i >= 0; i--)
    {
       ulong t = PositionGetTicket(i);
       if(t > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
       {
          datetime posTime = (datetime)PositionGetInteger(POSITION_TIME);
-         if((TimeCurrent() - posTime) >= limitSeconds)
+         if((TimeCurrent() - posTime) >= limitPositionSeconds)
          {
             PrintFormat("[TIME STOP] Closing expired position #%d (Age: %d sec)", t, (TimeCurrent() - posTime));
             ClosePositionByTicket(t);
