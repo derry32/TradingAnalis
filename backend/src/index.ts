@@ -18,7 +18,20 @@ import { pendingOrderEngine } from './services/pendingOrderEngine';
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.text({ type: 'application/json' }));
+app.use((req, res, next) => {
+  if (typeof req.body === 'string') {
+    try {
+      // Defensive cleanup: remove trailing null bytes commonly sent by MQL5 StringToCharArray
+      const cleanData = req.body.replace(/\0/g, '').trim();
+      req.body = cleanData ? JSON.parse(cleanData) : {};
+    } catch (e) {
+      console.error('[Middleware] JSON Parse Error (Defensive):', e.message);
+      return res.status(400).json({ error: 'Invalid JSON payload' });
+    }
+  }
+  next();
+});
 
 const marketData = new MarketDataService();
 const technical = new TechnicalAnalysis();
@@ -654,6 +667,26 @@ app.get('/api/mt5/status', (req, res) => {
 
 app.get('/api/mt5/signals/latest', (req, res) => {
   const token = (req.query.token as string) || (req.headers['x-mt5-token'] as string) || '';
+  
+  // MT5 Market Data Feed Ingestion
+  const bidStr = req.query.bid as string;
+  const askStr = req.query.ask as string;
+  const timeStr = req.query.time as string;
+  const symbol = req.query.symbol as string;
+  
+  if (bidStr && askStr && timeStr && symbol) {
+    const bid = parseFloat(bidStr);
+    const ask = parseFloat(askStr);
+    const timeMsc = parseInt(timeStr, 10);
+    if (!isNaN(bid) && !isNaN(ask) && !isNaN(timeMsc) && bid > 0 && ask > 0 && ask >= bid) {
+      const spreadPips = (ask - bid) * 10;
+      if (spreadPips >= 0 && spreadPips < 50) { // Spread masuk akal (<50 pips)
+        // Kirim ke marketDataService
+        marketData.processMt5Tick(symbol, bid, ask, timeMsc);
+      }
+    }
+  }
+
   const result = mt5Bridge.getLatestSignalPayload(token);
   if (!result.success) {
     return res.status(401).json({ error: result.error });

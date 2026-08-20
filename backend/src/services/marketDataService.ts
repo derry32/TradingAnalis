@@ -165,6 +165,37 @@ export class MarketDataService {
 
   private isBootstrapped = false;
   private isBootstrapping = false;
+  private isMt5FeedActive = false;
+  private mt5LastTickAgeSec = 0;
+
+  public processMt5Tick(symbol: string, bid: number, ask: number, timeMsc: number) {
+    if (symbol !== 'XAUUSD' && symbol !== 'XAU/USD' && symbol !== 'GOLD') return; // sementara limit ke XAUUSD
+    
+    this.isMt5FeedActive = true;
+    
+    const now = Date.now();
+    this.mt5LastTickAgeSec = (now - timeMsc) / 1000;
+    
+    // Ignore ticks from the future (clock drift) or too old (>60s shouldn't process historical here if we just want live)
+    if (this.mt5LastTickAgeSec < 0) this.mt5LastTickAgeSec = 0;
+
+    const price = bid; // Use Bid as the primary price for candle formation
+    const volume = 10; // Dummy volume
+    
+    this.lastTickMs = now;
+    this.lastMessageMs = now; // MT5 poll acts as heartbeat
+    
+    if (!this.isBootstrapped && !this.isBootstrapping) {
+      this.isBootstrapping = true;
+      console.log(`[MarketData] MT5 Feed Bootstrapping history from price: ${price}...`);
+      this.generateFallbackCandles(price).then(() => {
+        this.isBootstrapped = true;
+        this.isBootstrapping = false;
+      });
+    }
+
+    this.processAllTicks(price, volume, timeMsc);
+  }
 
   public async start() {
     if (config.TWELVEDATA_API_KEY) {
@@ -201,10 +232,19 @@ export class MarketDataService {
          this.lastMessageAgeSec = (now - this.lastMessageMs) / 1000;
          const lastPrice = this.m1.currentCandle?.close || 0;
          
-         if (this.lastMessageAgeSec > 30) {
-             console.warn(`[MarketData] 🔴 STALE/DISCONNECTED: No WebSocket message for ${this.lastMessageAgeSec.toFixed(1)}s! Blocking signals.`);
-         } else if (this.lastTickAgeSec > 10) {
-             console.log(`[MarketData] 🟡 WARNING: Market quiet. No tick for ${this.lastTickAgeSec.toFixed(1)}s, but connection is healthy (${this.lastMessageAgeSec.toFixed(1)}s). Signals ALLOWED.`);
+         if (this.isMt5FeedActive) {
+             if (this.mt5LastTickAgeSec > 5) {
+                 console.warn(`[MarketData] 🔴 MT5 FEED STALE: Tick age is ${this.mt5LastTickAgeSec.toFixed(1)}s! Blocking signals.`);
+                 this.lastMessageAgeSec = 999; // Force stale state
+             } else {
+                 this.lastMessageAgeSec = 0; // Force healthy state
+             }
+         } else {
+             if (this.lastMessageAgeSec > 30) {
+                 console.warn(`[MarketData] 🔴 TWELVEDATA STALE/DISCONNECTED: No WebSocket message for ${this.lastMessageAgeSec.toFixed(1)}s! Blocking signals.`);
+             } else if (this.lastTickAgeSec > 10) {
+                 console.log(`[MarketData] 🟡 WARNING: Market quiet. No tick for ${this.lastTickAgeSec.toFixed(1)}s, but connection is healthy (${this.lastMessageAgeSec.toFixed(1)}s). Signals ALLOWED.`);
+             }
          }
          
          // Inject a dummy tick with the current clock time to force close exactly on schedule
@@ -263,8 +303,14 @@ export class MarketDataService {
           // TwelveData format: price, day_volume (optional), timestamp (unix seconds)
           const volume = parsed.day_volume ? parsed.day_volume / 1000 : 10; // dummy volume if zero
           const timestampMs = parsed.timestamp * 1000;
-          this.lastTickMs = Date.now();
-          this.processAllTicks(parsed.price, volume, timestampMs);
+          
+          if (!this.isMt5FeedActive) {
+            this.lastTickMs = Date.now();
+            this.processAllTicks(parsed.price, volume, timestampMs);
+          } else {
+            // MT5 Feed is primary, ignore TwelveData tick for engine, just log diagnostic if needed
+            // console.log(`[Diagnostic] TwelveData tick: ${parsed.price}`);
+          }
         }
       } catch (e) {
         console.error('[MarketData] WebSocket Parse Error', e);

@@ -135,7 +135,7 @@ void SendAck(string signalId, ulong ticket, double price, string status, long sp
    string payload = StringFormat("{\"token\":\"%s\",\"signalId\":\"%s\",\"ticket\":%s,\"executedPrice\":%.2f,\"status\":\"%s\",\"spreadPips\":%d}",
                                  InpApiToken, signalId, IntegerToString((long)ticket), price, status, (int)(spread / 10));
    char postData[];
-   StringToCharArray(payload, postData);
+   StringToCharArray(payload, postData, 0, StringLen(payload));
    char serverResult[];
    string serverHeaders;
    string headers = "Content-Type: application/json\r\n";
@@ -499,7 +499,13 @@ void OnTimer()
 
    CheckSmartExits();
 
-   string url = InpApiUrl + "/api/mt5/signals/latest?token=" + InpApiToken;
+   MqlTick tick;
+   SymbolInfoTick(_Symbol, tick);
+   string url = InpApiUrl + "/api/mt5/signals/latest?token=" + InpApiToken
+              + "&symbol=" + _Symbol
+              + "&bid=" + DoubleToString(tick.bid, _Digits)
+              + "&ask=" + DoubleToString(tick.ask, _Digits)
+              + "&time=" + IntegerToString(tick.time_msc);
    string json = SendGetRequest(url);
    if(json == "") return;
 

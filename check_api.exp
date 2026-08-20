@@ -5,7 +5,7 @@ expect "password:"
 send "thunder-29%-quantum\r"
 
 expect "\\$ "
-send "sudo docker logs ai-backend --tail 1000 | grep -i 'M5 DEBUG'\r"
+send "curl -s \"https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=1min&outputsize=1&apikey=b8d759ae22664d318c5bcfef3230ee07\"\r"
 
 expect "\\$ "
 send "exit\r"

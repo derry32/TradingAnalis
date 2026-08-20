@@ -5,7 +5,7 @@ expect "password:"
 send "thunder-29%-quantum\r"
 
 expect "\\$ "
-send "sudo docker logs ai-backend --tail 1000 | grep -i 'M5 DEBUG'\r"
+send "sudo docker logs ai-backend | grep 'Watchdog timeout'\r"
 
 expect "\\$ "
 send "exit\r"
