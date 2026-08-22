@@ -5,7 +5,7 @@ import axios from 'axios';
 import { 
   ArrowLeft, Crosshair, Zap, CheckCircle2, 
   XCircle, Clock, Target, TrendingUp,
-  Activity, BarChart2, Calendar
+  Activity, BarChart2, Calendar, Download
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -14,6 +14,45 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'TODAY' | 'WEEK' | 'MONTH' | 'ALL' | 'CUSTOM'>('TODAY');
   const [customDate, setCustomDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [viewMode, setViewMode] = useState<'AI' | 'ROBOT'>('AI');
+
+  const exportExcel = () => {
+    const headers = ['Signal ID', 'Time', 'Type', 'Strategy', 'Entry', 'TP', 'SL', 'Status', 'Profit', 'Hit Time', 'Duration (Mins)'];
+    let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n";
+    
+    signals.forEach(sig => {
+      let ext: any = {};
+      try { ext = JSON.parse(sig.reason) || {}; } catch(e) {}
+      const isBuy = sig.type === 'BUY';
+      const raw = ext.entryZone || (sig.entryPrice ? sig.entryPrice.toFixed(2) : '-');
+      const match = raw.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+      const entryPrice = match ? match[1]?.trim() : raw;
+      const profit = ext.pips !== undefined ? ext.pips : '';
+      
+      const row = [
+        ext.id || '-',
+        new Date(sig.timestamp).toLocaleString('id-ID'),
+        isBuy ? 'BUY' : 'SELL',
+        ext.strategy,
+        entryPrice,
+        sig.takeProfit,
+        sig.stopLoss,
+        ext.finalStatus || 'ACTIVE',
+        profit,
+        ext.hitTime || '',
+        ext.duration || ''
+      ];
+      csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",") + "\n";
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `trading_history_${filter}_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const fetchHistory = async (filterType: string, dateVal?: string) => {
     setLoading(true);
@@ -106,7 +145,24 @@ export default function HistoryPage() {
             </div>
           </div>
 
-          {/* Date Filters */}
+          <div className="flex flex-col items-end gap-3">
+            {/* View Mode Toggle & Export */}
+            <div className="flex items-center gap-3">
+              <div className="flex bg-gray-900/50 p-1 rounded-xl border border-gray-800/50 relative z-10">
+                <button onClick={() => setViewMode('AI')} className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${viewMode === 'AI' ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/20' : 'text-gray-400 hover:text-gray-200'}`}>Sinyal AI</button>
+                <button onClick={() => setViewMode('ROBOT')} className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${viewMode === 'ROBOT' ? 'bg-emerald-600/90 text-white shadow-lg shadow-emerald-500/20' : 'text-gray-400 hover:text-gray-200'}`}>
+                  Robot MT5
+                </button>
+              </div>
+              <button 
+                onClick={exportExcel}
+                className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-bold text-gray-200 transition-colors relative z-10"
+              >
+                <Download size={14} className="text-blue-400" /> Export
+              </button>
+            </div>
+
+            {/* Date Filters */}
           <div 
             className="flex items-center cyber-card-glow p-1.5 rounded-xl backdrop-blur-md overflow-x-auto max-w-[calc(100vw-3rem)] md:max-w-full relative z-10"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -133,6 +189,7 @@ export default function HistoryPage() {
                 />
              </div>
           )}
+          </div>
         </header>
 
         {/* Global Statistics */}
@@ -184,7 +241,7 @@ export default function HistoryPage() {
                   <th className="p-4">Win Probability</th>
                   <th className="p-4">Targets (E / TP / SL)</th>
                   <th className="p-4">Hit Time & Duration</th>
-                  <th className="p-4 pr-6 text-right">Trade Accuracy</th>
+                  <th className="p-4 pr-6 text-right">{viewMode === 'ROBOT' ? 'Profit / Loss' : 'Trade Accuracy'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800/50 text-sm">
@@ -284,36 +341,51 @@ export default function HistoryPage() {
                     </td>
 
                     <td className="p-4 pr-6 align-top text-right">
-                      {isHitSL ? (
+                      {viewMode === 'ROBOT' ? (
                         <div>
-                          <span className="text-rose-500 font-bold text-lg">0%</span>
-                          <p className="text-[9px] text-rose-500/50 mt-0.5">FAILED</p>
-                        </div>
-                      ) : isExpired ? (
-                        <div>
-                          <span className="text-gray-500 font-bold text-lg">0%</span>
-                          <p className="text-[9px] text-gray-500 mt-0.5">EXPIRED</p>
-                        </div>
-                      ) : isActive ? (
-                        <div>
-                          <span className="text-gray-400 font-bold text-lg">~50%</span>
-                          <p className="text-[9px] text-gray-500 mt-0.5">IN PROGRESS</p>
+                          {ext.pips !== undefined && ext.pips !== null ? (
+                            ext.pips > 0 ? (
+                               <span className="font-bold text-lg text-emerald-400">+{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                            ) : (
+                               <span className="font-bold text-lg text-rose-500">{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                            )
+                          ) : (
+                            <span className="text-gray-500 font-bold text-lg">-</span>
+                          )}
+                          <p className="text-[9px] text-gray-500 mt-0.5 uppercase tracking-widest">{ext.finalStatus === 'HIT_TP' ? 'PROFIT' : ext.finalStatus === 'HIT_SL' ? 'LOSS' : 'IN PROGRESS'}</p>
                         </div>
                       ) : (
-                        <div>
-                          <span className={`font-bold text-lg ${ext.accuracy === 100 ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]' : 'text-emerald-400'}`}>
-                            {ext.accuracy}%
-                          </span>
-                          {ext.accuracy === 100 ? (
-                            <p className="text-[9px] text-yellow-500/80 mt-0.5 font-bold uppercase tracking-widest flex items-center justify-end gap-1">
-                              <Zap size={10} /> Perfect
-                            </p>
-                          ) : (
-                            <p className="text-[9px] text-rose-400/80 mt-0.5">
-                              -{((ext.duration || 0) - 20) * 0.5}% Penalty
-                            </p>
-                          )}
-                        </div>
+                        isHitSL ? (
+                          <div>
+                            <span className="text-rose-500 font-bold text-lg">0%</span>
+                            <p className="text-[9px] text-rose-500/50 mt-0.5">FAILED</p>
+                          </div>
+                        ) : isExpired ? (
+                          <div>
+                            <span className="text-gray-500 font-bold text-lg">0%</span>
+                            <p className="text-[9px] text-gray-500 mt-0.5">EXPIRED</p>
+                          </div>
+                        ) : isActive ? (
+                          <div>
+                            <span className="text-gray-400 font-bold text-lg">~50%</span>
+                            <p className="text-[9px] text-gray-500 mt-0.5">IN PROGRESS</p>
+                          </div>
+                        ) : (
+                          <div>
+                            <span className={`font-bold text-lg ${ext.accuracy === 100 ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]' : 'text-emerald-400'}`}>
+                              {ext.accuracy}%
+                            </span>
+                            {ext.accuracy === 100 ? (
+                              <p className="text-[9px] text-yellow-500/80 mt-0.5 font-bold uppercase tracking-widest flex items-center justify-end gap-1">
+                                <Zap size={10} /> Perfect
+                              </p>
+                            ) : (
+                              <p className="text-[9px] text-rose-400/80 mt-0.5">
+                                -{((ext.duration || 0) - 20) * 0.5}% Penalty
+                              </p>
+                            )}
+                          </div>
+                        )
                       )}
                     </td>
 
@@ -368,37 +440,52 @@ export default function HistoryPage() {
                             </div>
                          </div>
                          <div className="text-right">
-                           {isHitSL ? (
+                           {viewMode === 'ROBOT' ? (
                               <div>
-                                <span className="text-rose-500 font-bold text-sm">0%</span>
-                                <p className="text-[9px] text-rose-500/50 mt-0.5">FAILED</p>
-                              </div>
-                            ) : isExpired ? (
-                              <div>
-                                <span className="text-gray-500 font-bold text-sm">0%</span>
-                                <p className="text-[9px] text-gray-500 mt-0.5">EXPIRED</p>
-                              </div>
-                            ) : isActive ? (
-                              <div>
-                                <span className="text-gray-400 font-bold text-sm">~50%</span>
-                                <p className="text-[9px] text-gray-500 mt-0.5">IN PROGRESS</p>
-                              </div>
-                            ) : (
-                              <div>
-                                <span className={`font-bold text-sm ${ext.accuracy === 100 ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]' : 'text-emerald-400'}`}>
-                                  {ext.accuracy}%
-                                </span>
-                                {ext.accuracy === 100 ? (
-                                  <p className="text-[9px] text-yellow-500/80 mt-0.5 font-bold uppercase tracking-widest flex items-center justify-end gap-1">
-                                    <Zap size={10} /> Perfect
-                                  </p>
+                                {ext.pips !== undefined && ext.pips !== null ? (
+                                  ext.pips > 0 ? (
+                                     <span className="font-bold text-sm text-emerald-400">+{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                  ) : (
+                                     <span className="font-bold text-sm text-rose-500">{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                  )
                                 ) : (
-                                  <p className="text-[9px] text-rose-400/80 mt-0.5">
-                                    -{((ext.duration || 0) - 20) * 0.5}% Penalty
-                                  </p>
+                                  <span className="text-gray-500 font-bold text-sm">-</span>
                                 )}
+                                <p className="text-[9px] text-gray-500 mt-0.5 uppercase tracking-widest">{ext.finalStatus === 'HIT_TP' ? 'PROFIT' : ext.finalStatus === 'HIT_SL' ? 'LOSS' : 'IN PROGRESS'}</p>
                               </div>
-                            )}
+                           ) : (
+                             isHitSL ? (
+                               <div>
+                                 <span className="text-rose-500 font-bold text-sm">0%</span>
+                                 <p className="text-[9px] text-rose-500/50 mt-0.5">FAILED</p>
+                               </div>
+                             ) : isExpired ? (
+                               <div>
+                                 <span className="text-gray-500 font-bold text-sm">0%</span>
+                                 <p className="text-[9px] text-gray-500 mt-0.5">EXPIRED</p>
+                               </div>
+                             ) : isActive ? (
+                               <div>
+                                 <span className="text-gray-400 font-bold text-sm">~50%</span>
+                                 <p className="text-[9px] text-gray-500 mt-0.5">IN PROGRESS</p>
+                               </div>
+                             ) : (
+                               <div>
+                                 <span className={`font-bold text-sm ${ext.accuracy === 100 ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]' : 'text-emerald-400'}`}>
+                                   {ext.accuracy}%
+                                 </span>
+                                 {ext.accuracy === 100 ? (
+                                   <p className="text-[9px] text-yellow-500/80 mt-0.5 font-bold uppercase tracking-widest flex items-center justify-end gap-1">
+                                     <Zap size={10} /> Perfect
+                                   </p>
+                                 ) : (
+                                   <p className="text-[9px] text-rose-400/80 mt-0.5">
+                                     -{((ext.duration || 0) - 20) * 0.5}% Penalty
+                                   </p>
+                                 )}
+                               </div>
+                             )
+                           )}
                          </div>
                       </div>
 
