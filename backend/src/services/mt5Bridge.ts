@@ -36,6 +36,13 @@ export interface MT5AckPayload {
   spreadPips?: number;
 }
 
+export interface MT5ClosePayload {
+  signalId: string;
+  ticket: number;
+  profit: number;
+  closePrice: number;
+}
+
 export class MT5BridgeService {
   private latestSignal: Signal | null = null;
   private latestBurstSignal: BurstSignalPayload | null = null;
@@ -217,6 +224,28 @@ export class MT5BridgeService {
     return {
       success: true,
       message: `Signal ${ack.signalId} acknowledged with ticket #${ack.ticket}`,
+    };
+  }
+
+  public recordTradeClose(
+    token: string,
+    payload: MT5ClosePayload
+  ): { success: boolean; message: string } {
+    if (!this.authenticate(token)) {
+      return { success: false, message: 'Unauthorized: Invalid token' };
+    }
+
+    if (!payload.signalId) {
+      return { success: false, message: 'Missing signalId' };
+    }
+
+    console.log(
+      `[MT5 Bridge] Received CLOSE from MT5 for ${payload.signalId}: Ticket #${payload.ticket} | Profit: ${payload.profit} | ClosePrice: ${payload.closePrice}`
+    );
+
+    return {
+      success: true,
+      message: `Signal ${payload.signalId} close acknowledged with ticket #${payload.ticket}`,
     };
   }
 

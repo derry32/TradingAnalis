@@ -2,6 +2,15 @@
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
 
+## [1.9.6] - 2026-08-20
+### Ditambahkan
+- **Adaptive Entry Logging (Option A+):** Memodifikasi sistem penolakan sinyal pada *Signal Generator*. Sistem kini mampu membedakan antara "Setup Jelek" dan "Setup Bagus Tapi Lokasi Jelek". Jika *Confidence Score* terbukti sangat tinggi ($\ge 85$) namun jarak *Stop Loss* melampaui batas aman ($> \$5.50$), AI tidak akan membuang sinyal dengan alasan *Stop Loss* lebar secara generik. Melainkan, AI secara cerdas akan memberikan aksi spesifik `WAIT FOR PULLBACK`, memberikan instruksi visual bahwa market sedang mengalami momentum kuat namun belum memberikan harga "diskon" yang aman untuk masuk.
+
+### Diperbaiki
+- **EA Time Stop Logic & Docker Compilation Issue:**
+  - Memisahkan logika hold time pada `AurumAI_Executor.mq5` dari `InpMaxHoldMinutes` menjadi `InpPendingExpireMinutes` (untuk *Pending Order*) dan `InpPositionExpireMinutes` (untuk *Active Positions*). Hal ini memberikan "ruang gerak" pada trade yang sudah tereksekusi agar dapat menyentuh S/R sesungguhnya tanpa ditutup paksa terlalu dini oleh *timer* 5 menit.
+  - Memperbaiki kendala kritis kompilasi MetaEditor (F7) di KasmVNC VPS yang menimpa balik (*revert*) file MQ5. Menginvestigasi dan menemukan bahwa MT5 berjalan terisolasi di dalam *Docker Container* (`ai-mt5-vnc`). Pembaruan file berhasil dipaksakan dengan melakukan *file copy* langsung ke dalam kontainer dan men-terminasi `wineserver`, memaksa MetaEditor memuat versi terbaru dan mengompilasi `AurumAI_Executor.ex5` dengan sukses.
+
 ## [1.9.5] - 2026-08-18
 ### Ditambahkan
 - **Pending Order Engine (Async State Machine):** Merombak total arsitektur eksekusi order (terutama mode PULLBACK). Sinyal tidak lagi langsung ditembak via Market Order, melainkan dimasukkan ke state `ARMED`. Engine akan memantau live price hingga harga benar-benar menyentuh *Entry Zone*, melakukan `REVALIDATING` terhadap struktur harga terbaru, lalu mengeksekusi ke *Market* jika masih valid (menyelesaikan masalah nyangkut sebelum zona entri).

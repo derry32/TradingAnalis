@@ -383,28 +383,21 @@ export class SignalGenerator {
 
       const riskDist = Math.abs(currentPrice - calculatedSL);
 
-      // Hard Filter Safety Cap SL
-      if (riskDist > 5.5) {
-        lastRejectionReason = `Stop Loss terlalu lebar ($${riskDist.toFixed(2)} > $5.5). Menunggu titik entri yang lebih presisi.`;
-        continue;
-      }
-      if (riskDist < 1.0) {
-        lastRejectionReason = `Stop Loss terlalu sempit ($${riskDist.toFixed(2)} < $1.0). Rawan noise market.`;
-        continue;
-      }
-
       // 8. True Room to Target Calculation
       let maxTargetPrice = 0;
+      let roomToTargetValid = true;
+      let roomRejectReason = '';
+
       if (dir === 'BUY') {
          if (!analysis.nearestResistanceH1 || analysis.nearestResistanceH1 <= currentPrice + 0.5) {
-             lastRejectionReason = `Target resistance H1 tidak teridentifikasi atau terlalu dekat. Ruang gerak tidak valid.`;
-             continue;
+             roomRejectReason = `Target resistance H1 tidak teridentifikasi atau terlalu dekat. Ruang gerak tidak valid.`;
+             roomToTargetValid = false;
          }
          maxTargetPrice = analysis.nearestResistanceH1;
       } else {
          if (!analysis.nearestSupportH1 || analysis.nearestSupportH1 >= currentPrice - 0.5) {
-             lastRejectionReason = `Target support H1 tidak teridentifikasi atau terlalu dekat. Ruang gerak tidak valid.`;
-             continue;
+             roomRejectReason = `Target support H1 tidak teridentifikasi atau terlalu dekat. Ruang gerak tidak valid.`;
+             roomToTargetValid = false;
          }
          maxTargetPrice = analysis.nearestSupportH1;
       }
@@ -413,18 +406,39 @@ export class SignalGenerator {
       const trueRR = riskDist > 0 ? availableRoom / riskDist : 0;
       
       if (trueRR < 1.3) {
-        lastRejectionReason = `Ruang gerak tertahan S/R nyata (True RR ${trueRR.toFixed(1)}x < 1.3x). Hindari trading menabrak dinding.`;
-        continue;
+        roomRejectReason = `Ruang gerak tertahan S/R nyata (True RR ${trueRR.toFixed(1)}x < 1.3x). Hindari trading menabrak dinding.`;
+        roomToTargetValid = false;
       }
 
       let roomPenalty = 0;
-      if (trueRR < 1.6) {
+      if (trueRR >= 1.3 && trueRR < 1.6) {
         roomPenalty = 6;
       }
 
       // Hitung Skor 100-Point Matrix
       const scoreResult = this.calculateScoreV2(dir, analysis, sessionInfo.type, isNewsMode, activeStrategy, roomPenalty, currentPrice);
+
+      // Check Room To Target Validity first
+      if (!roomToTargetValid) {
+        lastRejectionReason = roomRejectReason;
+        continue;
+      }
+
+      // Hard Filter Safety Cap SL (Di-evaluasi setelah tau score dan room)
+      if (riskDist > 5.5) {
+        if (scoreResult.score >= 85) {
+          lastRejectionReason = `[WAIT] Confidence: ${scoreResult.score}, Direction: ${dir}, Structural SL: $${riskDist.toFixed(2)}, Max Allowed: $5.50. Reason: ENTRY TOO EXTENDED. Action: WAIT FOR PULLBACK.`;
+        } else {
+          lastRejectionReason = `Stop Loss terlalu lebar ($${riskDist.toFixed(2)} > $5.5). Menunggu titik entri yang lebih presisi.`;
+        }
+        continue;
+      }
       
+      if (riskDist < 1.0) {
+        lastRejectionReason = `Stop Loss terlalu sempit ($${riskDist.toFixed(2)} < $1.0). Rawan noise market.`;
+        continue;
+      }
+
       const setupType = this.determineSetupType(dir, analysis, isNewsBreakout);
 
       // Scalper TP1 = 1:1.3, TP2 = 1:2.0 | Sniper TP1 = 1:1.8, TP2 = 1:2.5

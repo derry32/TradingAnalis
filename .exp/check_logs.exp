@@ -5,7 +5,7 @@ expect "password:"
 send "thunder-29%-quantum\r"
 
 expect "\\$ "
-send "sudo docker logs ai-backend --tail 1000 | grep -i 'M5 DEBUG'\r"
+send "sudo docker exec ai-backend tcpdump -i any -A -c 5 port 3002 | grep -o 'GET /api/mt5/signals/latest.*HTTP'\r"
 
 expect "\\$ "
 send "exit\r"

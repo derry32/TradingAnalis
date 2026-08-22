@@ -144,6 +144,22 @@ void SendAck(string signalId, ulong ticket, double price, string status, long sp
 }
 
 //+------------------------------------------------------------------+
+//| HTTP POST Acknowledge Signal Close                               |
+//+------------------------------------------------------------------+
+void SendCloseAck(string signalId, ulong ticket, double profit, double closePrice)
+{
+   string url = InpApiUrl + "/api/mt5/signals/close";
+   string payload = StringFormat("{\"token\":\"%s\",\"signalId\":\"%s\",\"ticket\":%s,\"profit\":%.2f,\"closePrice\":%.2f}",
+                                 InpApiToken, signalId, IntegerToString((long)ticket), profit, closePrice);
+   char postData[];
+   StringToCharArray(payload, postData, 0, StringLen(payload));
+   char serverResult[];
+   string serverHeaders;
+   string headers = "Content-Type: application/json\r\n";
+   WebRequest("POST", url, headers, 3000, postData, serverResult, serverHeaders);
+}
+
+//+------------------------------------------------------------------+
 //| Execute Order Send using Pure Native MQL5 API                    |
 //+------------------------------------------------------------------+
 ulong ExecuteNativeTrade(ENUM_ORDER_TYPE orderType, double price, double sl, double tp, double lot, string comment)
@@ -618,6 +634,57 @@ void OnTimer()
       SendAck(signalId, firstTicket, livePrice, "OPENED", currentSpread);
       PrintFormat("[BURST COMPLETE] %s | %d Layers Opened | Target Potential: ~50 Pips",
                   signalId, opened);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Trade Transaction Event (Fired when order/deal is closed)        |
+//+------------------------------------------------------------------+
+void OnTradeTransaction(const MqlTradeTransaction& trans,
+                        const MqlTradeRequest& request,
+                        const MqlTradeResult& result)
+{
+   if (trans.type == TRADE_TRANSACTION_HISTORY_ADD)
+   {
+      if (trans.deal > 0)
+      {
+         if (HistoryDealSelect(trans.deal))
+         {
+            long magic = HistoryDealGetInteger(trans.deal, DEAL_MAGIC);
+            if (magic == InpMagicNumber)
+            {
+               long entry = HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
+               if (entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_INOUT)
+               {
+                  double profit = HistoryDealGetDouble(trans.deal, DEAL_PROFIT);
+                  double price = HistoryDealGetDouble(trans.deal, DEAL_PRICE);
+                  ulong ticket = HistoryDealGetInteger(trans.deal, DEAL_POSITION_ID);
+                  string comment = HistoryDealGetString(trans.deal, DEAL_COMMENT);
+                  
+                  // Extract signalId from comment: "Aurum-L1 TEST-12345"
+                  string signalId = g_activeSignalId; // fallback
+                  string prefix = "Aurum-";
+                  int prefixPos = StringFind(comment, prefix);
+                  if (prefixPos >= 0)
+                  {
+                     int spacePos = StringFind(comment, " ", prefixPos);
+                     if (spacePos > 0)
+                     {
+                        signalId = StringSubstr(comment, spacePos + 1);
+                        StringTrimLeft(signalId);
+                        StringTrimRight(signalId);
+                     }
+                  }
+                  
+                  if (signalId != "")
+                  {
+                     PrintFormat("[TRADE CLOSED] Ticket #%d | Profit: %.2f | Price: %.2f | Signal: %s", ticket, profit, price, signalId);
+                     SendCloseAck(signalId, ticket, profit, price);
+                  }
+               }
+            }
+         }
+      }
    }
 }
 //+------------------------------------------------------------------+

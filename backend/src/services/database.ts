@@ -123,6 +123,39 @@ export async function updateSignalStatus(dbId: number | string, status: string, 
   await supabase.from('signals').update({ reason: JSON.stringify(reasonObj) }).eq('id', dbId);
 }
 
+export async function updateSignalStatusByInternalId(internalId: string, status: string, hitTime: string, profit: number) {
+  if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return;
+  
+  // Search for the signal in the last 2 days
+  const past48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from('signals')
+    .select('id, reason, timestamp')
+    .gte('timestamp', past48h)
+    .order('timestamp', { ascending: false });
+
+  if (error || !data) return;
+
+  for (const row of data) {
+    let reasonObj: any = {};
+    try {
+      reasonObj = JSON.parse(row.reason);
+    } catch(e) {}
+    
+    if (reasonObj.id === internalId) {
+      reasonObj.finalStatus = status;
+      reasonObj.hitTime = hitTime;
+      reasonObj.duration = Math.floor((new Date().getTime() - new Date(row.timestamp).getTime()) / 60000);
+      reasonObj.pips = profit; // Save the actual profit amount in pips/money field
+      reasonObj.accuracy = status === 'HIT_TP' ? 100 : 0;
+      
+      await supabase.from('signals').update({ reason: JSON.stringify(reasonObj) }).eq('id', row.id);
+      console.log(`[DB] Signal ${internalId} updated to ${status} with profit ${profit}`);
+      break;
+    }
+  }
+}
+
 export async function fetchSignalsByDate(startDate: string, endDate: string) {
   if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return [];
   const { data, error } = await supabase
