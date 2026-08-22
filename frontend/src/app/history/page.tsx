@@ -15,6 +15,12 @@ export default function HistoryPage() {
   const [filter, setFilter] = useState<'TODAY' | 'WEEK' | 'MONTH' | 'ALL' | 'CUSTOM'>('TODAY');
   const [customDate, setCustomDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [viewMode, setViewMode] = useState<'AI' | 'ROBOT'>('AI');
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+
+  const toggleRow = (id: string) => {
+    if (!id) return;
+    setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const exportExcel = () => {
     const headers = ['Signal ID', 'Time', 'Type', 'Strategy', 'Entry', 'TP', 'SL', 'Status', 'Profit', 'Hit Time', 'Duration (Mins)'];
@@ -256,9 +262,18 @@ export default function HistoryPage() {
                   const isActive = !isHitTP && !isHitSL && !isExpired;
 
                   return (
-                  <tr key={idx} className="hover:bg-gray-800/40 hover:translate-x-1 transition-all duration-300 group relative border-l-2 border-transparent hover:border-blue-500">
+                  <React.Fragment key={idx}>
+                  <tr className="hover:bg-gray-800/40 hover:translate-x-1 transition-all duration-300 group relative border-l-2 border-transparent hover:border-blue-500">
                     <td className="p-4 pl-6 align-top">
-                      <div className="font-mono text-xs text-gray-300 font-medium mb-1">{ext.id || '-'}</div>
+                      <div 
+                        className={`font-mono text-xs text-gray-300 font-medium mb-1 ${viewMode === 'ROBOT' ? 'cursor-pointer hover:text-blue-400 transition-colors flex items-center gap-1' : ''}`}
+                        onClick={() => viewMode === 'ROBOT' && toggleRow(ext.id)}
+                      >
+                        {ext.id || '-'}
+                        {viewMode === 'ROBOT' && (
+                          <span className="text-[9px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">Layers {expandedRows[ext.id] ? '▲' : '▼'}</span>
+                        )}
+                      </div>
                       {sig.timestamp && (
                         <div className="text-[10px] text-gray-500 flex items-center gap-1">
                            <Clock size={10} /> {new Date(sig.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })} WIB
@@ -392,6 +407,34 @@ export default function HistoryPage() {
                     </td>
 
                   </tr>
+                  {viewMode === 'ROBOT' && expandedRows[ext.id] && sig.layers && sig.layers.length > 0 && (
+                    <tr className="bg-gray-800/20 border-b border-gray-800/30">
+                      <td colSpan={7} className="p-4 pl-6">
+                        <div className="flex flex-col gap-2 bg-gray-900/50 p-3 rounded-lg border border-gray-800/50">
+                          <p className="text-xs text-gray-400 font-bold mb-1">Rincian Entry (Layers)</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {sig.layers.map((layer: any, lIdx: number) => (
+                              <div key={lIdx} className="flex items-center justify-between p-2 bg-gray-800/40 rounded border border-gray-700/30">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-gray-500 font-mono">#{layer.ticket}</span>
+                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${layer.status === 'HIT_TP' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>{layer.status === 'HIT_TP' ? 'PROFIT' : 'LOSS'}</span>
+                                </div>
+                                <div className="text-right">
+                                  {layer.profit > 0 ? (
+                                    <span className="text-xs font-bold text-emerald-400">+{Number(layer.profit).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                  ) : (
+                                    <span className="text-xs font-bold text-rose-500">{Number(layer.profit).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                  )}
+                                  <div className="text-[9px] text-gray-500">{new Date(layer.hit_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })} WIB</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
                 );
                 })}
               </tbody>
@@ -410,11 +453,20 @@ export default function HistoryPage() {
                   const isActive = !isHitTP && !isHitSL && !isExpired;
 
                   return (
-                    <div key={idx} className="p-4 flex flex-col gap-4 hover:bg-gray-800/30 transition-colors">
+                    <React.Fragment key={idx}>
+                    <div className="p-4 flex flex-col gap-4 hover:bg-gray-800/30 transition-colors">
                       {/* Header Row */}
                       <div className="flex items-center justify-between">
                          <div>
-                            <div className="font-mono text-xs text-gray-300 font-medium mb-1">{ext.id || '-'}</div>
+                            <div 
+                              className={`font-mono text-xs text-gray-300 font-medium mb-1 ${viewMode === 'ROBOT' ? 'cursor-pointer hover:text-blue-400 transition-colors flex items-center gap-1' : ''}`}
+                              onClick={() => viewMode === 'ROBOT' && toggleRow(ext.id)}
+                            >
+                              {ext.id || '-'}
+                              {viewMode === 'ROBOT' && (
+                                <span className="text-[9px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">Layers {expandedRows[ext.id] ? '▲' : '▼'}</span>
+                              )}
+                            </div>
                             {sig.timestamp && (
                               <div className="text-[10px] text-gray-500 flex items-center gap-1">
                                  <Clock size={10} /> {new Date(sig.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })} WIB
@@ -535,6 +587,30 @@ export default function HistoryPage() {
                         </div>
                       )}
                     </div>
+                    {viewMode === 'ROBOT' && expandedRows[ext.id] && sig.layers && sig.layers.length > 0 && (
+                        <div className="bg-gray-900/60 p-4 border-t border-gray-800/50">
+                          <p className="text-xs text-gray-400 font-bold mb-2">Rincian Entry (Layers)</p>
+                          <div className="flex flex-col gap-2">
+                            {sig.layers.map((layer: any, lIdx: number) => (
+                              <div key={lIdx} className="flex items-center justify-between p-2.5 bg-gray-800/50 rounded-lg border border-gray-700/40">
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-[10px] text-gray-500 font-mono">#{layer.ticket}</span>
+                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 w-fit rounded ${layer.status === 'HIT_TP' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>{layer.status === 'HIT_TP' ? 'PROFIT' : 'LOSS'}</span>
+                                </div>
+                                <div className="text-right">
+                                  {layer.profit > 0 ? (
+                                    <span className="text-sm font-bold text-emerald-400">+{Number(layer.profit).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                  ) : (
+                                    <span className="text-sm font-bold text-rose-500">{Number(layer.profit).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                  )}
+                                  <div className="text-[10px] text-gray-500">{new Date(layer.hit_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })} WIB</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                    )}
+                    </React.Fragment>
                   );
               })}
             </div>

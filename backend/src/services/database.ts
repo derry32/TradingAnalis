@@ -156,11 +156,68 @@ export async function updateSignalStatusByInternalId(internalId: string, status:
   }
 }
 
+export async function processSignalLayer(internalId: string, ticket: number, profit: number) {
+  if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return;
+  
+  // 1. Find the parent signal
+  const past48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from('signals')
+    .select('id, reason, timestamp')
+    .gte('timestamp', past48h)
+    .order('timestamp', { ascending: false });
+    
+  if (error || !data) return;
+  
+  let targetRow = null;
+  let reasonObj: any = {};
+  for (const row of data) {
+    try { reasonObj = JSON.parse(row.reason); } catch(e) {}
+    if (reasonObj.id === internalId) {
+      targetRow = row;
+      break;
+    }
+  }
+  
+  if (!targetRow) return;
+  
+  const status = profit > 0 ? 'HIT_TP' : 'HIT_SL';
+  
+  // 2. Insert into signal_layers
+  const { error: insertErr } = await supabase.from('signal_layers').insert({
+    signal_id: targetRow.id,
+    ticket: ticket,
+    status: status,
+    profit: profit,
+    hit_time: new Date().toISOString()
+  });
+  
+  if (insertErr && insertErr.code !== '23505') {
+     console.error('[DB] Error inserting signal layer:', insertErr);
+  }
+  
+  // 3. Sum profits from signal_layers
+  const { data: layers } = await supabase.from('signal_layers').select('profit').eq('signal_id', targetRow.id);
+  const totalProfit = layers && layers.length > 0 ? layers.reduce((acc, curr) => acc + Number(curr.profit), 0) : profit;
+  const finalStatus = totalProfit > 0 ? 'HIT_TP' : 'HIT_SL';
+  const hitTimeWIB = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) + ' WIB';
+  
+  // 4. Update parent
+  reasonObj.finalStatus = finalStatus;
+  reasonObj.hitTime = hitTimeWIB;
+  reasonObj.duration = Math.floor((new Date().getTime() - new Date(targetRow.timestamp).getTime()) / 60000);
+  reasonObj.pips = totalProfit; // aggregated total
+  reasonObj.accuracy = finalStatus === 'HIT_TP' ? 100 : 0;
+  
+  await supabase.from('signals').update({ reason: JSON.stringify(reasonObj) }).eq('id', targetRow.id);
+  console.log(`[DB] Signal ${internalId} processed layer ticket ${ticket}. Total Profit: ${totalProfit}`);
+}
+
 export async function fetchSignalsByDate(startDate: string, endDate: string) {
   if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return [];
   const { data, error } = await supabase
     .from('signals')
-    .select('*')
+    .select('*, signal_layers(*)')
     .gte('timestamp', startDate)
     .lte('timestamp', endDate)
     .order('timestamp', { ascending: false });
@@ -177,7 +234,8 @@ export async function fetchSignalsByDate(startDate: string, endDate: string) {
     stopLoss: Number(row.stop_loss),
     takeProfit: Number(row.take_profit),
     reason: row.reason,
-    timestamp: row.timestamp
+    timestamp: row.timestamp,
+    layers: row.signal_layers || []
   }));
 }
 

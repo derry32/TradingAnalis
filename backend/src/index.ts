@@ -7,7 +7,7 @@ import { NewsService } from './services/newsService';
 import { SentimentAnalysis, SentimentResult } from './services/sentimentAnalysis';
 import { SignalGenerator, Signal } from './services/signalGenerator';
 import { TelegramService } from './services/telegramBot';
-import { insertSignal, fetchRecentSignals, updateSignalStatus, updateSignalStatusByInternalId, fetchSignalsByDate, fetchMonthlyStats, fetchActiveSignals, insertSystemLog } from './services/database';
+import { insertSignal, fetchRecentSignals, updateSignalStatus, updateSignalStatusByInternalId, processSignalLayer, fetchSignalsByDate, fetchMonthlyStats, fetchActiveSignals, insertSystemLog } from './services/database';
 import { mt5Bridge } from './services/mt5Bridge';
 import { featureEngine } from './services/featureEngine';
 import { confidenceEngine } from './services/confidenceEngine';
@@ -713,14 +713,9 @@ app.post('/api/mt5/signals/close', async (req, res) => {
   try {
     const profit = Number(req.body.profit) || 0;
     const signalId = req.body.signalId;
-    const hitTimeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) + ' WIB';
+    const ticket = Number(req.body.ticket) || 0;
     
-    await updateSignalStatusByInternalId(
-      signalId, 
-      profit > 0 ? 'HIT_TP' : 'HIT_SL', 
-      hitTimeStr, 
-      profit
-    );
+    await processSignalLayer(signalId, ticket, profit);
   } catch (e) {
     console.error('[MT5 Bridge] Error updating signal close in DB:', e);
   }
