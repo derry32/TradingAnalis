@@ -343,11 +343,13 @@ export default function HistoryPage() {
                     <td className="p-4 pr-6 align-top text-right">
                       {viewMode === 'ROBOT' ? (
                         <div>
-                          {ext.pips !== undefined && ext.pips !== null ? (
+                          {ext.finalStatus === 'HIT_TP' || ext.finalStatus === 'HIT_SL' ? (
                             ext.pips > 0 ? (
                                <span className="font-bold text-lg text-emerald-400">+{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
-                            ) : (
+                            ) : ext.pips < 0 ? (
                                <span className="font-bold text-lg text-rose-500">{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                            ) : (
+                               <span className="font-bold text-lg text-gray-400">0</span>
                             )
                           ) : (
                             <span className="text-gray-500 font-bold text-lg">-</span>
@@ -442,11 +444,13 @@ export default function HistoryPage() {
                          <div className="text-right">
                            {viewMode === 'ROBOT' ? (
                               <div>
-                                {ext.pips !== undefined && ext.pips !== null ? (
+                                {ext.finalStatus === 'HIT_TP' || ext.finalStatus === 'HIT_SL' ? (
                                   ext.pips > 0 ? (
                                      <span className="font-bold text-sm text-emerald-400">+{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
-                                  ) : (
+                                  ) : ext.pips < 0 ? (
                                      <span className="font-bold text-sm text-rose-500">{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                  ) : (
+                                     <span className="font-bold text-sm text-gray-400">0</span>
                                   )
                                 ) : (
                                   <span className="text-gray-500 font-bold text-sm">-</span>
