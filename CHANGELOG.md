@@ -1,4 +1,11 @@
-# Changelog & Update Historis
+# Changelog
+
+## [1.3.1] - Hotfix (Data & Logic Calibration)
+### Diperbaiki
+- **Bug Fix MT5 Status "IN PROGRESS" Stagnant:** Memperbaiki insiden di mana sinyal gagal memperbarui status menjadi `HIT_TP` atau `HIT_SL` pada UI web karena robot (EA) macet/terblokir oleh antrean fungsi *WebRequest*. Solusi diimplementasikan melalui sistem antrean asinkron (Queue System) di fungsi `OnTimer` pada `AurumAI_Executor.mq5` agar tidak mengganggu *Thread* utama eksekusi MT5.
+- **Data Kalibrasi Sinyal Gagal:** Melakukan penyesuaian (sinkronisasi manual) pada *database* untuk sinyal `AURUM-820251` dan `AURUM-161256` yang sebelumnya nyangkut berhari-hari. 
+- **Bug Fix ATR Volatility Blocking:** Memperbaiki sistem *bootstrapping* di `CandleBuilder` (Backend). Sebelumnya, saat *restart* server, sinkronisasi *array* riwayat lilin (M15 dan H1) gagal terbentuk sehingga indikator ATR bernilai `0`. Hal ini menyebabkan AI mengira pasar "mati" dan menge-blok (*Veto*) semua sinyal. Sistem sudah diperbaiki dengan fungsi `clear()` sehingga lilin M15/H1 (hingga ratusan lilin) terbentuk sempurna dan ATR berfungsi normal.
+- **Bug Fix Threshold Skoring (Sniper vs Scalper):** Memperbaiki *hardcode* batasan skor probabilitas pada `signalGenerator.ts`. Sebelumnya AI memberlakukan skor ketat (65 poin) untuk kedua strategi. Kini telah dikembalikan sesuai desain awal: mode **SNIPER** mewajibkan minimal 65 Poin (60 jika ada *News*), sedangkan **HYPER SCALPER** hanya butuh minimal 55 Poin (50 jika ada *News*) karena berfokus pada momentum *timeframe* kecil.
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
 
