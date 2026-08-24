@@ -256,6 +256,7 @@ export async function fetchMonthlyStats(year: number, month: number) {
   if (error || !data) return null;
 
   let totalSignals = 0, hitTP = 0, hitSL = 0, totalPips = 0;
+  let totalGrossProfit = 0, totalGrossLoss = 0;
   let maxStreak = 0, currentStreak = 0;
   let durations: number[] = [];
 
@@ -268,7 +269,11 @@ export async function fetchMonthlyStats(year: number, month: number) {
 
     const pips = ext.pips || 0;
     const dur = ext.duration || 0;
-    totalPips += pips;
+    totalPips += pips; // In IDR/Money context, this is actually net profit
+    
+    if (pips > 0) totalGrossProfit += pips;
+    if (pips < 0) totalGrossLoss += Math.abs(pips);
+
     if (dur > 0) durations.push(dur);
 
     if (ext.finalStatus === 'HIT_TP') {
@@ -282,10 +287,10 @@ export async function fetchMonthlyStats(year: number, month: number) {
   }
 
   const winRate = totalSignals > 0 ? Math.round((hitTP / totalSignals) * 100) : 0;
-  const avgWinPips = hitTP > 0 ? totalPips / hitTP : 0;
-  const avgLossPips = hitSL > 0 ? Math.abs(totalPips - (avgWinPips * hitTP)) / hitSL : 0;
+  const avgWinPips = hitTP > 0 ? totalGrossProfit / hitTP : 0;
+  const avgLossPips = hitSL > 0 ? totalGrossLoss / hitSL : 0;
   const expectancy = hitTP > 0 || hitSL > 0
-    ? (winRate / 100 * Math.abs(avgWinPips)) - ((1 - winRate / 100) * Math.abs(avgLossPips))
+    ? (winRate / 100 * avgWinPips) - ((1 - winRate / 100) * avgLossPips)
     : 0;
   const avgDuration = durations.length > 0
     ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
@@ -297,6 +302,9 @@ export async function fetchMonthlyStats(year: number, month: number) {
     hitTP,
     hitSL,
     totalPips: Math.round(totalPips),
+    totalGrossProfit: Math.round(totalGrossProfit),
+    totalGrossLoss: Math.round(totalGrossLoss),
+    totalNetProfit: Math.round(totalPips),
     winRate,
     maxDrawdownStreak: maxStreak,
     expectancy: Math.round(expectancy * 10) / 10,

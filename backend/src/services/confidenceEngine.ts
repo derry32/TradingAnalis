@@ -77,7 +77,7 @@ export class ConfidenceEngine {
 
       if (isCrashBuy) {
         evalResult = this.calculateCrashScore('BUY', snapshot, crashRegime);
-        threshold = 55; // Crash Mode threshold
+        threshold = 60; // Crash Mode threshold
       } else if (isMacroBuy) {
         evalResult = this.calculateNormalScore('BUY', snapshot);
         threshold = 55;
@@ -102,7 +102,7 @@ export class ConfidenceEngine {
 
       if (isCrashSell) {
         evalResult = this.calculateCrashScore('SELL', snapshot, crashRegime);
-        threshold = 55; // Crash Mode threshold
+        threshold = 60; // Crash Mode threshold
       } else if (isMacroSell) {
         evalResult = this.calculateNormalScore('SELL', snapshot);
         threshold = 55;
@@ -153,7 +153,7 @@ export class ConfidenceEngine {
     // --- Bearish Crash Conditions ---
     const bearishCond1 = s.currentPrice < s.m1.features.ema20 && s.currentPrice < s.m5.features.ema20;
     const bearishCond2 = s.m1.features.macd.histogram < 0 && s.m1.features.macd.histogram < s.m1.features.macd.signal;
-    const bearishCond3 = s.m1.structure.lastBOS === 'BEARISH_BOS';
+    const bearishCond3 = s.m1.structure.lastBOS === 'BEARISH_BOS' && s.m5.structure.lastBOS === 'BEARISH_BOS';
     const bearishCond4 = m1Candle.close < m1Candle.open && (m1Candle.open - m1Candle.close) > atrM1 * 0.5;
 
     const bearishConditionsMet = [bearishCond1, bearishCond2, bearishCond3, bearishCond4].filter(Boolean).length;
@@ -161,14 +161,18 @@ export class ConfidenceEngine {
     // --- Bullish Crash Conditions ---
     const bullishCond1 = s.currentPrice > s.m1.features.ema20 && s.currentPrice > s.m5.features.ema20;
     const bullishCond2 = s.m1.features.macd.histogram > 0 && s.m1.features.macd.histogram > s.m1.features.macd.signal;
-    const bullishCond3 = s.m1.structure.lastBOS === 'BULLISH_BOS';
+    const bullishCond3 = s.m1.structure.lastBOS === 'BULLISH_BOS' && s.m5.structure.lastBOS === 'BULLISH_BOS';
     const bullishCond4 = m1Candle.close > m1Candle.open && (m1Candle.close - m1Candle.open) > atrM1 * 0.5;
 
     const bullishConditionsMet = [bullishCond1, bullishCond2, bullishCond3, bullishCond4].filter(Boolean).length;
 
+    // H1 Trend Guard (Mencegah false crash saat H1 berlawanan)
+    const isH1Bullish = s.h1.features.trend === 'BULLISH';
+    const isH1Bearish = s.h1.features.trend === 'BEARISH';
+
     return {
-      isCrashBearish: bearishConditionsMet >= 3,
-      isCrashBullish: bullishConditionsMet >= 3,
+      isCrashBearish: bearishConditionsMet >= 3 && !isH1Bullish,
+      isCrashBullish: bullishConditionsMet >= 3 && !isH1Bearish,
       bearishConditionsMet,
       bullishConditionsMet,
     };

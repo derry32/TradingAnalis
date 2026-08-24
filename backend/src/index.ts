@@ -620,7 +620,7 @@ app.get('/api/signals', async (req, res) => {
       const reasonObj = JSON.parse(sig.reason);
       // Fallback to SNIPER if strategy is not defined (for older signals)
       const sigStrategy = reasonObj.strategy || 'SNIPER';
-      return sigStrategy === activeStrategy;
+      return sigStrategy.includes(activeStrategy);
     } catch (e) {
       return activeStrategy === 'SNIPER';
     }

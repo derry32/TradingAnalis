@@ -1,6 +1,6 @@
 #!/usr/bin/expect -f
 set timeout 120
-spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "cd /home/ubuntu/TradingAnalis/backend && sudo docker stop ai-backend && sudo docker rm -f ai-backend && sudo docker run -d --name ai-backend --restart always --network host --env-file .env ai-backend-img"
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "cd /home/ubuntu/TradingAnalis && git pull && cd backend && sudo docker build -t ai-backend-img . && sudo docker stop ai-backend || true && sudo docker rm -f ai-backend || true && sudo docker run -d --name ai-backend --restart always --network host --env-file .env ai-backend-img"
 expect {
     "password:" {
         send "thunder-29%-quantum\r"

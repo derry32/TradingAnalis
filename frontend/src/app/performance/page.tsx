@@ -27,6 +27,7 @@ interface MonthlyStats {
   totalSignals: number; hitTP: number; hitSL: number;
   totalPips: number; winRate: number; maxDrawdownStreak: number;
   expectancy: number; avgDurationMins: number;
+  totalGrossProfit: number; totalGrossLoss: number; totalNetProfit: number;
 }
 
 interface CapitalInfo {
@@ -43,6 +44,8 @@ function getBadge(winRate: number, totalSignals: number) {
   if (winRate >= 40) return { label: 'Perlu Perbaikan', color: 'text-amber-400', bg: 'bg-amber-900/30', border: 'border-amber-500/30' };
   return { label: 'Under Control', color: 'text-red-400', bg: 'bg-red-900/30', border: 'border-red-500/30' };
 }
+
+const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(val);
 
 export default function PerformancePage() {
   const now = new Date();
@@ -173,9 +176,11 @@ export default function PerformancePage() {
           <div className="space-y-6">
             
             {/* Metric Cards Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { icon: <TrendingUp size={22} className={(stats?.totalPips ?? 0) >= 0 ? "text-emerald-500" : "text-red-500"} />, label: 'Total Profit Pips', value: stats ? (stats.totalPips > 0 ? '+' + stats.totalPips : stats.totalPips) : '—', color: (stats?.totalPips ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400' },
+                { icon: <TrendingUp size={22} className="text-emerald-500" />, label: 'Total Profit', value: stats ? formatCurrency(stats.totalGrossProfit) : '—', color: 'text-emerald-400' },
+                { icon: <TrendingUp size={22} className="text-red-500" />, label: 'Total Loss', value: stats ? formatCurrency(stats.totalGrossLoss) : '—', color: 'text-red-400' },
+                { icon: <DollarSign size={22} className={(stats?.totalNetProfit ?? 0) >= 0 ? "text-emerald-500" : "text-red-500"} />, label: 'Net Profit', value: stats ? ((stats.totalNetProfit > 0 ? '+' : '') + formatCurrency(stats.totalNetProfit)) : '—', color: (stats?.totalNetProfit ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400' },
                 { icon: <Target size={22} className="text-blue-500" />, label: 'Win Rate', value: stats ? stats.winRate + '%' : '—', color: (stats?.winRate ?? 0) >= 60 ? 'text-emerald-400' : (stats?.winRate ?? 0) >= 40 ? 'text-amber-400' : 'text-red-400' },
                 { icon: <Activity size={22} className="text-purple-500" />, label: 'Max Drawdown', value: stats ? stats.maxDrawdownStreak + 'x SL Streak' : '—', color: (stats?.maxDrawdownStreak ?? 0) <= 2 ? 'text-emerald-400' : 'text-red-400' },
                 { icon: <DollarSign size={22} className="text-amber-500" />, label: 'Expectancy', value: stats ? (stats.expectancy > 0 ? '+' + stats.expectancy : stats.expectancy) + ' pips' : '—', color: (stats?.expectancy ?? 0) > 0 ? 'text-emerald-400' : 'text-red-400' },
