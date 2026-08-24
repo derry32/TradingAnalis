@@ -96,8 +96,14 @@ export class SignalGenerator {
 
     // 2. Premium / Discount Zone Filter
     const m15Range = analysis.closestSwingHighM5 - analysis.closestSwingLowM5;
-    if (m15Range > 0) {
-      const pricePosition = (currentPrice - analysis.closestSwingLowM5) / m15Range; 
+    // Only apply if swing data is valid: swingLow < currentPrice < swingHigh
+    const swingDataValid = m15Range > 0 
+      && analysis.closestSwingLowM5 < currentPrice 
+      && analysis.closestSwingHighM5 > currentPrice;
+    if (swingDataValid) {
+      // Clamp to [0,1] as safety net
+      const rawPos = (currentPrice - analysis.closestSwingLowM5) / m15Range;
+      const pricePosition = Math.max(0, Math.min(1, rawPos));
       
       if (direction === 'BUY') {
         if (pricePosition > 0.8) {
