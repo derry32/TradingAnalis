@@ -77,13 +77,13 @@ export class ConfidenceEngine {
 
       if (isCrashBuy) {
         evalResult = this.calculateCrashScore('BUY', snapshot, crashRegime);
-        threshold = 60; // Crash Mode threshold
+        threshold = 55; // Crash Mode threshold
       } else if (isMacroBuy) {
         evalResult = this.calculateNormalScore('BUY', snapshot);
-        threshold = 65;
+        threshold = 55;
       } else {
         evalResult = this.calculateCounterTrendScore('BUY', snapshot);
-        threshold = 75;
+        threshold = 70;
       }
 
       if (evalResult.totalScore > maxScore && evalResult.totalScore >= threshold) {
@@ -102,13 +102,13 @@ export class ConfidenceEngine {
 
       if (isCrashSell) {
         evalResult = this.calculateCrashScore('SELL', snapshot, crashRegime);
-        threshold = 60; // Crash Mode threshold (lebih ketat dari normal 55, tapi tidak seketat counter-trend 75)
+        threshold = 55; // Crash Mode threshold
       } else if (isMacroSell) {
         evalResult = this.calculateNormalScore('SELL', snapshot);
-        threshold = 65;
+        threshold = 55;
       } else {
         evalResult = this.calculateCounterTrendScore('SELL', snapshot);
-        threshold = 75;
+        threshold = 70;
       }
 
       if (evalResult.totalScore > maxScore && evalResult.totalScore >= threshold) {
@@ -447,9 +447,9 @@ export class ConfidenceEngine {
       Math.round(slPips * 2.0), Math.round(slPips * 2.5)
     ];
 
-    const thresholdBase = mode === 'NORMAL' ? 55 : mode === 'CRASH' ? 60 : 75;
-    const thresholdMid  = mode === 'NORMAL' ? 65 : mode === 'CRASH' ? 72 : 85;
-    const thresholdTop  = mode === 'NORMAL' ? 80 : mode === 'CRASH' ? 85 : 95;
+    const thresholdBase = mode === 'NORMAL' ? 55 : mode === 'CRASH' ? 55 : 70;
+    const thresholdMid  = mode === 'NORMAL' ? 65 : mode === 'CRASH' ? 70 : 80;
+    const thresholdTop  = mode === 'NORMAL' ? 80 : mode === 'CRASH' ? 85 : 90;
 
     let tier: SignalTier = 'WAIT';
     let maxReEntryCycles = 0;
