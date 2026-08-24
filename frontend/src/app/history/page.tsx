@@ -369,7 +369,9 @@ export default function HistoryPage() {
                           ) : (
                             <span className="text-gray-500 font-bold text-lg">-</span>
                           )}
-                          <p className="text-[9px] text-gray-500 mt-0.5 uppercase tracking-widest">{ext.finalStatus === 'HIT_TP' ? 'PROFIT' : ext.finalStatus === 'HIT_SL' ? 'LOSS' : 'IN PROGRESS'}</p>
+                          <p className="text-[9px] text-gray-500 mt-0.5 uppercase tracking-widest">
+                            {ext.pips > 0 ? 'PROFIT' : ext.pips < 0 ? 'LOSS' : (ext.finalStatus === 'HIT_TP' ? 'PROFIT' : ext.finalStatus === 'HIT_SL' ? 'LOSS' : 'IN PROGRESS')}
+                          </p>
                         </div>
                       ) : (
                         isHitSL ? (
@@ -507,7 +509,9 @@ export default function HistoryPage() {
                                 ) : (
                                   <span className="text-gray-500 font-bold text-sm">-</span>
                                 )}
-                                <p className="text-[9px] text-gray-500 mt-0.5 uppercase tracking-widest">{ext.finalStatus === 'HIT_TP' ? 'PROFIT' : ext.finalStatus === 'HIT_SL' ? 'LOSS' : 'IN PROGRESS'}</p>
+                                <p className="text-[9px] text-gray-500 mt-0.5 uppercase tracking-widest">
+                                  {ext.pips > 0 ? 'PROFIT' : ext.pips < 0 ? 'LOSS' : (ext.finalStatus === 'HIT_TP' ? 'PROFIT' : ext.finalStatus === 'HIT_SL' ? 'LOSS' : 'IN PROGRESS')}
+                                </p>
                               </div>
                            ) : (
                              isHitSL ? (
