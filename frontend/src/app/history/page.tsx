@@ -370,7 +370,7 @@ export default function HistoryPage() {
                             <span className="text-gray-500 font-bold text-lg">-</span>
                           )}
                           <p className="text-[9px] text-gray-500 mt-0.5 uppercase tracking-widest">
-                            {ext.pips > 0 ? 'PROFIT' : ext.pips < 0 ? 'LOSS' : (ext.finalStatus === 'HIT_TP' ? 'PROFIT' : ext.finalStatus === 'HIT_SL' ? 'LOSS' : 'IN PROGRESS')}
+                            {ext.pips > 0 ? 'PROFIT' : ext.pips < 0 ? 'LOSS' : (ext.finalStatus === 'HIT_TP' ? 'PROFIT' : ext.finalStatus === 'HIT_SL' ? 'LOSS' : ext.finalStatus === 'EXPIRED' ? 'EXPIRED' : 'IN PROGRESS')}
                           </p>
                         </div>
                       ) : (
@@ -387,7 +387,7 @@ export default function HistoryPage() {
                         ) : isActive ? (
                           <div>
                             <span className="text-gray-400 font-bold text-lg">~50%</span>
-                            <p className="text-[9px] text-gray-500 mt-0.5">IN PROGRESS</p>
+                            <p className="text-[9px] text-gray-500 mt-0.5">{ext.finalStatus === 'EXPIRED' ? 'EXPIRED' : 'IN PROGRESS'}</p>
                           </div>
                         ) : (
                           <div>
@@ -510,7 +510,7 @@ export default function HistoryPage() {
                                   <span className="text-gray-500 font-bold text-sm">-</span>
                                 )}
                                 <p className="text-[9px] text-gray-500 mt-0.5 uppercase tracking-widest">
-                                  {ext.pips > 0 ? 'PROFIT' : ext.pips < 0 ? 'LOSS' : (ext.finalStatus === 'HIT_TP' ? 'PROFIT' : ext.finalStatus === 'HIT_SL' ? 'LOSS' : 'IN PROGRESS')}
+                                  {ext.pips > 0 ? 'PROFIT' : ext.pips < 0 ? 'LOSS' : (ext.finalStatus === 'HIT_TP' ? 'PROFIT' : ext.finalStatus === 'HIT_SL' ? 'LOSS' : ext.finalStatus === 'EXPIRED' ? 'EXPIRED' : 'IN PROGRESS')}
                                 </p>
                               </div>
                            ) : (
@@ -527,7 +527,7 @@ export default function HistoryPage() {
                              ) : isActive ? (
                                <div>
                                  <span className="text-gray-400 font-bold text-sm">~50%</span>
-                                 <p className="text-[9px] text-gray-500 mt-0.5">IN PROGRESS</p>
+                                 <p className="text-[9px] text-gray-500 mt-0.5">{ext.finalStatus === 'EXPIRED' ? 'EXPIRED' : 'IN PROGRESS'}</p>
                                </div>
                              ) : (
                                <div>
