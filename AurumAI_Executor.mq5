@@ -77,7 +77,7 @@ ClosedSignal g_closeQueue[];
 
 ulong g_reportedPositions[];  // Track position IDs already reported
 
-void QueueCloseAck(string signalId, ulong ticket, double profit, double closePrice)
+void QueueCloseAck(string signalId, ulong ticket, double profit, double closePrice, double mfePips=0.0, double maePips=0.0, int mfeSec=0, int maeSec=0)
 {
    // Deduplicate: skip if already queued/reported
    for(int i=0; i<ArraySize(g_reportedPositions); i++)
@@ -626,6 +626,8 @@ void OnDeinit(const int reason)
 //+------------------------------------------------------------------+
 void OnTick()
 {
+   double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
 
    // Track MFE/MAE for open positions
    for(int i = 0; i < PositionsTotal(); i++)
