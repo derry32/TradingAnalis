@@ -31,6 +31,11 @@ export class CandleBuilder {
     this.updateCandle(periodStart, price, price, price, price, volume, isDummy);
   }
 
+  public clear() {
+    this.allCandles = [];
+    this.currentCandle = null;
+  }
+
   public processCandle(lowerCandle: OHLCV) {
     const periodStart = Math.floor(lowerCandle.time / this.periodMs) * this.periodMs;
     this.updateCandle(periodStart, lowerCandle.open, lowerCandle.high, lowerCandle.low, lowerCandle.close, lowerCandle.volume, lowerCandle.isDummy);
@@ -445,6 +450,11 @@ export class MarketDataService {
     const numSaved = savedRealCandles.length;
     let currentPrice = anchorPrice; 
     
+    // Clear any live ticks that were added during the async fetch
+    this.m5.clear();
+    this.m15.clear();
+    this.h1.clear();
+
     // Process real candles
     for (const c of savedRealCandles) {
       this.m5.processCandle(c);
