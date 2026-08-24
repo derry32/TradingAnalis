@@ -500,8 +500,6 @@ export class TechnicalAnalysis {
     const atr_M1 = this.calculateATR(data.m1, 14);
     const m1Ob = this.detectM1OrderBlock(data.m1, swingsM1, atr_M1);
     const { sweep: m1LiquiditySweep, bos: m1Bos } = this.detectM1LiquiditySweep(data.m1, swingsM1, atr_M1);
-    
-    const isExtendedM5 = Math.abs(data.currentM5.close - data.currentM5.open) > (atr_M15 * 1.5) || volumeSpikeM5;
 
     const marketCondition: MarketCondition = trendM15 === 'BULLISH' ? 'TRENDING_BULLISH' : trendM15 === 'BEARISH' ? 'TRENDING_BEARISH' : (trendH1 === 'BULLISH' ? 'TRENDING_BULLISH' : trendH1 === 'BEARISH' ? 'TRENDING_BEARISH' : 'SIDEWAYS');
     
@@ -513,6 +511,7 @@ export class TechnicalAnalysis {
 
     const { volumeSpike: volumeSpikeM5, strongVolume: strongVolumeM5 } = this.checkVolume(data.m5);
     const consecutiveCandlesM5 = this.countConsecutiveCandles(data.m5);
+    const isExtendedM5 = Math.abs(data.currentM5.close - data.currentM5.open) > (atr_M15 * 1.5) || volumeSpikeM5;
 
     // BOS/CHoCH detection using H1 and M15 trends
     const marketStructureM15 = this.detectBOSCHoCH(data.currentM15.close, swingsM15, trendH1, trendM15, volumeSpikeM5, atr_M15);
