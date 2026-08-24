@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.2] - Hotfix (MT5 Burst Layer Tracking)
+### Diperbaiki
+- **Bug Fix MT5 Layer Drop (Burst Scalper):** Memperbaiki sistem pelacakan *close order* pada Robot EA MT5. Sebelumnya, MT5 menutup kelima layer secara bersamaan (karena kena TP), namun karena komentar (*comment*) pada tiket *closing* kosong, EA gagal mengekstrak Signal ID sehingga hanya 1 dari 5 tiket yang dikirim ke *backend*. 
+  - **Solusi:** Menghapus fungsi *event-based* `OnTradeTransaction` yang tidak *reliable* dan menggantinya dengan sistem **History Polling** di fungsi `OnTimer`. EA kini memindai riwayat *close deal* setiap 1 detik, melacak kembali tiket *opening* aslinya untuk memastikan Signal ID (`AURUM-XXXXXX`) selalu terbaca, lalu mengirim kelima layer dengan presisi 100% ke dasbor web tanpa risiko hilang.
+- **Recovery Data AURUM-920596:** Melakukan injeksi skrip manual (`fix_layers_920596.ts`) untuk memasukkan 4 tiket layer yang sebelumnya tidak tercatat karena *bug drop layer* di atas. Total profit sinyal tersebut kini akurat (Rp 197.118,12) untuk kelima layernya.
+
 ## [1.3.1] - Hotfix (Data & Logic Calibration)
 ### Diperbaiki
 - **Bug Fix MT5 Status "IN PROGRESS" Stagnant:** Memperbaiki insiden di mana sinyal gagal memperbarui status menjadi `HIT_TP` atau `HIT_SL` pada UI web karena robot (EA) macet/terblokir oleh antrean fungsi *WebRequest*. Solusi diimplementasikan melalui sistem antrean asinkron (Queue System) di fungsi `OnTimer` pada `AurumAI_Executor.mq5` agar tidak mengganggu *Thread* utama eksekusi MT5.
