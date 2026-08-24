@@ -353,10 +353,9 @@ export class SignalGenerator {
       setupType: string;
     } | null = null;
 
-    let lastRejectionReason = "Skor probabilitas di bawah ambang batas minimal kelulusan (Minimal 65 Poin).";
+    let lastRejectionReason = `Skor probabilitas di bawah ambang batas minimal kelulusan (Minimal ${activeStrategy === 'HYPER_SCALPER' ? 55 : 65} Poin).`;
 
     for (const dir of possibleDirections) {
-      // Dynamic Stop Loss Calculation: Swing Point + ATR Buffer dengan Smart Cap
       // Dynamic Stop Loss Calculation: Swing Point + ATR Buffer
       const atrBuffer = Math.max(0.6, atr * 0.5);
       let calculatedSL = 0;
@@ -464,11 +463,13 @@ export class SignalGenerator {
       }
     }
 
-    // 9. Strict Threshold Filter: Skor < 65 LANGSUNG WAIT (Blokir Sinyal Lemah!)
-    if (!bestTrade || bestTrade.score < (isNewsMode ? 60 : 65)) {
+    // 9. Strict Threshold Filter: Skor < Threshold LANGSUNG WAIT (Blokir Sinyal Lemah!)
+    const minScore = activeStrategy === 'HYPER_SCALPER' ? (isNewsMode ? 50 : 55) : (isNewsMode ? 60 : 65);
+    
+    if (!bestTrade || bestTrade.score < minScore) {
       if (bestTrade) {
-         console.log(`[M5 DEBUG] Setup ${bestTrade.dir} REJECTED. Score: ${bestTrade.score} < 65. Reasons: ${JSON.stringify(bestTrade.reasons)} Warnings: ${JSON.stringify(bestTrade.warnings)}`);
-         return this.createWaitSignal(`Skor probabilitas (${bestTrade.score}/100) di bawah ambang batas minimal kelulusan (Minimal 65 Poin).`, activeStrategy);
+         console.log(`[M5 DEBUG] Setup ${bestTrade.dir} REJECTED. Score: ${bestTrade.score} < ${minScore}. Reasons: ${JSON.stringify(bestTrade.reasons)} Warnings: ${JSON.stringify(bestTrade.warnings)}`);
+         return this.createWaitSignal(`Skor probabilitas (${bestTrade.score}/100) di bawah ambang batas minimal kelulusan (Minimal ${minScore} Poin).`, activeStrategy);
       } else {
          console.log(`[M5 DEBUG] All setups REJECTED. Last reason: ${lastRejectionReason}`);
          return this.createWaitSignal(lastRejectionReason, activeStrategy);
