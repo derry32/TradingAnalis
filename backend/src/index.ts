@@ -715,7 +715,12 @@ app.post('/api/mt5/signals/close', async (req, res) => {
     const signalId = req.body.signalId;
     const ticket = Number(req.body.ticket) || 0;
     
-    await processSignalLayer(signalId, ticket, profit);
+    await processSignalLayer(signalId, ticket, profit, {
+       mfePips: req.body.mfePips ? Number(req.body.mfePips) : undefined,
+       maePips: req.body.maePips ? Number(req.body.maePips) : undefined,
+       timeToMfeSec: req.body.timeToMfeSec ? Number(req.body.timeToMfeSec) : undefined,
+       timeToMaeSec: req.body.timeToMaeSec ? Number(req.body.timeToMaeSec) : undefined
+    });
   } catch (e) {
     console.error('[MT5 Bridge] Error updating signal close in DB:', e);
   }

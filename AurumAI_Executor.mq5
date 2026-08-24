@@ -50,13 +50,31 @@ double   g_signalOpenPx      = 0.0;
 datetime g_signalOpenTime    = 0;
 bool     g_beDone            = false;
 
+
+struct TradeStat {
+   ulong ticket;
+   string signalId;
+   double fillPrice;
+   datetime openTime;
+   double maxPrice;
+   double minPrice;
+   datetime maxTime;
+   datetime minTime;
+};
+TradeStat g_tradeStats[];
+
 struct ClosedSignal {
    string signalId;
    ulong ticket;
    double profit;
    double closePrice;
+   double mfePips;
+   double maePips;
+   int timeToMfeSec;
+   int timeToMaeSec;
 };
 ClosedSignal g_closeQueue[];
+
 ulong g_reportedPositions[];  // Track position IDs already reported
 
 void QueueCloseAck(string signalId, ulong ticket, double profit, double closePrice)
@@ -75,6 +93,10 @@ void QueueCloseAck(string signalId, ulong ticket, double profit, double closePri
    g_closeQueue[size].ticket = ticket;
    g_closeQueue[size].profit = profit;
    g_closeQueue[size].closePrice = closePrice;
+   g_closeQueue[size].mfePips = mfePips;
+   g_closeQueue[size].maePips = maePips;
+   g_closeQueue[size].timeToMfeSec = mfeSec;
+   g_closeQueue[size].timeToMaeSec = maeSec;
 }
 
 //+------------------------------------------------------------------+
@@ -604,6 +626,37 @@ void OnDeinit(const int reason)
 //+------------------------------------------------------------------+
 void OnTick()
 {
+
+   // Track MFE/MAE for open positions
+   for(int i = 0; i < PositionsTotal(); i++)
+   {
+      ulong t = PositionGetTicket(i);
+      if(t > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
+      {
+         bool found = false;
+         for(int j = 0; j < ArraySize(g_tradeStats); j++) {
+            if(g_tradeStats[j].ticket == t) {
+               found = true;
+               if(bid > g_tradeStats[j].maxPrice) { g_tradeStats[j].maxPrice = bid; g_tradeStats[j].maxTime = TimeCurrent(); }
+               if(ask < g_tradeStats[j].minPrice) { g_tradeStats[j].minPrice = ask; g_tradeStats[j].minTime = TimeCurrent(); }
+               break;
+            }
+         }
+         if(!found) {
+            int sz = ArraySize(g_tradeStats);
+            ArrayResize(g_tradeStats, sz + 1);
+            g_tradeStats[sz].ticket = t;
+            g_tradeStats[sz].signalId = PositionGetString(POSITION_COMMENT); // Actually we need to parse it, but for now we rely on history
+            g_tradeStats[sz].fillPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+            g_tradeStats[sz].openTime = (datetime)PositionGetInteger(POSITION_TIME);
+            g_tradeStats[sz].maxPrice = bid;
+            g_tradeStats[sz].minPrice = ask;
+            g_tradeStats[sz].maxTime = TimeCurrent();
+            g_tradeStats[sz].minTime = TimeCurrent();
+         }
+      }
+   }
+
    if(!g_isInitialized) return;
    CheckSmartExits();
 }

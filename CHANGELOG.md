@@ -276,3 +276,7 @@ Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Anal
 - Logika Penghasil Sinyal (*Signal Generator*) dengan kalkulasi rasio Risk/Reward 1:2.
 - Integrasi Telegram Bot untuk memberikan notifikasi sinyal instan ke *handphone*.
 - Pembuatan antarmuka *Dashboard* interaktif.
+
+## [1.3.1] - Sprint 5 (Minor Fixes)
+### Ditambahkan
+- **Daily Loss Limit Advice:** Penambahan catatan dan rekomendasi batas harian (Daily Loss Limit). Untuk akun real cent bermodal kecil (misal: 553 cent / $5.53), batas maksimal drawdown harian disarankan di angka `100.0` (maksimal loss $1 per hari) untuk menjaga ketahanan modal.
