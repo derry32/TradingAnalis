@@ -1,0 +1,24 @@
+#!/usr/bin/expect -f
+set timeout 45
+spawn scp -o StrictHostKeyChecking=no ./mt5/AurumAI_Executor.ex5 ubuntu@43.156.79.235:/home/ubuntu/AurumAI_Executor.ex5
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker cp /home/ubuntu/AurumAI_Executor.ex5 ai-mt5-vnc:'/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor.ex5'
+echo "=== Copied AurumAI_Executor.ex5 successfully ==="
+echo "=== Restarting MT5 to load v4.10 EA ==="
+sudo docker exec ai-mt5-vnc pkill terminal64.exe || true
+sleep 3
+sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine "/headless/.wine/drive_c/Program Files/MetaTrader 5/terminal64.exe"
+sleep 7
+echo "=== Checking Experts log for v4.10 ==="
+today=$(date +%Y%m%d)
+sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Logs/$today.log" 2>/dev/null | tail -n 35 || true
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

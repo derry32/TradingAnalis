@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker exec ai-mt5-vnc pkill -f terminal64.exe; sleep 2; sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine '/headless/.wine/drive_c/Program Files/MetaTrader 5/terminal64.exe'"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

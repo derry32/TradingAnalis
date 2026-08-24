@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn scp -o StrictHostKeyChecking=no mt5/AurumAI_Executor.mq5 ubuntu@43.156.79.235:/tmp/AurumAI_Executor.mq5
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker cp /tmp/AurumAI_Executor.mq5 ai-mt5-vnc:"/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor.mq5"
+sudo docker exec ai-mt5-vnc pkill -9 -f MetaEditor64.exe || true
+sleep 1
+sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine '/headless/.wine/drive_c/Program Files/MetaTrader 5/MetaEditor64.exe' 'C:\Program Files\MetaTrader 5\MQL5\Experts\AurumAI_Executor.mq5'
+sleep 5
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool search --name "MetaEditor" windowactivate --sync
+sleep 1
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool key F7
+sleep 4
+sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log' | tail -n 5
+echo "--- CHECK EXPERTS DIR ---"
+sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'
+}
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

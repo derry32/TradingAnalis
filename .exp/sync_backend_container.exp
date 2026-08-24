@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker cp /home/ubuntu/TradingAnalis/backend/src ai-backend:/app/
+sudo docker exec ai-backend npm run build
+sudo docker restart ai-backend
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/logs/20260805.log' | tail -n 25"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

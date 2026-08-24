@@ -1,0 +1,18 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec ai-mt5-vnc bash -c "DISPLAY=:1 xdotool mousemove 65 460 click --repeat 2 --delay 100 1"
+sleep 2
+sudo docker exec ai-mt5-vnc ffmpeg -y -f x11grab -video_size 1440x778 -i :1 -vframes 1 /tmp/mt5_screen.png
+sudo docker cp ai-mt5-vnc:/tmp/mt5_screen.png /home/ubuntu/mt5_screen.png
+sudo chmod 666 /home/ubuntu/mt5_screen.png
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}
+spawn scp -o StrictHostKeyChecking=no ubuntu@43.156.79.235:/home/ubuntu/mt5_screen.png /tmp/mt5_screen.png
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

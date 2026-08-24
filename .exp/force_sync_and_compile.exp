@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f
+set timeout 60
+
+spawn scp -o StrictHostKeyChecking=no /Users/badrinteractive/Documents/TradingAnalis/mt5/AurumAI_Executor.mq5 ubuntu@43.156.79.235:/home/ubuntu/AurumAI_Executor.mq5
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect {
+    "password:" { send "thunder-29%-quantum\r" }
+}
+expect "$ "
+
+send "sudo docker cp /home/ubuntu/AurumAI_Executor.mq5 'ai-mt5-vnc:/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor.mq5'\r"
+expect "$ "
+
+send "sudo docker exec ai-mt5-vnc sed -n '175,188p' '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor.mq5'\r"
+expect "$ "
+
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc bash -c 'WID=\$(xdotool search --onlyvisible --name \"MetaEditor\" | head -1); if [ -n \"\$WID\" ]; then xdotool windowactivate --sync \$WID; sleep 1; xdotool key ctrl+w; sleep 1; xdotool key ctrl+o; sleep 1; xdotool type \"C:\\\\Program Files\\\\MetaTrader 5\\\\MQL5\\\\Experts\\\\AurumAI_Executor.mq5\"; sleep 1; xdotool key Return; sleep 2; xdotool key F7; sleep 4; fi'\r"
+expect "$ "
+
+send "sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log' | tail -n 8\r"
+expect "$ "
+
+send "sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'\r"
+expect "$ "
+
+send "exit\r"
+expect eof

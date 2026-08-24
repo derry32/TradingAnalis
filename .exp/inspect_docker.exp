@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker inspect ai-backend | grep -A 10 "Mounts"
+cd /home/ubuntu/TradingAnalis && git log -n 1 --oneline
+sudo docker exec ai-backend git log -n 1 --oneline 2>/dev/null || true
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

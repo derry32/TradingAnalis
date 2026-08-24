@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u kasm-user -e WINEPREFIX=/headless/.wine -e DISPLAY=:1 ai-mt5-vnc winecfg -v win10
+sudo docker exec -u kasm-user -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine reg query "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion" | grep -E "(CurrentVersion|ProductName|CSDVersion)"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

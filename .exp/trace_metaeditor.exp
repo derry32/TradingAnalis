@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Debug MetaEditor file access ==="
+cd /home/ubuntu/mt5_build
+WINEDEBUG=+file wine ./metaeditor64.exe /compile:"Z:\\home\\ubuntu\\mt5_build\\MQL5\\Experts\\test.mq5" 2>&1 | grep -i -E "bitcode|temp|error|\.bc|\.ll|test\." | head -n 40
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

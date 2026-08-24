@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+set timeout 300
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+send "sudo docker exec -u root ai-mt5-vnc pkill -9 -f terminal64.exe 2>/dev/null || true\r"
+expect "$ "
+send "sudo docker exec -u root ai-mt5-vnc pkill -9 -f metaeditor64.exe 2>/dev/null || true\r"
+expect "$ "
+send "sudo docker exec -u root ai-mt5-vnc pkill -9 -f wineserver 2>/dev/null || true\r"
+expect "$ "
+
+# Upgrade winehq-stable to 10.0 as root
+send "sudo docker exec -u root ai-mt5-vnc apt-get update\r"
+expect "$ "
+
+send "sudo docker exec -u root ai-mt5-vnc apt-get install -y --allow-downgrades --allow-change-held-packages winehq-stable wine-stable wine-stable-amd64 wine-stable-i386\r"
+expect "$ "
+
+send "sudo docker exec ai-mt5-vnc wine --version\r"
+expect "$ "
+
+send "exit\r"
+expect eof

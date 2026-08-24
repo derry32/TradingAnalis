@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+set timeout 30
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+# Step 1: Click the Yes button (position ~487, 300 based on screenshot)
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc /usr/bin/xdotool mousemove 487 300 click 1\r"
+expect "$ "
+sleep 1
+
+# Step 2: Click the Compile button in toolbar (~355, 38 based on screenshot)
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc /usr/bin/xdotool mousemove 355 38 click 1\r"
+expect "$ "
+sleep 5
+
+# Check log
+send "sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log' | tail -n 6\r"
+expect "$ "
+
+send "sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'\r"
+expect "$ "
+
+send "exit\r"
+expect eof

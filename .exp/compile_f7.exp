@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Step 1: Copy updated mq5 into container ==="
+sudo docker cp /home/ubuntu/mt5_build/MQL5/Experts/AurumAI_Executor.mq5 "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor.mq5"
+sudo docker exec -u root ai-mt5-vnc chown -R kasm-user:kasm-user "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts"
+
+echo "=== Step 2: Press F7 in MetaEditor ==="
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool search --name "MetaEditor" windowfocus --sync key F7
+sleep 3
+
+echo "=== Step 3: Check files in MQL5/Experts ==="
+sudo docker exec ai-mt5-vnc ls -la "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts"
+
+echo "=== Step 4: Take screenshot ==="
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xwd -root -silent -out /tmp/screen2.xwd
+sudo docker cp ai-mt5-vnc:/tmp/screen2.xwd /tmp/screen2.xwd
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+set timeout 30
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+    echo "=== 1. Focus MetaEditor and reload document ==="
+    sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc bash -c '
+        WID=$(xdotool search --onlyvisible --name "MetaEditor" | head -1)
+        if [ -n "$WID" ]; then
+            xdotool windowactivate --sync $WID
+            sleep 1
+            xdotool key ctrl+w
+            sleep 1
+            xdotool key ctrl+o
+            sleep 1
+            xdotool type "C:\\Program Files\\MetaTrader 5\\MQL5\\Experts\\AurumAI_Executor.mq5"
+            sleep 1
+            xdotool key Return
+            sleep 2
+            xdotool key F7
+            sleep 4
+        fi
+    '
+
+    echo "=== 2. Check metaeditor.log ==="
+    sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log' | tail -n 8
+
+    echo "=== 3. Check EX5 file generation ==="
+    sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

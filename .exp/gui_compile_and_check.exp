@@ -1,0 +1,24 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Step 1: Copy clean mq5 into MT5 container ==="
+sudo docker cp /home/ubuntu/mt5_build/MQL5/Experts/AurumAI_Executor.mq5 "ai-mt5-vnc:/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor.mq5"
+sudo docker exec -u root ai-mt5-vnc chown -R kasm-user:kasm-user "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor.mq5"
+
+echo "=== Step 2: Focus MetaEditor and send F7 ==="
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool search --name "MetaEditor" windowactivate --sync
+sleep 1
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool key --window $(sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool search --name "MetaEditor" | head -n 1) F7
+sleep 3
+
+echo "=== Step 3: Check if .ex5 exists ==="
+sudo docker exec ai-mt5-vnc ls -la "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor"*
+
+echo "=== Step 4: Take screenshot ==="
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xwd -root -silent -out /tmp/screen2.xwd
+sudo docker cp ai-mt5-vnc:/tmp/screen2.xwd /tmp/screen2.xwd
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

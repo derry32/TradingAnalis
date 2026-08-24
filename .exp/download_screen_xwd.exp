@@ -1,0 +1,7 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn scp -o StrictHostKeyChecking=no ubuntu@43.156.79.235:/tmp/screen.xwd /tmp/screen.xwd
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

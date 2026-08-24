@@ -1,0 +1,24 @@
+#!/usr/bin/expect -f
+set timeout 60
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+# Use metaeditor /compile flag - CLI mode, no GUI needed
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine '/headless/.wine/drive_c/Program Files/MetaTrader 5/metaeditor64.exe' /compile:'C:\\Program Files\\MetaTrader 5\\MQL5\\Experts\\AurumAI_Executor.mq5'\r"
+expect "$ "
+
+sleep 5
+
+# Check latest log
+send "sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log' | tail -n 6\r"
+expect "$ "
+
+# Check for .ex5 file
+send "sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'\r"
+expect "$ "
+
+send "exit\r"
+expect eof

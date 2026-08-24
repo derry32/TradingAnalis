@@ -1,0 +1,64 @@
+#!/usr/bin/expect -f
+set timeout 45
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec ai-mt5-vnc pkill -9 -f terminal64.exe || true
+sleep 1
+sudo docker exec ai-mt5-vnc python3 -c "
+chr_path = '/headless/.wine/drive_c/Program Files/MetaTrader 5/Profiles/Charts/Default/chart01.chr'
+with open(chr_path, 'r', encoding='utf-16le', errors='ignore') as f:
+    content = f.read()
+
+# Replace symbol with XAUUSD
+import re
+content = re.sub(r'symbol=[^\r\n]+', 'symbol=XAUUSD', content)
+
+# Remove any existing expert block
+content = re.sub(r'<expert>.*?</expert>\r?\n?', '', content, flags=re.DOTALL)
+
+expert_block = '''<expert>
+name=AurumAI_Executor
+flags=339
+window_num=0
+<inputs>
+InpApiUrl=http://43.156.79.235:3002
+InpApiToken=aurum_secret_bridge_token_2026
+InpTimerSeconds=1
+InpNumMarketLayers=3
+InpNumLimitLayers=2
+InpMinLot=0.03
+InpMidLot=0.05
+InpMaxLot=0.09
+InpLayerStepPoints=35
+InpMaxOpenPositions=15
+InpMagicNumber=778899
+InpMaxSpreadPoints=400
+InpSlippage=30
+InpDemoOnlyGuard=1
+InpEnableBasketTP=1
+InpEnableHalfSecured=1
+</inputs>
+</expert>
+'''
+
+if '</chart>' in content:
+    content = content.replace('</chart>', expert_block + '</chart>')
+
+with open(chr_path, 'w', encoding='utf-16le') as f:
+    f.write(content)
+
+print('chart01.chr updated successfully!')
+"
+sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine '/headless/.wine/drive_c/Program Files/MetaTrader 5/terminal64.exe'
+sleep 6
+echo "=== MT5 EXPERTS LOGS ==="
+sudo docker exec ai-mt5-vnc find '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Logs/' -name '*.log' -exec iconv -f UTF-16LE -t UTF-8 {} + 2>/dev/null | tail -n 25 || true
+echo "=== MT5 TERMINAL LOGS ==="
+sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/20260805.log' | tail -n 15
+}
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

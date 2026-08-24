@@ -1,0 +1,18 @@
+#!/usr/bin/expect -f
+set timeout 120
+spawn scp -o StrictHostKeyChecking=no backend/src/index.ts ubuntu@43.156.79.235:/home/ubuntu/TradingAnalis/backend/src/index.ts
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "cd /home/ubuntu/TradingAnalis/backend && sudo docker stop ai-backend && sudo docker rm ai-backend && sudo docker build -t ai-backend-img . && sudo docker run -d --name ai-backend --network host --env-file .env ai-backend-img"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

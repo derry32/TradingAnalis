@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "python3 -c 'from PIL import Image; print(\"PIL_OK\")' 2>/dev/null || echo NO_PIL"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

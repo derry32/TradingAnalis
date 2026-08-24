@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== EXPERTS LOGS ==="
+sudo docker exec ai-mt5-vnc find '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Logs/' -name '*.log' -exec iconv -f UTF-16LE -t UTF-8 {} + 2>/dev/null | tail -n 25 || true
+echo "=== ACTIVE PROCESSES ==="
+sudo docker exec ai-mt5-vnc ps aux | grep -i exe | grep -v grep || true
+}
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

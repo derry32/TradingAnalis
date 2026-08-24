@@ -1,0 +1,25 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Test minimal test.mq5 ==="
+cat << 'EOF' > /home/ubuntu/mt5_build/MQL5/Experts/test.mq5
+void OnStart()
+{
+   Print("Hello from MT5");
+}
+EOF
+
+cd /home/ubuntu/mt5_build
+rm -f test.log MQL5/Experts/test.ex5
+export WINEDEBUG=-all
+wine ./metaeditor64.exe /compile:"Z:\\home\\ubuntu\\mt5_build\\MQL5\\Experts\\test.mq5" /log:"Z:\\home\\ubuntu\\mt5_build\\test.log" || true
+sleep 4
+
+echo "=== Minimal test log ==="
+iconv -f UTF-16LE -t UTF-8 test.log 2>/dev/null || cat test.log 2>/dev/null
+ls -la MQL5/Experts/test*
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

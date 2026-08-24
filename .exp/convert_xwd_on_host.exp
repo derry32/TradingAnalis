@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker cp ai-mt5-vnc:/tmp/screen.xwd /tmp/screen.xwd
+python3 -c "
+from PIL import Image
+im = Image.open('/tmp/screen.xwd')
+im.save('/tmp/screen.png')
+print('Host converted screen.png OK')
+" 2>/dev/null || echo "Host PIL failed"
+ls -lh /tmp/screen.png 2>/dev/null || true
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker exec ai-mt5-vnc bash -c \"which metatrader5 || which mt5 || find / -name '*terminal64.exe*' 2>/dev/null || find / -name '*mt5*' 2>/dev/null\""
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker exec ai-mt5-vnc pkill -9 -f terminal64.exe || true && sudo docker exec ai-mt5-vnc pkill -9 -f MetaEditor64.exe || true"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

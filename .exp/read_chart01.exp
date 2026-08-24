@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker exec ai-mt5-vnc cat '/headless/.wine/drive_c/Program Files/MetaTrader 5/Profiles/Charts/Default/chart01.chr' | head -n 40"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

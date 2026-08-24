@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+set timeout 180
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+send "while sudo docker exec ai-mt5-vnc pgrep -f rundll32 >/dev/null; do echo 'Waiting for wine setup...'; sleep 5; done\r"
+expect "$ "
+
+send "echo 'Wine setup FINISHED!'\r"
+expect "$ "
+
+# Now compile
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine 'C:\\Program Files\\MetaTrader 5\\metaeditor64.exe' '/compile:C:\\Program Files\\MetaTrader 5\\MQL5\\Experts\\AurumAI_Executor.mq5' '/log:C:\\Program Files\\MetaTrader 5\\wine10_compile.log'\r"
+expect "$ "
+sleep 5
+
+send "sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/wine10_compile.log' 2>/dev/null || true\r"
+expect "$ "
+
+send "sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'\r"
+expect "$ "
+
+send "exit\r"
+expect eof

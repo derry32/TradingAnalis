@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Terminal Log ==="
+sudo docker exec ai-mt5-vnc bash -c '
+latest_term=$(ls -t "/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/"*.log 2>/dev/null | head -n 1)
+echo "Reading $latest_term"
+iconv -f UTF-16LE -t UTF-8 "$latest_term" 2>/dev/null | tail -n 20 || true
+'
+
+echo "=== Experts Log ==="
+sudo docker exec ai-mt5-vnc bash -c '
+latest_exp=$(ls -t "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/logs/"*.log 2>/dev/null | head -n 1)
+echo "Reading $latest_exp"
+iconv -f UTF-16LE -t UTF-8 "$latest_exp" 2>/dev/null | tail -n 25 || true
+'
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

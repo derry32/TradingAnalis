@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+set timeout 30
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+send "sudo docker exec ai-mt5-vnc cat '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/test.mq5'\r"
+expect "$ "
+
+send "sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine '/headless/.wine/drive_c/Program Files/MetaTrader 5/metaeditor64.exe' 'C:\\Program Files\\MetaTrader 5\\MQL5\\Experts\\test.mq5'\r"
+expect "$ "
+sleep 5
+
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool key F7\r"
+expect "$ "
+sleep 4
+
+send "sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log' | tail -n 6\r"
+expect "$ "
+
+send "sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'\r"
+expect "$ "
+
+send "exit\r"
+expect eof

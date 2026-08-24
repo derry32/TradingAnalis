@@ -1,0 +1,29 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Step 1: Create all Windows Temp directories in Wine ==="
+sudo docker exec -u root ai-mt5-vnc mkdir -p "/headless/.wine/drive_c/users/kasm-user/Temp"
+sudo docker exec -u root ai-mt5-vnc mkdir -p "/headless/.wine/drive_c/users/kasm-user/AppData/Local/Temp"
+sudo docker exec -u root ai-mt5-vnc mkdir -p "/headless/.wine/drive_c/windows/temp"
+sudo docker exec -u root ai-mt5-vnc chmod -R 777 "/headless/.wine/drive_c/users/kasm-user/Temp" "/headless/.wine/drive_c/users/kasm-user/AppData/Local/Temp" "/headless/.wine/drive_c/windows/temp"
+
+mkdir -p "/home/ubuntu/.wine/drive_c/users/ubuntu/Temp"
+mkdir -p "/home/ubuntu/.wine/drive_c/users/ubuntu/AppData/Local/Temp"
+mkdir -p "/home/ubuntu/.wine/drive_c/windows/temp"
+chmod -R 777 "/home/ubuntu/.wine/drive_c/users/ubuntu/Temp" "/home/ubuntu/.wine/drive_c/windows/temp"
+
+echo "=== Step 2: Test CLI compile with host Wine ==="
+cd "/home/ubuntu/.wine/drive_c/Program Files/MetaTrader 5"
+wine metaeditor64.exe /compile:"C:\\Program Files\\MetaTrader 5\\MQL5\\Experts\\AurumAI_Executor.mq5" /log:"C:\\Program Files\\MetaTrader 5\\compile_res.log" || true
+sleep 4
+
+echo "=== Step 3: Check compile_res.log ==="
+iconv -f UTF-16LE -t UTF-8 compile_res.log 2>/dev/null || cat compile_res.log 2>/dev/null
+
+echo "=== Step 4: Check if .ex5 exists ==="
+ls -la "MQL5/Experts/AurumAI_Executor"*
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

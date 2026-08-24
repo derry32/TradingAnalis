@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout 90
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u root ai-mt5-vnc bash -c "
+# Point 'wine' symlink to wine64-10.13
+which wine64
+ls -la /usr/bin/wine* 2>/dev/null || true
+ls -la /opt/wine-staging/bin/ 2>/dev/null || true
+update-alternatives --list wine 2>/dev/null || true
+"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

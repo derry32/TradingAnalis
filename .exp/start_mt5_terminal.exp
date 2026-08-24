@@ -1,0 +1,23 @@
+#!/usr/bin/expect -f
+set timeout 45
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+# Start MT5 terminal
+send "sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine 'C:\\Program Files\\MetaTrader 5\\terminal64.exe'\r"
+expect "$ "
+sleep 12
+
+# Check MT5 terminal log
+send "sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/20260808.log' | tail -n 20\r"
+expect "$ "
+
+# Check running processes
+send "sudo docker exec ai-mt5-vnc ps aux | grep -E 'terminal64|metaeditor' | grep -v grep\r"
+expect "$ "
+
+send "exit\r"
+expect eof

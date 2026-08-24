@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -e DISPLAY=:1 ai-mt5-vnc import -window root /tmp/screen.png 2>/dev/null || true
+sudo docker exec -e DISPLAY=:1 ai-mt5-vnc scrot /tmp/screen.png 2>/dev/null || true
+sudo docker exec ai-mt5-vnc ls -la /tmp/screen.png 2>/dev/null || true
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

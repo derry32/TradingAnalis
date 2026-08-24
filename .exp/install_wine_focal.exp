@@ -1,0 +1,18 @@
+#!/usr/bin/expect -f
+set timeout 300
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u root ai-mt5-vnc bash -c "
+# Ubuntu 20.04 focal - use focal wine repo
+dpkg --add-architecture i386 2>/dev/null || true
+mkdir -pm755 /etc/apt/keyrings
+wget -qO /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+echo 'deb [arch=amd64,i386 signed-by=/etc/apt/keyrings/winehq-archive.key] https://dl.winehq.org/wine-builds/ubuntu/ focal main' > /etc/apt/sources.list.d/winehq.list
+apt-get update -qq 2>&1 | tail -3
+apt-get install -y --install-recommends winehq-staging 2>&1 | tail -10
+wine --version
+"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

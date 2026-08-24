@@ -1,0 +1,26 @@
+#!/usr/bin/expect -f
+set timeout 300
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u root ai-mt5-vnc bash -c "
+echo '=== Removing broken kisak-mesa PPA ==='
+rm -f /etc/apt/sources.list.d/kisak-*.list
+rm -f /etc/apt/sources.list.d/*kisak*
+
+echo '=== Also removing duplicate winehq entry from main sources.list ==='
+sed -i '/dl.winehq.org/d' /etc/apt/sources.list
+
+echo '=== Updating apt ==='
+apt-get update -qq 2>&1 | grep -E '(Get:|Ign:|Err:)' | tail -10
+
+echo '=== Installing wine-staging amd64 only (no i386 needed for MT5 64bit) ==='
+apt-get install -y --no-install-recommends wine-staging-amd64 wine-staging 2>&1 | tail -15
+
+echo '=== Wine version ==='
+wine --version
+wine64 --version 2>/dev/null || true
+"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

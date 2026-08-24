@@ -1,0 +1,68 @@
+#!/usr/bin/expect -f
+set timeout 40
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Step 1: Check chart01.chr expert configuration ==="
+sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 "/headless/.wine/drive_c/Program Files/MetaTrader 5/Profiles/Charts/Default/chart01.chr" 2>/dev/null | grep -i -A 35 "<expert>" || true
+
+echo "=== Step 2: Ensure AurumAI_Executor is in chart01.chr ==="
+sudo docker exec ai-mt5-vnc python3 -c '
+chr_path = "/headless/.wine/drive_c/Program Files/MetaTrader 5/Profiles/Charts/Default/chart01.chr"
+try:
+    with open(chr_path, "rb") as f:
+        content = f.read().decode("utf-16le")
+except Exception as e:
+    print("Error reading chr:", e)
+    exit(0)
+
+if "<expert>" not in content:
+    print("Injecting expert into chart01.chr...")
+    expert_block = """<expert>
+name=AurumAI_Executor
+flags=343
+window_num=0
+<inputs>
+InpApiUrl=http://43.156.79.235:3002
+InpApiToken=aurum_secret_bridge_token_2026
+InpTimerSeconds=1
+InpNumMarket=3
+InpNumLimit=2
+InpMinLot=0.03
+InpMidLot=0.05
+InpMaxLot=0.09
+InpStepPoints=35
+InpMaxPositions=15
+InpMagic=778899
+InpMaxSpread=400
+InpSlippage=30
+InpDemoOnly=1
+InpBasketTP=1
+InpHalfSecured=1
+</inputs>
+</expert>
+"""
+    # Insert right before </chart>
+    if "</chart>" in content:
+        content = content.replace("</chart>", expert_block + "</chart>")
+        with open(chr_path, "wb") as f:
+            f.write(content.encode("utf-16le"))
+        print("Expert block injected successfully!")
+else:
+    print("Expert already present in chart01.chr")
+'
+
+echo "=== Step 3: Restart MT5 and verify startup ==="
+sudo docker exec -u kasm-user -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wineserver -k || true
+sleep 2
+sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine "/headless/.wine/drive_c/Program Files/MetaTrader 5/terminal64.exe" /portable
+sleep 8
+
+echo "=== Step 4: Check Today Experts Log ==="
+sudo docker exec ai-mt5-vnc bash -c '
+today=$(date +%Y%m%d)
+iconv -f UTF-16LE -t UTF-8 "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/logs/$today.log" 2>/dev/null | tail -n 35 || true
+'
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

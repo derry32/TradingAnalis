@@ -1,0 +1,73 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec ai-mt5-vnc python3 -c '
+chr_path = "/headless/.wine/drive_c/Program Files/MetaTrader 5/Profiles/Charts/Default/chart01.chr"
+with open(chr_path, "rb") as f:
+    raw = f.read()
+text = raw.decode("utf-16le", errors="ignore")
+
+expert_block = """<expert>
+name=AurumAI_Executor
+flags=339
+window_num=0
+<inputs>
+InpApiUrl=http://43.156.79.235:3002
+InpApiToken=aurum_secret_bridge_token_2026
+InpTimerSeconds=1
+InpNumMarket=3
+InpNumLimit=2
+InpMinLot=0.03
+InpMidLot=0.05
+InpMaxLot=0.09
+InpStepPoints=35
+InpMaxPositions=15
+InpMagic=778899
+InpMaxSpread=400
+InpSlippage=30
+InpDemoOnly=1
+InpBEMultiplier=1.2
+InpPartialR=1.5
+InpTrailingStartR=2.0
+InpTrailingATR2R=2.0
+InpTrailingATR3R=1.5
+InpTrailingATR4R=1.0
+InpTimeStopMinR=0.5
+InpTSAtrSmall=1.5
+InpTSAtrLarge=5.0
+InpTSMinsSmall=20
+InpTSMinsNormal=30
+InpTSMinsLarge=45
+InpDailyMaxLossPct=3.0
+</inputs>
+</expert>
+</chart>
+"""
+
+# Replace from <expert> to </chart>
+idx = text.find("<expert>")
+if idx >= 0:
+    new_text = text[:idx] + expert_block
+else:
+    chart_end = text.find("</chart>")
+    if chart_end >= 0:
+        new_text = text[:chart_end] + expert_block
+    else:
+        new_text = text + expert_block
+
+with open(chr_path, "wb") as f:
+    f.write(new_text.encode("utf-16le"))
+print("chart01.chr updated successfully!")
+'
+echo "=== Restarting MT5 ==="
+sudo docker exec ai-mt5-vnc pkill terminal64.exe || true
+sleep 3
+sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine "/headless/.wine/drive_c/Program Files/MetaTrader 5/terminal64.exe"
+sleep 7
+today=$(date +%Y%m%d)
+sudo docker exec ai-mt5-vnc bash -c "iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/logs/'$today.log | tail -n 40"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

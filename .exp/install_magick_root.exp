@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker exec -u root ai-mt5-vnc apt-get update -qq && sudo docker exec -u root ai-mt5-vnc apt-get install -y -qq imagemagick"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

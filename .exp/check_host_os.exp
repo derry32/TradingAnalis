@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+which wine wine64 docker 2>/dev/null || true
+wine --version 2>/dev/null || echo "host has no wine"
+docker --version
+cat /etc/os-release | grep PRETTY_NAME
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

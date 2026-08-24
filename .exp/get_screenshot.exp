@@ -1,0 +1,17 @@
+#!/usr/bin/expect -f
+set timeout 30
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+    sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xwd -root -silent -out /tmp/vnc_screen.xwd
+    sudo docker cp ai-mt5-vnc:/tmp/vnc_screen.xwd /tmp/vnc_screen.xwd
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}
+
+spawn scp -o StrictHostKeyChecking=no ubuntu@43.156.79.235:/tmp/vnc_screen.xwd /tmp/vnc_screen.xwd
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

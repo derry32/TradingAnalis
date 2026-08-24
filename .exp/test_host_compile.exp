@@ -1,0 +1,18 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Compiling AurumAI_Executor.mq5 with MetaEditor64 ==="
+cd /home/ubuntu/mt5_build
+rm -f compile.log MQL5/Experts/AurumAI_Executor.ex5
+export WINEDEBUG=-all
+wine ./metaeditor64.exe /compile:"Z:\\home\\ubuntu\\mt5_build\\MQL5\\Experts\\AurumAI_Executor.mq5" /log:"Z:\\home\\ubuntu\\mt5_build\\compile.log" || true
+sleep 4
+echo "=== Compile Log ==="
+iconv -f UTF-16LE -t UTF-8 compile.log 2>/dev/null || cat compile.log 2>/dev/null
+echo "=== Check .ex5 ==="
+ls -la MQL5/Experts/AurumAI_Executor*
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

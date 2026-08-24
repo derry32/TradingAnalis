@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc bash -c '
+WID=$(xdotool search --name "MetaEditor" | head -1)
+echo "MetaEditor Window ID: $WID"
+if [ -n "$WID" ]; then
+    xdotool windowactivate --sync "$WID"
+    sleep 1
+    # Save open file
+    xdotool key --window "$WID" ctrl+s
+    sleep 1
+    # Press F7 (Compile)
+    echo "Sending F7 to $WID..."
+    xdotool key --window "$WID" F7
+    sleep 4
+fi
+'
+echo "=== METAEDITOR LOG ==="
+sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 "/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log" | tail -n 10
+echo "=== CHECK EXPERTS DIR ==="
+sudo docker exec ai-mt5-vnc ls -la "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

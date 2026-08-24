@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+set timeout 45
+spawn scp -o StrictHostKeyChecking=no ./mt5/test_probe.mq5 ubuntu@43.156.79.235:/tmp/
+expect "password:"
+send "thunder-29%-quantum\r"
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+send "sudo docker cp /tmp/test_probe.mq5 ai-mt5-vnc:'/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/test_probe.mq5'\r"
+expect "$ "
+
+send "sudo /tmp/remote_compile.sh test_probe.mq5\r"
+expect "$ "
+
+send "exit\r"
+expect eof

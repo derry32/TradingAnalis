@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+set timeout 30
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+    echo "=== 1. Check metaeditor.log ==="
+    sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log' | tail -n 8
+
+    echo "=== 2. Check EX5 file generation ==="
+    sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

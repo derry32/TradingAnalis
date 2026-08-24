@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 180
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+# Check Ubuntu version first
+sudo docker exec ai-mt5-vnc lsb_release -a 2>/dev/null || sudo docker exec ai-mt5-vnc cat /etc/os-release
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

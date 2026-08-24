@@ -1,0 +1,19 @@
+#!/usr/bin/expect -f
+set timeout 30
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xwd -root -out /tmp/screen_now.xwd\r"
+expect "$ "
+
+send "sudo docker cp ai-mt5-vnc:/tmp/screen_now.xwd /home/ubuntu/screen_now.xwd\r"
+expect "$ "
+
+send "sudo chmod 666 /home/ubuntu/screen_now.xwd\r"
+expect "$ "
+
+send "exit\r"
+expect eof

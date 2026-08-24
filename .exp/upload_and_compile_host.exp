@@ -1,0 +1,5 @@
+#!/usr/bin/expect -f
+set timeout 120
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Step 1: Copy clean mq5 to host ==="
+cat << 'EOF' > /home/ubuntu/mt5_build/MQL5/Experts/AurumAI_Executor.mq5

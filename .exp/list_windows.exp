@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+set timeout 45
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+# List all visible windows
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool search --onlyvisible --name ''\r"
+expect "$ "
+
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc wmctrl -l\r"
+expect "$ "
+
+# Look for MetaEditor window specifically
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool search --name 'MetaEditor'\r"
+expect "$ "
+
+send "exit\r"
+expect eof

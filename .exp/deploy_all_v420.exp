@@ -1,0 +1,69 @@
+#!/usr/bin/expect -f
+set timeout 90
+
+# 1. Sync updated backend & MQ5 to VPS
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+  echo "=== 1. SYNCING BACKEND CODE ==="
+  mkdir -p /home/ubuntu/TradingAnalis/backend/src/services
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}
+
+# 2. SCP modified files to VPS
+spawn scp -o StrictHostKeyChecking=no backend/src/index.ts backend/src/services/featureEngine.ts backend/src/services/confidenceEngine.ts backend/src/services/signalStateMachine.ts backend/src/services/marketDataService.ts backend/src/services/mt5Bridge.ts backend/src/services/preNewsEngine.ts ubuntu@43.156.79.235:/home/ubuntu/TradingAnalis/backend/src/services/
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}
+
+spawn scp -o StrictHostKeyChecking=no backend/src/index.ts ubuntu@43.156.79.235:/home/ubuntu/TradingAnalis/backend/src/index.ts
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}
+
+spawn scp -o StrictHostKeyChecking=no mt5/AurumAI_Executor.mq5 ubuntu@43.156.79.235:/tmp/AurumAI_Executor.mq5
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}
+
+# 3. Build backend, compile MQ5 in MT5 VPS, and restart services
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+  echo "=== 2. BUILDING BACKEND ON VPS ==="
+  cd /home/ubuntu/TradingAnalis/backend
+  npm run build
+  sudo docker restart ai-backend
+  sleep 3
+
+  echo "=== 3. COPYING & COMPILING AURUM AI v4.20 MQ5 ==="
+  sudo docker cp /tmp/AurumAI_Executor.mq5 ai-mt5-vnc:'/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor.mq5'
+  
+  # Launch MetaEditor
+  sudo docker exec ai-mt5-vnc pkill -9 -f MetaEditor64.exe || true
+  sleep 1
+  sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine '/headless/.wine/drive_c/Program Files/MetaTrader 5/MetaEditor64.exe' 'C:\Program Files\MetaTrader 5\MQL5\Experts\AurumAI_Executor.mq5'
+  sleep 6
+  
+  # Send F7 to compile
+  sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc bash -c 'WID=$(xdotool search --onlyvisible --class metaeditor | head -1); xdotool windowactivate --sync $WID; sleep 1; xdotool key F7; sleep 4;'
+  
+  echo "=== 4. COMPILATION LOG ==="
+  sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log' | tail -n 6
+  
+  echo "=== 5. RESTARTING MT5 TERMINAL TO LOAD v4.20 ==="
+  sudo docker exec ai-mt5-vnc pkill -9 -f terminal64.exe || true
+  sleep 2
+  sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine '/headless/.wine/drive_c/Program Files/MetaTrader 5/terminal64.exe'
+  sleep 8
+  
+  echo "=== 6. VERIFYING MT5 EXPERTS LOG ==="
+  today=$(date +%Y%m%d)
+  sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Logs/$today.log" 2>/dev/null | tail -n 25 || true
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

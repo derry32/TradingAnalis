@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+set timeout 120
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+# Download wine-staging deb packages manually for focal
+sudo docker exec -u root ai-mt5-vnc bash -c "
+cd /tmp
+WINE_VER=9.0.0.0~focal-1
+wget -q 'https://dl.winehq.org/wine-builds/ubuntu/dists/focal/main/binary-amd64/wine-staging-amd64_${WINE_VER}_amd64.deb' -O wine-staging-amd64.deb 2>&1 && echo 'DL OK amd64' || echo 'DL FAIL amd64'
+wget -q 'https://dl.winehq.org/wine-builds/ubuntu/dists/focal/main/binary-amd64/wine-staging_${WINE_VER}_amd64.deb' -O wine-staging.deb 2>&1 && echo 'DL OK staging' || echo 'DL FAIL staging'
+ls -la /tmp/wine-staging*.deb 2>/dev/null || echo 'no debs found'
+"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

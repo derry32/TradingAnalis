@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker exec ai-backend sed -i 's/if (evaluation.direction !== \\\"WAIT\\\" && evaluation.totalScore >= 55 && !isGuardActive) {/console.log(\\\"[M1 DEBUG] Score:\\\", evaluation.totalScore, \\\"Dir:\\\", evaluation.direction, \\\"Reasons:\\\", evaluation.reasons); if (evaluation.direction !== \\\"WAIT\\\" && evaluation.totalScore >= 55 && !isGuardActive) {/' /app/src/index.ts && sudo docker restart ai-backend"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

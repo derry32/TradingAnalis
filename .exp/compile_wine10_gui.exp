@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+set timeout 45
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+# Launch MetaEditor fresh with the file
+send "sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine 'C:\\Program Files\\MetaTrader 5\\metaeditor64.exe' 'C:\\Program Files\\MetaTrader 5\\MQL5\\Experts\\AurumAI_Executor.mq5'\r"
+expect "$ "
+sleep 6
+
+# Find MetaEditor window and send F7
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc bash -c 'WID=\$(/usr/bin/xdotool search --name MetaEditor | head -1); echo WID=\$WID; /usr/bin/xdotool windowactivate --sync \$WID; sleep 1; /usr/bin/xdotool key F7; sleep 5; echo COMPILED'\r"
+expect "$ "
+
+# Read log
+send "sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log' | tail -n 6\r"
+expect "$ "
+
+# Check if .ex5 was created
+send "sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'\r"
+expect "$ "
+
+send "exit\r"
+expect eof

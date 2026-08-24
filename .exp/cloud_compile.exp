@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+set timeout 60
+# Try Ctrl+F7 (Cloud Compile) instead of F7 (local compile)
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec ai-mt5-vnc pkill -9 -f MetaEditor64.exe || true
+sleep 2
+sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine "/headless/.wine/drive_c/Program Files/MetaTrader 5/MetaEditor64.exe" "C:\Program Files\MetaTrader 5\MQL5\Experts\AurumAI_Executor.mq5"
+sleep 6
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool search --name "MetaEditor" windowactivate --sync
+sleep 1
+echo "Sending Ctrl+F7 (Cloud Compile)..."
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool key ctrl+F7
+sleep 8
+echo "=== METAEDITOR LOG ==="
+sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 "/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log" | tail -n 5
+echo "=== CHECK EXPERTS DIR ==="
+sudo docker exec ai-mt5-vnc ls -la "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+set timeout 120
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Step 1: Check wine command on host ==="
+which wine
+wine --version
+
+echo "=== Step 2: Copy MT5 files from container to host ==="
+mkdir -p /home/ubuntu/mt5_build
+sudo docker cp "ai-mt5-vnc:/headless/.wine/drive_c/Program Files/MetaTrader 5/." /home/ubuntu/mt5_build/
+sudo chown -R ubuntu:ubuntu /home/ubuntu/mt5_build
+
+echo "=== Step 3: Run MetaEditor compile under Wine 9.0 ==="
+export WINEDEBUG=-all
+wine /home/ubuntu/mt5_build/metaeditor64.exe /compile:"Z:\\home\\ubuntu\\mt5_build\\MQL5\\Experts\\AurumAI_Executor.mq5" /log:"Z:\\home\\ubuntu\\mt5_build\\compile.log" || true
+sleep 5
+
+echo "=== Step 4: Check Compile Log ==="
+iconv -f UTF-16LE -t UTF-8 /home/ubuntu/mt5_build/compile.log 2>/dev/null || cat /home/ubuntu/mt5_build/compile.log 2>/dev/null || echo "no log"
+
+echo "=== Step 5: Check if .ex5 was produced ==="
+ls -la /home/ubuntu/mt5_build/MQL5/Experts/AurumAI_Executor*
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

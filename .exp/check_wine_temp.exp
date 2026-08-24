@@ -1,0 +1,9 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u kasm-user -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine cmd /c "echo %TEMP% & echo %TMP% & dir \"%TEMP%\" & dir C:\\windows\\temp"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

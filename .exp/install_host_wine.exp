@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+set timeout 300
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Installing wine64 on Ubuntu 24.04 Host ==="
+sudo apt-get update -qq
+sudo apt-get install -y --no-install-recommends wine64 wine
+wine64 --version
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

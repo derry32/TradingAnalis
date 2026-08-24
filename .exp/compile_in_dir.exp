@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker exec -u kasm-user -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc bash -c \"cd '/headless/.wine/drive_c/Program Files/MetaTrader 5' && wine metaeditor64.exe /compile:MQL5\\\\Experts\\\\AurumAI_Executor.mq5 /log\""
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc bash -c '
+WID=$(xdotool search --name "MetaEditor" | head -1)
+if [ -n "$WID" ]; then
+    xdotool windowactivate --sync "$WID"
+    sleep 0.5
+    # Click at bottom toolbox area (e.g. x=200, y=700) to focus Errors tab
+    xdotool mousemove --window "$WID" 200 700 click 1
+    sleep 0.5
+    xdotool key --window "$WID" ctrl+a ctrl+c
+    sleep 0.5
+    echo "=== CLIPBOARD CONTENT ==="
+    xclip -selection clipboard -o 2>/dev/null || xsel -b 2>/dev/null || echo "no xclip"
+fi
+'
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

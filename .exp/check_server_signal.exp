@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+curl -s "http://127.0.0.1:3002/api/mt5/signals/latest?token=aurum_secret_bridge_token_2026"
+echo ""
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

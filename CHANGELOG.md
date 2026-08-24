@@ -2,6 +2,14 @@
 
 Semua pembaruan, peningkatan fitur, dan perbaikan bug pada proyek **Trading Analis** akan didokumentasikan di file ini.
 
+## [1.9.7] - 2026-08-22
+### Ditambahkan
+- **Multi-Layer / Burst Scalper Tracking (Option C):** Merombak sistem pelacakan profit MT5 agar mendukung eksekusi multi-tiket (*Burst Layer*) untuk satu sinyal AI.
+  - **Database:** Menambahkan tabel relasional `signal_layers` di Supabase untuk mencatat riwayat eksekusi setiap nomor tiket (Ticket Number), status (TP/SL), dan profit individual.
+  - **Aggregated Profit:** Sistem `backend` kini tidak lagi menimpa profit (*overwrite*), melainkan menjumlahkan/mengagregasi seluruh profit dari beberapa tiket yang terikat pada satu *Signal ID*, memberikan laporan akumulasi bersih di dasbor.
+  - **Expandable UI:** Halaman *History* di web *frontend* (mode Robot MT5) kini mendukung tampilan *dropdown/expandable* pada *Signal ID*. Pengguna dapat mengklik ID untuk melihat rincian setiap layer/tiket yang dieksekusi oleh EA lengkap dengan waktu *Hit TP/SL*.
+- **Fitur Ekspor Excel:** Menambahkan tombol **Export Excel** di halaman *History* agar pengguna bisa mengunduh riwayat performa AI dan Robot MT5 ke dalam format `.csv`.
+
 ## [1.9.6] - 2026-08-20
 ### Ditambahkan
 - **Adaptive Entry Logging (Option A+):** Memodifikasi sistem penolakan sinyal pada *Signal Generator*. Sistem kini mampu membedakan antara "Setup Jelek" dan "Setup Bagus Tapi Lokasi Jelek". Jika *Confidence Score* terbukti sangat tinggi ($\ge 85$) namun jarak *Stop Loss* melampaui batas aman ($> \$5.50$), AI tidak akan membuang sinyal dengan alasan *Stop Loss* lebar secara generik. Melainkan, AI secara cerdas akan memberikan aksi spesifik `WAIT FOR PULLBACK`, memberikan instruksi visual bahwa market sedang mengalami momentum kuat namun belum memberikan harga "diskon" yang aman untuk masuk.

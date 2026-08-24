@@ -1,0 +1,28 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "cd /home/ubuntu/TradingAnalis/backend && sudo docker exec ai-backend npx tsx -e \"
+import { confidenceEngine } from './src/services/confidenceEngine';
+import { marketData } from './src/services/marketData';
+import { featureEngine } from './src/services/featureEngine';
+import { technical } from './src/services/technical';
+
+async function run() {
+    await marketData.initialize();
+    const data = marketData.getLatestData();
+    if (!data.currentM1) { console.log('No M1 data'); return; }
+    const currentPrice = data.currentM1.close;
+    const snapshot = featureEngine.generateSnapshot(
+        data.m1, data.m5, data.m15, data.h1, currentPrice
+    );
+    const evaluation = confidenceEngine.evaluate(snapshot);
+    console.log(JSON.stringify(evaluation, null, 2));
+}
+run();
+\""
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

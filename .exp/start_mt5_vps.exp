@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "cd ~/TradingAnalis && sudo docker rm -f ai-mt5-vnc 2>/dev/null || true && sudo docker run -d --name ai-mt5-vnc --restart always -e VNC_PW=aurum2026 -p 6901:6901 -p 5901:5901 -v \$(pwd)/mt5:/headless/Desktop/Aurum_EA elestio/metatrader5:latest"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

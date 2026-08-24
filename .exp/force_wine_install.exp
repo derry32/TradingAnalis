@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+set timeout 300
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u root ai-mt5-vnc bash -c "
+# Force install wine-staging directly from deb packages
+apt-get -y -f install 2>&1 | tail -5
+apt-get install -y wine-staging-amd64 wine-staging-i386:i386 wine-staging 2>&1 | tail -20
+wine --version
+"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

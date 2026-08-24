@@ -1,0 +1,51 @@
+#!/usr/bin/expect -f
+set timeout 60
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+send "echo '=== 1. Build Backend inside Docker ==='\r"
+send "sudo docker exec ai-backend npm run build\r"
+expect "$ "
+
+send "echo '=== 2. Restart backend ==='\r"
+send "sudo docker restart ai-backend\r"
+expect "$ "
+
+send "echo '=== 3. Check MQ5 file size in container ==='\r"
+send "sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor.mq5'\r"
+expect "$ "
+
+send "echo '=== 4. Launch MetaEditor & Compile ==='\r"
+send "sudo docker exec ai-mt5-vnc pkill -9 -f MetaEditor64.exe || true\r"
+expect "$ "
+
+send "sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine '/headless/.wine/drive_c/Program Files/MetaTrader 5/MetaEditor64.exe' '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor.mq5'\r"
+expect "$ "
+
+sleep 7
+
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc bash -c 'xdotool search --name \"MetaEditor\" windowactivate --sync key F7; sleep 4;'\r"
+expect "$ "
+
+send "echo '=== 5. Check EX5 file generation ==='\r"
+send "sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'\r"
+expect "$ "
+
+send "echo '=== 6. Restart MT5 ==='\r"
+send "sudo docker exec ai-mt5-vnc pkill -9 -f terminal64.exe || true\r"
+expect "$ "
+sleep 2
+
+send "sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine '/headless/.wine/drive_c/Program Files/MetaTrader 5/terminal64.exe'\r"
+expect "$ "
+sleep 6
+
+send "echo '=== 7. Tail Experts Log ==='\r"
+send "sudo docker exec ai-mt5-vnc bash -c 'tail -n 25 /headless/.wine/drive_c/Program\\ Files/MetaTrader\\ 5/MQL5/Logs/\$(date +%Y%m%d).log' || true\r"
+expect "$ "
+
+send "exit\r"
+expect eof

@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u root ai-mt5-vnc bash -c "
+# Find the new wine64-10.13 binary
+find /opt -name 'wine64' 2>/dev/null
+ls /opt/ 2>/dev/null
+/opt/wine-staging/bin/wine64 --version 2>/dev/null || echo 'not at /opt/wine-staging'
+dpkg -L wine-staging-amd64 2>/dev/null | grep -i wine64 | head -5
+"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

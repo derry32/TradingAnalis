@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+set timeout 45
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+# MetaEditor main window ID from wmctrl is 0x03600001 (decimal: 56623105)
+# Activate MetaEditor window and send F7
+send "sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc bash -c 'xdotool windowfocus 56623105; sleep 0.5; xdotool key F7; sleep 4'\r"
+expect "$ "
+
+# Check compile result
+send "sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log' | tail -n 4\r"
+expect "$ "
+
+send "sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'\r"
+expect "$ "
+
+send "exit\r"
+expect eof

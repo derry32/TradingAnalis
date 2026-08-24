@@ -1,0 +1,7 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn scp -o StrictHostKeyChecking=no /Users/badrinteractive/Documents/TradingAnalis/mt5/AurumAI_Executor.mq5 ubuntu@43.156.79.235:/home/ubuntu/mt5_build/MQL5/Experts/AurumAI_Executor.mq5
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec ai-mt5-vnc bash -c "python3 -c \"
+import subprocess
+try:
+    subprocess.run(['xwd', '-root', '-display', ':1', '-out', '/tmp/screen.xwd'], check=True)
+    subprocess.run(['convert', '/tmp/screen.xwd', '/tmp/screen.png'], check=True)
+    print('SCREENSHOT_OK')
+except Exception as e:
+    print('ERROR:', e)
+\""
+}
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 300
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "cd /home/ubuntu/TradingAnalis && git pull && cd frontend && sudo docker build -t ai-frontend-img . && sudo docker stop ai-frontend || true && sudo docker rm -f ai-frontend || true && sudo docker run -d --name ai-frontend -p 3000:3000 --restart always ai-frontend-img"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

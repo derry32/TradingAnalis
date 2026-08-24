@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool search --name "MetaEditor" windowactivate --sync
+sleep 1
+# Press F4 (Next Error)
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool key F4
+sleep 1
+# Copy selected line in editor
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool key ctrl+c
+sleep 0.5
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xclip -o -selection clipboard 2>/dev/null || true
+}
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}

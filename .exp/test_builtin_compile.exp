@@ -1,0 +1,26 @@
+#!/usr/bin/expect -f
+set timeout 30
+# Test compile a simple built-in example first
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool search --name "MetaEditor" windowactivate --sync
+sleep 1
+# Open built-in Moving Average expert
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool key ctrl+o
+sleep 1.5
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool key ctrl+a
+sleep 0.3
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool type "C:\\Program Files\\MetaTrader 5\\MQL5\\Experts\\Examples\\Moving Average\\Moving Average.mq5"
+sleep 0.5
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool key Return
+sleep 2
+sudo docker exec -u kasm-user -e DISPLAY=:1 ai-mt5-vnc xdotool key F7
+sleep 4
+echo "=== METAEDITOR LOG (last 3 lines) ==="
+sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 "/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log" | tail -n 3
+echo "=== CHECK EX5 ==="
+sudo docker exec ai-mt5-vnc ls -la "/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/Examples/Moving Average/"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec ai-mt5-vnc which xdotool xwininfo xwd 2>/dev/null || true
+sudo docker exec -e DISPLAY=:1 ai-mt5-vnc xdotool search --onlyvisible "" getwindowname %@ 2>/dev/null || true
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

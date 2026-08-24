@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+echo "=== Setup MT5 in Wine C: drive ==="
+mkdir -p "/home/ubuntu/.wine/drive_c/Program Files/MetaTrader 5"
+cp -r /home/ubuntu/mt5_build/* "/home/ubuntu/.wine/drive_c/Program Files/MetaTrader 5/"
+
+echo "=== Test Compile using C: path ==="
+cd "/home/ubuntu/.wine/drive_c/Program Files/MetaTrader 5"
+wine metaeditor64.exe /compile:"C:\\Program Files\\MetaTrader 5\\MQL5\\Experts\\test.mq5" /log:"C:\\Program Files\\MetaTrader 5\\test.log" || true
+sleep 4
+
+echo "=== Compile Log ==="
+iconv -f UTF-16LE -t UTF-8 test.log 2>/dev/null || cat test.log 2>/dev/null
+ls -la "MQL5/Experts/test"*
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

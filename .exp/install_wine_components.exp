@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+set timeout 180
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -u root ai-mt5-vnc bash -c "
+# Install wine-stable components separately
+apt-get install -y wine-stable-amd64 wine-stable-i386 wine-stable 2>&1 | tail -15
+wine --version
+"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

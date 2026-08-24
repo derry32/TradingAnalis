@@ -1,0 +1,31 @@
+#!/usr/bin/expect -f
+set timeout 120
+
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235
+expect "password:"
+send "thunder-29%-quantum\r"
+expect "$ "
+
+# Kill ALL wine processes including MT5 and MetaEditor
+send "sudo docker exec ai-mt5-vnc pkill -9 -f 'wine\\|metaeditor\\|terminal' || true\r"
+expect "$ "
+sleep 2
+
+# Clear any stale MetaEditor lock files
+send "sudo docker exec ai-mt5-vnc find '/headless/.wine' -name '*.lock' -delete 2>/dev/null || true\r"
+expect "$ "
+
+# Start MetaEditor fresh via DISPLAY
+send "sudo docker exec -u kasm-user -d -e DISPLAY=:1 -e WINEPREFIX=/headless/.wine ai-mt5-vnc wine '/headless/.wine/drive_c/Program Files/MetaTrader 5/metaeditor64.exe' '/compile:C:\\Program Files\\MetaTrader 5\\MQL5\\Experts\\AurumAI_Executor.mq5'\r"
+expect "$ "
+sleep 12
+
+# Check log
+send "sudo docker exec ai-mt5-vnc iconv -f UTF-16LE -t UTF-8 '/headless/.wine/drive_c/Program Files/MetaTrader 5/logs/metaeditor.log' | tail -n 8\r"
+expect "$ "
+
+send "sudo docker exec ai-mt5-vnc ls -la '/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/'\r"
+expect "$ "
+
+send "exit\r"
+expect eof

@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 {
+sudo docker exec -e DISPLAY=:1 ai-mt5-vnc bash -c "
+xwd -root -out /tmp/screen.xwd
+python3 -c \"
+import sys
+try:
+    from PIL import Image
+    im = Image.open('/tmp/screen.xwd')
+    im.save('/tmp/screen.png')
+    print('Converted with PIL OK')
+except Exception as e:
+    print('PIL error:', e)
+\" 2>/dev/null || true
+ls -la /tmp/screen*
+"
+}
+expect {
+    "password:" { send "thunder-29%-quantum\r"; exp_continue }
+    eof
+}

@@ -1,0 +1,19 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.156.79.235 "sudo docker cp ai-mt5-vnc:'/headless/.wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/AurumAI_Executor.ex5' /tmp/AurumAI_Executor.ex5"
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}
+
+spawn scp -o StrictHostKeyChecking=no ubuntu@43.156.79.235:/tmp/AurumAI_Executor.ex5 ./mt5/AurumAI_Executor.ex5
+expect {
+    "password:" {
+        send "thunder-29%-quantum\r"
+        exp_continue
+    }
+    eof
+}
