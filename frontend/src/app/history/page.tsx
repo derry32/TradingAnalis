@@ -209,45 +209,50 @@ export default function HistoryPage() {
         </header>
 
         {/* Global Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <div className={`grid grid-cols-1 md:grid-cols-3 ${viewMode === 'ROBOT' ? 'lg:grid-cols-6 grid-cols-2' : ''} gap-4 mb-8`}>
           <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-[0_0_15px_rgba(0,255,157,0.1)] relative z-10">
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
               <Target size={12} className="text-cyber-neon drop-shadow-[0_0_5px_rgba(0,255,157,0.8)]" /> Overall Win Rate
             </p>
-            <p className="text-2xl font-bold text-cyber-neon drop-shadow-[0_0_5px_rgba(0,255,157,0.8)]">{stats.winRate}%</p>
+            <p className={`${viewMode === 'ROBOT' ? 'text-2xl' : 'text-3xl'} font-bold text-cyber-neon drop-shadow-[0_0_5px_rgba(0,255,157,0.8)]`}>{stats.winRate}%</p>
           </div>
           <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-lg relative z-10">
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
               <CheckCircle2 size={12} className="text-gray-400" /> Perfect Trades
             </p>
-            <p className="text-2xl font-bold text-gray-200">{stats.perfectTrades}</p>
+            <p className={`${viewMode === 'ROBOT' ? 'text-2xl' : 'text-3xl'} font-bold text-gray-200`}>{stats.perfectTrades}</p>
           </div>
           <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-lg relative z-10">
             <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
               <BarChart2 size={12} className="text-gray-400" /> Total Signals
             </p>
-            <p className="text-2xl font-bold text-gray-200">{stats.totalSignals}</p>
+            <p className={`${viewMode === 'ROBOT' ? 'text-2xl' : 'text-3xl'} font-bold text-gray-200`}>{stats.totalSignals}</p>
           </div>
-          <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-lg relative z-10">
-            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
-              <TrendingUp size={12} className="text-emerald-400" /> Total Profit
-            </p>
-            <p className="text-lg font-bold text-emerald-400">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.totalGrossProfit)}</p>
-          </div>
-          <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-lg relative z-10">
-            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
-              <TrendingUp size={12} className="text-rose-400" /> Total Loss
-            </p>
-            <p className="text-lg font-bold text-rose-400">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.totalGrossLoss)}</p>
-          </div>
-          <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-lg relative z-10">
-            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
-              <Activity size={12} className={stats.totalNetProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'} /> Net Profit
-            </p>
-            <p className={`text-lg font-bold ${stats.totalNetProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {stats.totalNetProfit > 0 ? '+' : ''}{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.totalNetProfit)}
-            </p>
-          </div>
+          
+          {viewMode === 'ROBOT' && (
+            <>
+              <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-lg relative z-10">
+                <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
+                  <TrendingUp size={12} className="text-emerald-400" /> Total Profit
+                </p>
+                <p className="text-lg font-bold text-emerald-400">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.totalGrossProfit)}</p>
+              </div>
+              <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-lg relative z-10">
+                <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
+                  <TrendingUp size={12} className="text-rose-400" /> Total Loss
+                </p>
+                <p className="text-lg font-bold text-rose-400">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.totalGrossLoss)}</p>
+              </div>
+              <div className="cyber-card-glow backdrop-blur-md rounded-xl p-5 shadow-lg relative z-10">
+                <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1">
+                  <Activity size={12} className={stats.totalNetProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'} /> Net Profit
+                </p>
+                <p className={`text-lg font-bold ${stats.totalNetProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {stats.totalNetProfit > 0 ? '+' : ''}{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.totalNetProfit)}
+                </p>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Data Table */}
