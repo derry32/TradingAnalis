@@ -48,6 +48,105 @@ string   g_activeDir         = "";
 double   g_signalOpenPx      = 0.0;
 datetime g_signalOpenTime    = 0;
 bool     g_beDone            = false;
+
+struct ClosedSignal {
+   string signalId;
+   ulong ticket;
+   double profit;
+   double closePrice;
+};
+ClosedSignal g_closeQueue[];
+ulong g_reportedPositions[];  // Track position IDs already reported
+
+void QueueCloseAck(string signalId, ulong ticket, double profit, double closePrice)
+{
+   // Deduplicate: skip if already queued/reported
+   for(int i=0; i<ArraySize(g_reportedPositions); i++)
+      if(g_reportedPositions[i] == ticket) return;
+   
+   int sz = ArraySize(g_reportedPositions);
+   ArrayResize(g_reportedPositions, sz + 1);
+   g_reportedPositions[sz] = ticket;
+   
+   int size = ArraySize(g_closeQueue);
+   ArrayResize(g_closeQueue, size + 1);
+   g_closeQueue[size].signalId = signalId;
+   g_closeQueue[size].ticket = ticket;
+   g_closeQueue[size].profit = profit;
+   g_closeQueue[size].closePrice = closePrice;
+}
+
+//+------------------------------------------------------------------+
+//| History polling: detect ALL closed positions reliably             |
+//+------------------------------------------------------------------+
+void CheckAndReportClosedPositions()
+{
+   // Scan history for last 10 minutes
+   datetime since = TimeCurrent() - 600;
+   if(!HistorySelect(since, TimeCurrent())) return;
+
+   int total = HistoryDealsTotal();
+   for(int i = 0; i < total; i++)
+   {
+      ulong dealTicket = HistoryDealGetTicket(i);
+      if(dealTicket == 0) continue;
+
+      // Only our magic number
+      long magic = HistoryDealGetInteger(dealTicket, DEAL_MAGIC);
+      if(magic != InpMagicNumber) continue;
+
+      // Only closing deals
+      long entry = HistoryDealGetInteger(dealTicket, DEAL_ENTRY);
+      if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_INOUT) continue;
+
+      ulong posId = (ulong)HistoryDealGetInteger(dealTicket, DEAL_POSITION_ID);
+
+      // Skip if already reported
+      bool alreadyDone = false;
+      for(int j = 0; j < ArraySize(g_reportedPositions); j++)
+         if(g_reportedPositions[j] == posId) { alreadyDone = true; break; }
+      if(alreadyDone) continue;
+
+      double profit     = HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
+      double closePrice = HistoryDealGetDouble(dealTicket, DEAL_PRICE);
+
+      // Get signalId from the OPENING deal's comment (closing deals have empty comments)
+      string signalId = g_activeSignalId; // fallback
+      
+      // Find opening deal of this position to read original comment
+      for(int k = 0; k < total; k++)
+      {
+         ulong openDeal = HistoryDealGetTicket(k);
+         if(openDeal == 0) continue;
+         if((ulong)HistoryDealGetInteger(openDeal, DEAL_POSITION_ID) != posId) continue;
+         if(HistoryDealGetInteger(openDeal, DEAL_ENTRY) != DEAL_ENTRY_IN) continue;
+         
+         string openComment = HistoryDealGetString(openDeal, DEAL_COMMENT);
+         string prefix = "Aurum-";
+         int prefixPos = StringFind(openComment, prefix);
+         if(prefixPos >= 0)
+         {
+            int spacePos = StringFind(openComment, " ", prefixPos);
+            if(spacePos > 0)
+            {
+               string extracted = StringSubstr(openComment, spacePos + 1);
+               StringTrimLeft(extracted);
+               StringTrimRight(extracted);
+               if(StringLen(extracted) > 0) signalId = extracted;
+            }
+         }
+         break;
+      }
+
+      if(signalId != "")
+      {
+         PrintFormat("[POLL CLOSE] PosID #%d | Profit: %.2f | Price: %.2f | Signal: %s",
+                     posId, profit, closePrice, signalId);
+         QueueCloseAck(signalId, posId, profit, closePrice);
+      }
+   }
+}
+
 bool     g_isInitialized     = false;
 
 //+------------------------------------------------------------------+
@@ -119,7 +218,7 @@ string SendGetRequest(string url)
    string serverHeaders;
    char dummyData[];
    ArrayResize(dummyData, 0);
-   int res = WebRequest("GET", url, "", 3000, dummyData, serverResult, serverHeaders);
+   int res = WebRequest("GET", url, "", 15000, dummyData, serverResult, serverHeaders);
    if(res == 200)
       return CharArrayToString(serverResult);
    if(GetLastError() == 4014)
@@ -133,14 +232,14 @@ string SendGetRequest(string url)
 void SendAck(string signalId, ulong ticket, double price, string status, long spread)
 {
    string url = InpApiUrl + "/api/mt5/signals/ack";
-   string payload = StringFormat("{\"token\":\"%s\",\"signalId\":\"%s\",\"ticket\":%s,\"executedPrice\":%.2f,\"status\":\"%s\",\"spreadPips\":%d}",
-                                 InpApiToken, signalId, IntegerToString((long)ticket), price, status, (int)(spread / 10));
+   string payload = StringFormat("{\"token\":\"%s\",\"signalId\":\"%s\",\"ticket\":%s,\"executedPrice\":%s,\"status\":\"%s\",\"spreadPips\":%d}",
+                                 InpApiToken, signalId, IntegerToString((long)ticket), DoubleToString(price, 2), status, (int)(spread / 10));
    char postData[];
    StringToCharArray(payload, postData, 0, StringLen(payload));
    char serverResult[];
    string serverHeaders;
    string headers = "Content-Type: application/json\r\n";
-   WebRequest("POST", url, headers, 3000, postData, serverResult, serverHeaders);
+   WebRequest("POST", url, headers, 15000, postData, serverResult, serverHeaders);
 }
 
 //+------------------------------------------------------------------+
@@ -149,14 +248,14 @@ void SendAck(string signalId, ulong ticket, double price, string status, long sp
 void SendCloseAck(string signalId, ulong ticket, double profit, double closePrice)
 {
    string url = InpApiUrl + "/api/mt5/signals/close";
-   string payload = StringFormat("{\"token\":\"%s\",\"signalId\":\"%s\",\"ticket\":%s,\"profit\":%.2f,\"closePrice\":%.2f}",
-                                 InpApiToken, signalId, IntegerToString((long)ticket), profit, closePrice);
+   string payload = StringFormat("{\"token\":\"%s\",\"signalId\":\"%s\",\"ticket\":%s,\"profit\":%s,\"closePrice\":%s}",
+                                 InpApiToken, signalId, IntegerToString((long)ticket), DoubleToString(profit, 2), DoubleToString(closePrice, 2));
    char postData[];
    StringToCharArray(payload, postData, 0, StringLen(payload));
    char serverResult[];
    string serverHeaders;
    string headers = "Content-Type: application/json\r\n";
-   WebRequest("POST", url, headers, 3000, postData, serverResult, serverHeaders);
+   WebRequest("POST", url, headers, 15000, postData, serverResult, serverHeaders);
 }
 
 //+------------------------------------------------------------------+
@@ -515,6 +614,19 @@ void OnTimer()
 {
    if(!g_isInitialized) return;
 
+   // 1. Poll MT5 history to detect ALL closed positions reliably (replaces OnTradeTransaction)
+   CheckAndReportClosedPositions();
+
+   // 2. Process queued close webhooks
+   if (ArraySize(g_closeQueue) > 0)
+   {
+      for (int i=0; i<ArraySize(g_closeQueue); i++)
+      {
+         SendCloseAck(g_closeQueue[i].signalId, g_closeQueue[i].ticket, g_closeQueue[i].profit, g_closeQueue[i].closePrice);
+      }
+      ArrayResize(g_closeQueue, 0);
+   }
+
    CheckSmartExits();
 
    MqlTick tick;
@@ -637,54 +749,6 @@ void OnTimer()
    }
 }
 
-//+------------------------------------------------------------------+
-//| Trade Transaction Event (Fired when order/deal is closed)        |
-//+------------------------------------------------------------------+
-void OnTradeTransaction(const MqlTradeTransaction& trans,
-                        const MqlTradeRequest& request,
-                        const MqlTradeResult& result)
-{
-   if (trans.type == TRADE_TRANSACTION_HISTORY_ADD)
-   {
-      if (trans.deal > 0)
-      {
-         if (HistoryDealSelect(trans.deal))
-         {
-            long magic = HistoryDealGetInteger(trans.deal, DEAL_MAGIC);
-            if (magic == InpMagicNumber)
-            {
-               long entry = HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
-               if (entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_INOUT)
-               {
-                  double profit = HistoryDealGetDouble(trans.deal, DEAL_PROFIT);
-                  double price = HistoryDealGetDouble(trans.deal, DEAL_PRICE);
-                  ulong ticket = HistoryDealGetInteger(trans.deal, DEAL_POSITION_ID);
-                  string comment = HistoryDealGetString(trans.deal, DEAL_COMMENT);
-                  
-                  // Extract signalId from comment: "Aurum-L1 TEST-12345"
-                  string signalId = g_activeSignalId; // fallback
-                  string prefix = "Aurum-";
-                  int prefixPos = StringFind(comment, prefix);
-                  if (prefixPos >= 0)
-                  {
-                     int spacePos = StringFind(comment, " ", prefixPos);
-                     if (spacePos > 0)
-                     {
-                        signalId = StringSubstr(comment, spacePos + 1);
-                        StringTrimLeft(signalId);
-                        StringTrimRight(signalId);
-                     }
-                  }
-                  
-                  if (signalId != "")
-                  {
-                     PrintFormat("[TRADE CLOSED] Ticket #%d | Profit: %.2f | Price: %.2f | Signal: %s", ticket, profit, price, signalId);
-                     SendCloseAck(signalId, ticket, profit, price);
-                  }
-               }
-            }
-         }
-      }
-   }
-}
+//+------------------------------------------------------------------+// OnTradeTransaction removed - replaced by CheckAndReportClosedPositions() polling
+// in OnTimer which is more reliable for burst close scenarios (TP hits with empty comments)
 //+------------------------------------------------------------------+
