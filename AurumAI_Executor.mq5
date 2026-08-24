@@ -15,13 +15,14 @@ input int    InpTimerSeconds       = 1;                                 // Polli
 
 //=== Inputs: Multi-Layer Burst Scalping ===
 input int    InpMultiLayerCount    = 5;     // Number of Burst Layers (5 Layers)
-input double InpMicroTPMin         = 8.0;   // Base Micro TP (pips: 8.0 = $0.80 Gold)
-input double InpMicroTPStep        = 1.0;   // TP Step per layer (pips)
+input double InpMicroTPMin         = 15.0;  // Base Micro TP (pips: 15.0 = $1.50 Gold)
+input double InpMicroTPStep        = 3.0;   // TP Step per layer (pips)
 input double InpDynamicMicroSL     = 10.0;  // Tight Micro SL (pips: 10.0 = $1.00 Gold)
-input double InpMinLot             = 0.02;  // Lot per layer for Conf < 75%
-input double InpMidLot             = 0.03;  // Lot per layer for Conf 75-84%
-input double InpMaxLot             = 0.05;  // Lot per layer for Conf >= 85%
+input double InpMinLot             = 0.01;  // Lot per layer for Conf < 75%
+input double InpMidLot             = 0.02;  // Lot per layer for Conf 75-84%
+input double InpMaxLot             = 0.03;  // Lot per layer for Conf >= 85%
 input int    InpMaxPositions       = 25;    // Max simultaneous open positions
+input double InpDailyLossLimitIDR  = 500000.0; // Daily Loss Limit (IDR/Cent) to stop EA if drawdown is too large
 
 //=== Inputs: Anti-Chasing & Signal TTL Guard ===
 input int    InpSignalTTLSec       = 30;    // Signal TTL (sec) - Discard stale signals

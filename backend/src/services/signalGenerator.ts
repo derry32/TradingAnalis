@@ -404,13 +404,13 @@ export class SignalGenerator {
       const availableRoom = Math.abs(maxTargetPrice - currentPrice);
       const trueRR = riskDist > 0 ? availableRoom / riskDist : 0;
       
-      if (trueRR < 1.3) {
-        roomRejectReason = `Ruang gerak tertahan S/R nyata (True RR ${trueRR.toFixed(1)}x < 1.3x). Hindari trading menabrak dinding.`;
+      if (trueRR < 1.0) {
+        roomRejectReason = `Ruang gerak tertahan S/R nyata (True RR ${trueRR.toFixed(1)}x < 1.0x). Hindari trading menabrak dinding.`;
         roomToTargetValid = false;
       }
 
       let roomPenalty = 0;
-      if (trueRR >= 1.3 && trueRR < 1.6) {
+      if (trueRR >= 1.0 && trueRR < 1.5) {
         roomPenalty = 6;
       }
 
