@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.0] - Sprint 5 (Dual-Engine AI & Timing Engine)
+### Ditambahkan
+- **M1 Timing Engine:** Mengubah arsitektur AI menjadi "Dual-Engine". M1 kini bertugas secara eksklusif sebagai penentu titik *entry* (Timing), sementara H1/M15/M5 bertugas mencari arah tren (Direction/Setup). AI kini tidak akan memaksakan masuk saat M5 *extended*, melainkan mewajibkan *Wait for Pullback*.
+- **M1 Order Block & Liquidity Sweep:** Otak M1 dibekali sensor deteksi blok order (Order Block) yang terkonfirmasi (wajib ada *Displacement* dan *Break of Structure*) dan deteksi *Liquidity Sweep* dengan konfirmasi *Reclaim*, menekan drastis sinyal palsu (menangkap pisau jatuh).
+- **Dynamic Noise Budget:** Menambahkan pengaman volatilitas presisi tinggi. Algoritma akan menghitung `(ATR M1 + Spread)` dan memblokir otomatis sinyal jika rasio keributan pasar (Noise) terlalu tinggi untuk menahan SL 10 pips.
+- **MFE & MAE Tracking (Empirical Data Logging):** EA `AurumAI_Executor.mq5` kini mencatat fluktuasi *Maximum Favorable Excursion* (MFE) dan *Maximum Adverse Excursion* (MAE) pada setiap transaksi terbuka secara *real-time* berbasis **Actual Fill Price**. Data pips maksimal dan kecepatan waktunya (detik) disimpan ke basis data Supabase untuk memvalidasi presisi *timing* AI di masa depan.
+### Diperbaiki
+- **Penyakit FOMO Pucuk:** Sinyal yang dikirim kini jauh lebih presisi untuk target *Hyper-Scalping* (8-12 pips) dengan probabilitas *Hit TP* yang lebih tinggi tanpa menjilat SL karena AI diwajibkan menunggu koreksi di M1 terlebih dahulu.
+
 ## [1.3.2] - Hotfix (MT5 Burst Layer Tracking)
 ### Diperbaiki
 - **Bug Fix MT5 Layer Drop (Burst Scalper):** Memperbaiki sistem pelacakan *close order* pada Robot EA MT5. Sebelumnya, MT5 menutup kelima layer secara bersamaan (karena kena TP), namun karena komentar (*comment*) pada tiket *closing* kosong, EA gagal mengekstrak Signal ID sehingga hanya 1 dari 5 tiket yang dikirim ke *backend*. 
