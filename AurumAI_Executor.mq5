@@ -268,11 +268,12 @@ void SendAck(string signalId, ulong ticket, double price, string status, long sp
 //+------------------------------------------------------------------+
 //| HTTP POST Acknowledge Signal Close                               |
 //+------------------------------------------------------------------+
-void SendCloseAck(string signalId, ulong ticket, double profit, double closePrice)
+void SendCloseAck(string signalId, ulong ticket, double profit, double closePrice, double mfePips=0.0, double maePips=0.0, int mfeSec=0, int maeSec=0)
 {
    string url = InpApiUrl + "/api/mt5/signals/close";
-   string payload = StringFormat("{\"token\":\"%s\",\"signalId\":\"%s\",\"ticket\":%s,\"profit\":%s,\"closePrice\":%s}",
-                                 InpApiToken, signalId, IntegerToString((long)ticket), DoubleToString(profit, 2), DoubleToString(closePrice, 2));
+   string payload = StringFormat("{\"token\":\"%s\",\"signalId\":\"%s\",\"ticket\":%s,\"profit\":%s,\"closePrice\":%s,\"mfePips\":%.1f,\"maePips\":%.1f,\"timeToMfeSec\":%d,\"timeToMaeSec\":%d}",
+                                 InpApiToken, signalId, IntegerToString((long)ticket), DoubleToString(profit, 2), DoubleToString(closePrice, 2),
+                                 mfePips, maePips, mfeSec, maeSec);
    char postData[];
    StringToCharArray(payload, postData, 0, StringLen(payload));
    char serverResult[];
@@ -666,9 +667,44 @@ void OnTick()
 //+------------------------------------------------------------------+
 //| Expert timer function (Autonomous Polling Loop)                  |
 //+------------------------------------------------------------------+
+// Calculate total realized loss today from MT5 deal history
+double GetTodayRealizedLoss()
+{
+   double totalLoss = 0.0;
+   datetime dayStart = StringToTime(TimeToString(TimeCurrent(), TIME_DATE));
+   if(!HistorySelect(dayStart, TimeCurrent())) return 0.0;
+   int total = HistoryDealsTotal();
+   for(int i = 0; i < total; i++)
+   {
+      ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0) continue;
+      if((ulong)HistoryDealGetInteger(deal, DEAL_MAGIC) != InpMagicNumber) continue;
+      if(HistoryDealGetInteger(deal, DEAL_ENTRY) != DEAL_ENTRY_OUT) continue;
+      double p = HistoryDealGetDouble(deal, DEAL_PROFIT);
+      if(p < 0) totalLoss += MathAbs(p);
+   }
+   return totalLoss;
+}
+
 void OnTimer()
 {
    if(!g_isInitialized) return;
+
+   // === DAILY LOSS CIRCUIT BREAKER ===
+   if(InpDailyLossLimitIDR > 0)
+   {
+      double todayLoss = GetTodayRealizedLoss();
+      if(todayLoss >= InpDailyLossLimitIDR)
+      {
+         static bool g_lossLimitPrinted = false;
+         if(!g_lossLimitPrinted)
+         {
+            PrintFormat("[CIRCUIT BREAKER] Daily Loss %.0f >= Limit %.0f. EA locked for today.", todayLoss, InpDailyLossLimitIDR);
+            g_lossLimitPrinted = true;
+         }
+         return;
+      }
+   }
 
    // 1. Poll MT5 history to detect ALL closed positions reliably (replaces OnTradeTransaction)
    CheckAndReportClosedPositions();
@@ -678,7 +714,8 @@ void OnTimer()
    {
       for (int i=0; i<ArraySize(g_closeQueue); i++)
       {
-         SendCloseAck(g_closeQueue[i].signalId, g_closeQueue[i].ticket, g_closeQueue[i].profit, g_closeQueue[i].closePrice);
+         SendCloseAck(g_closeQueue[i].signalId, g_closeQueue[i].ticket, g_closeQueue[i].profit, g_closeQueue[i].closePrice,
+                      g_closeQueue[i].mfePips, g_closeQueue[i].maePips, g_closeQueue[i].timeToMfeSec, g_closeQueue[i].timeToMaeSec);
       }
       ArrayResize(g_closeQueue, 0);
    }
