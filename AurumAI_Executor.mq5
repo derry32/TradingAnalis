@@ -139,7 +139,7 @@ void CheckAndReportClosedPositions()
          if(HistoryDealGetInteger(openDeal, DEAL_ENTRY) != DEAL_ENTRY_IN) continue;
          
          string openComment = HistoryDealGetString(openDeal, DEAL_COMMENT);
-         string prefix = "Aurum-";
+         string prefix = "Aurum";
          int prefixPos = StringFind(openComment, prefix);
          if(prefixPos >= 0)
          {
@@ -262,7 +262,7 @@ void SendAck(string signalId, ulong ticket, double price, string status, long sp
 //+------------------------------------------------------------------+
 //| HTTP POST Acknowledge Signal Close                               |
 //+------------------------------------------------------------------+
-void SendCloseAck(string signalId, ulong ticket, double profit, double closePrice, double mfePips=0.0, double maePips=0.0, int mfeSec=0, int maeSec=0)
+bool SendCloseAck(string signalId, ulong ticket, double profit, double closePrice, double mfePips=0.0, double maePips=0.0, int mfeSec=0, int maeSec=0)
 {
    string url = InpApiUrl + "/api/mt5/signals/close";
    string payload = StringFormat("{\"token\":\"%s\",\"signalId\":\"%s\",\"ticket\":%s,\"profit\":%s,\"closePrice\":%s,\"mfePips\":%.1f,\"maePips\":%.1f,\"timeToMfeSec\":%d,\"timeToMaeSec\":%d}",
@@ -273,8 +273,14 @@ void SendCloseAck(string signalId, ulong ticket, double profit, double closePric
    char serverResult[];
    string serverHeaders;
    string headers = "Content-Type: application/json\r\n";
-   WebRequest("POST", url, headers, 15000, postData, serverResult, serverHeaders);
+   int res = WebRequest("POST", url, headers, 15000, postData, serverResult, serverHeaders);
+   
+   if(res == 200 || res == 201) return true;
+   
+   PrintFormat("[WEBHOOK ERR] SendCloseAck failed (Code: %d) for ticket %s. Retrying later...", res, IntegerToString((long)ticket));
+   return false;
 }
+
 
 //+------------------------------------------------------------------+
 //| Execute Order Send using Pure Native MQL5 API                    |
@@ -704,15 +710,23 @@ void OnTimer()
    // 1. Poll MT5 history to detect ALL closed positions reliably (replaces OnTradeTransaction)
    CheckAndReportClosedPositions();
 
-   // 2. Process queued close webhooks
+   // 2. Process queued close webhooks (with retry)
    if (ArraySize(g_closeQueue) > 0)
    {
+      int newSize = 0;
       for (int i=0; i<ArraySize(g_closeQueue); i++)
       {
-         SendCloseAck(g_closeQueue[i].signalId, g_closeQueue[i].ticket, g_closeQueue[i].profit, g_closeQueue[i].closePrice,
-                      g_closeQueue[i].mfePips, g_closeQueue[i].maePips, g_closeQueue[i].timeToMfeSec, g_closeQueue[i].timeToMaeSec);
+         bool success = SendCloseAck(g_closeQueue[i].signalId, g_closeQueue[i].ticket, g_closeQueue[i].profit, g_closeQueue[i].closePrice,
+                                     g_closeQueue[i].mfePips, g_closeQueue[i].maePips, g_closeQueue[i].timeToMfeSec, g_closeQueue[i].timeToMaeSec);
+         
+         if(!success)
+         {
+            // Keep in queue for retry
+            g_closeQueue[newSize] = g_closeQueue[i];
+            newSize++;
+         }
       }
-      ArrayResize(g_closeQueue, 0);
+      ArrayResize(g_closeQueue, newSize);
    }
 
    CheckSmartExits();
