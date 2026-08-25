@@ -442,10 +442,10 @@ void CloseAllPositions(string reason)
 //+------------------------------------------------------------------+
 double LotByConf(double conf)
 {
-   if(conf >= 85.0) return InpMaxLot;
-   if(conf >= 75.0) return InpMidLot;
-   return InpMinLot;
+   // Basket Engine v2: fixed lot, no confidence-based sizing
+   return InpBasketLot;
 }
+
 
 //+------------------------------------------------------------------+
 //| Check Break-Even & Trailing Stops                                |
@@ -589,10 +589,11 @@ int OnInit()
    EventSetTimer(InpTimerSeconds);
    
    Print("=================================================");
-   Print("[Aurum AI] MT5 Autonomous Burst Scalper v4.20 Started!");
+   Print("[AurumAI] Basket Engine v5.0 Started!");
    Print("Connecting to: ", InpApiUrl);
    Print("Magic Number  : ", IntegerToString((long)InpMagicNumber));
-   Print("Burst Layers  : ", IntegerToString(InpMultiLayerCount), " Layers @ Micro TP ", DoubleToString(InpMicroTPMin,1), "-", DoubleToString(InpMicroTPMin + 4,1), " pips");
+   Print("Basket Lot    : ", DoubleToString(InpBasketLot, 2), " lot per position");
+   Print("Max Positions : ", IntegerToString(InpMaxPositions), " (Phase 1: 1 position)");
    Print("Anti-Chasing  : Max ", DoubleToString(InpMaxChasingPips,1), " pips deviation");
    Print("Signal TTL    : ", IntegerToString(InpSignalTTLSec), " sec guard");
    Print("=================================================");
