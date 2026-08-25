@@ -1,7 +1,7 @@
 import { BurstSignalPayload, SignalLifecycleState } from './signalStateMachine';
 import { LiveMarketSnapshot } from './featureEngine';
 import { insertSystemLog } from './database';
-import mt5Bridge from './mt5Bridge';
+import { mt5Bridge } from './mt5Bridge';
 
 export interface BasketLayer {
   layerNumber: number;
@@ -89,8 +89,9 @@ class BasketEngine {
     if (!riskPass) return;
 
     // 4. Trend / Thesis masih valid?
-    const h1TrendMatch = snapshot.h1.features.trend === basket.direction;
-    const m15TrendMatch = snapshot.m15.features.trend === basket.direction;
+    const expectedTrend = basket.direction === 'BUY' ? 'BULLISH' : 'BEARISH';
+    const h1TrendMatch = snapshot.h1.features.trend === expectedTrend;
+    const m15TrendMatch = snapshot.m15.features.trend === expectedTrend;
     const invalidationTouched = basket.direction === 'BUY' ? currentPrice <= basket.basketInvalidation : currentPrice >= basket.basketInvalidation;
     if (!h1TrendMatch || !m15TrendMatch || invalidationTouched) return;
 
@@ -113,7 +114,7 @@ class BasketEngine {
     if (isFallingKnife) return;
 
     // 8. Rejection confirmation = TRUE? (From closed candle)
-    const m1ClosedBullish = snapshot.m1.structure.lastClose > snapshot.m1.structure.lastOpen;
+    const m1ClosedBullish = snapshot.m1.candle.close > snapshot.m1.candle.open;
     const hasRejection = basket.direction === 'BUY' ? m1ClosedBullish : !m1ClosedBullish;
     if (!hasRejection) return;
 
@@ -156,12 +157,12 @@ class BasketEngine {
 
     const addPayload = {
       ...basket.basePayload,
-      action: 'BASKET_ADD',
+      action: 'BASKET_ADD' as 'BASKET_ADD',
       updateIndex: basket.updateIndex,
       entryPrice: currentPrice,
       layers: [{
         layerIndex: basket.layers.length,
-        orderType: basket.direction === 'BUY' ? 'BUY_MARKET' : 'SELL_MARKET',
+        orderType: (basket.direction === 'BUY' ? 'BUY_MARKET' : 'SELL_MARKET') as 'BUY_MARKET' | 'SELL_MARKET',
         suggestedPrice: currentPrice,
         tpPrice: newBasketTp,
         tpPips: 0,
