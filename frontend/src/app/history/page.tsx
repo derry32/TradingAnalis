@@ -305,7 +305,7 @@ export default function HistoryPage() {
                         onClick={() => viewMode === 'ROBOT' && toggleRow(ext.id)}
                       >
                         {ext.id || '-'}
-                        {viewMode === 'ROBOT' && (
+                        {viewMode === 'ROBOT' && sig.layers && sig.layers.length > 0 && (
                           <span className="text-[9px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">Layers {expandedRows[ext.id] ? '▲' : '▼'}</span>
                         )}
                       </div>
@@ -393,7 +393,7 @@ export default function HistoryPage() {
                     <td className="p-4 pr-6 align-top text-right">
                       {viewMode === 'ROBOT' ? (
                         <div>
-                          {ext.finalStatus === 'HIT_TP' || ext.finalStatus === 'HIT_SL' ? (
+                          {ext.finalStatus === 'HIT_TP' || ext.finalStatus === 'HIT_SL' || ext.finalStatus === 'EXPIRED' ? (
                             ext.pips > 0 ? (
                                <span className="font-bold text-lg text-emerald-400">+{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
                             ) : ext.pips < 0 ? (
@@ -500,7 +500,7 @@ export default function HistoryPage() {
                               onClick={() => viewMode === 'ROBOT' && toggleRow(ext.id)}
                             >
                               {ext.id || '-'}
-                              {viewMode === 'ROBOT' && (
+                              {viewMode === 'ROBOT' && sig.layers && sig.layers.length > 0 && (
                                 <span className="text-[9px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">Layers {expandedRows[ext.id] ? '▲' : '▼'}</span>
                               )}
                             </div>
@@ -533,16 +533,16 @@ export default function HistoryPage() {
                          <div className="text-right">
                            {viewMode === 'ROBOT' ? (
                               <div>
-                                {ext.finalStatus === 'HIT_TP' || ext.finalStatus === 'HIT_SL' ? (
+                                {ext.finalStatus === 'HIT_TP' || ext.finalStatus === 'HIT_SL' || ext.finalStatus === 'EXPIRED' ? (
                                   ext.pips > 0 ? (
-                                     <span className="font-bold text-sm text-emerald-400">+{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                     <span className="font-bold text-base text-emerald-400">+{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
                                   ) : ext.pips < 0 ? (
-                                     <span className="font-bold text-sm text-rose-500">{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                     <span className="font-bold text-base text-rose-500">{Number(ext.pips).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
                                   ) : (
-                                     <span className="font-bold text-sm text-gray-400">0</span>
+                                     <span className="font-bold text-base text-gray-400">0</span>
                                   )
                                 ) : (
-                                  <span className="text-gray-500 font-bold text-sm">-</span>
+                                  <span className="text-gray-500 font-bold text-base">-</span>
                                 )}
                                 <p className="text-[9px] text-gray-500 mt-0.5 uppercase tracking-widest">
                                   {ext.pips > 0 ? 'PROFIT' : ext.pips < 0 ? 'LOSS' : (ext.finalStatus === 'HIT_TP' ? 'PROFIT' : ext.finalStatus === 'HIT_SL' ? 'LOSS' : ext.finalStatus === 'EXPIRED' ? 'EXPIRED' : 'IN PROGRESS')}
