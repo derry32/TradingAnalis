@@ -98,6 +98,10 @@ export class MT5BridgeService {
         currentReEntryCycle: currentBurst.currentReEntryCycle,
         maxReEntryCycles: currentBurst.maxReEntryCycles,
         layerCount: currentBurst.layers.length,
+        action: currentBurst.action || 'INIT',
+        updateIndex: currentBurst.updateIndex || 0,
+        basketTarget: currentBurst.layers[currentBurst.layers.length - 1]?.tpPrice || 0,
+        basketInvalidation: currentBurst.stopLossPrice
       };
 
       currentBurst.layers.forEach((layer, idx) => {

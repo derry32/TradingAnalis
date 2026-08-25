@@ -15,6 +15,7 @@ import { signalStateMachine, BurstSignalPayload } from './services/signalStateMa
 import { preNewsEngine } from './services/preNewsEngine';
 import { riskEngine } from './services/riskEngine';
 import { pendingOrderEngine } from './services/pendingOrderEngine';
+import basketEngine from './services/basketEngine';
 
 const app = express();
 app.use(cors());
@@ -310,6 +311,8 @@ marketData.setOnM1Closed((data) => {
     currentPrice
   );
 
+  basketEngine.onM1Closed(snapshot);
+
   // 2. Deterministic Quant Confidence Evaluation (<5ms, Zero LLM)
   const evaluation = confidenceEngine.evaluate(snapshot);
 
@@ -342,6 +345,7 @@ marketData.setOnM1Closed((data) => {
 
       // ⚡ CRITICAL PATH (<100ms Push to MT5 & Telegram)
       mt5Bridge.setLatestBurstSignal(burst);
+      basketEngine.initializeBasket(burst);
 
       // Construct legacy Signal format for DB & Telegram compatibility
       const legacySignal: Signal = {
@@ -378,6 +382,10 @@ marketData.setOnM1Closed((data) => {
       });
     }
   }
+});
+
+marketData.setOnTickUpdate((price: number) => {
+  basketEngine.onTick(price);
 });
 
 marketData.setOnM5Closed(async (data) => {

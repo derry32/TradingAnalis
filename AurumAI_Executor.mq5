@@ -40,6 +40,7 @@ input int    InpPositionExpireMinutes = 20;  // Max Hold Time if no Basket TP hi
 string   g_lastProcessedId   = "";
 string   g_activeSignalId    = "";
 string   g_activeDir         = "";
+int      g_lastProcessedUpdateIndex = -1;
 double   g_signalOpenPx      = 0.0;
 datetime g_signalOpenTime    = 0;
 bool     g_beDone            = false;
@@ -744,17 +745,33 @@ void OnTimer()
    if(GetJsonString(json, "status") != "ACTIVE_SIGNAL") return;
 
    string signalId = GetJsonString(json, "id");
-   if(signalId == "" || signalId == g_lastProcessedId) return;
+   if(signalId == "") return;
 
-   if(CountPositions() >= InpMaxPositions)
+   string action = GetJsonString(json, "action");
+   if(action == "") action = "INIT";
+   int updateIndex = (int)GetJsonDouble(json, "updateIndex");
+
+   if(action == "INIT")
    {
-      Print("[CAP] Max positions reached - skipping ", signalId);
-      return;
+      if(signalId == g_lastProcessedId) return;
+
+      if(CountPositions() >= InpMaxPositions)
+      {
+         Print("[CAP] Max positions reached - skipping ", signalId);
+         return;
+      }
+
+      g_lastProcessedUpdateIndex = updateIndex;
+      ExecuteBasketInit(json, signalId);
    }
+   else if(action == "BASKET_ADD")
+   {
+      if(signalId != g_activeSignalId) return; // Ignore ADD for unknown basket
+      if(updateIndex <= g_lastProcessedUpdateIndex) return; // Duplicates / Already processed
 
-   // === BASKET ENGINE v2: Delegate all execution to ExecuteBasketInit ===
-   ExecuteBasketInit(json, signalId);
-
+      g_lastProcessedUpdateIndex = updateIndex;
+      ExecuteBasketAdd(json, signalId);
+   }
 }
 
 //+------------------------------------------------------------------+
@@ -840,6 +857,107 @@ void ExecuteBasketInit(string json, string signalId)
    else
    {
       PrintFormat("[BASKET_INIT FAILED] %s — ExecuteNativeTrade returned 0", signalId);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| ExecuteBasketAdd — Phase 2 Basket Engine                         |
+//| Opens ADD position and updates ALL TP/SL of the basket           |
+//+------------------------------------------------------------------+
+void ExecuteBasketAdd(string json, string signalId)
+{
+   int currentLayers = CountPositions();
+   if(currentLayers >= 3)
+   {
+      Print("[BASKET_ADD_REJECTED] Max basket layers (3) reached.");
+      return;
+   }
+
+   string dir        = GetJsonString(json, "type");
+   double idealP     = GetJsonDouble(json, "price");
+   double basketTP   = GetJsonDouble(json, "basketTarget");
+   double basketInv  = GetJsonDouble(json, "basketInvalidation");
+
+   if (dir != g_activeDir) 
+   {
+      Print("[BASKET_ADD_REJECTED] Direction mismatch.");
+      return;
+   }
+
+   double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double livePrice = (dir == "BUY") ? ask : bid;
+
+   // Final safety guard: TP validity
+   if (dir == "BUY" && basketTP <= livePrice) return;
+   if (dir == "SELL" && basketTP >= livePrice) return;
+
+   ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+   string comment = "AurumBasket-ADD " + signalId;
+   ulong ticket = ExecuteNativeTrade(ot, livePrice, basketInv, basketTP, InpBasketLot, comment);
+   
+   if(ticket > 0)
+   {
+      PrintFormat("[BASKET_ADD SUCCESS] %s | Ticket=%s | Px=%.2f | NewTP=%.2f | NewSL=%.2f",
+                  signalId, IntegerToString((long)ticket), livePrice, basketTP, basketInv);
+      
+      UpdateBasketTPSL(basketTP, basketInv);
+   }
+   else
+   {
+      PrintFormat("[BASKET_ADD FAILED] %s — ExecuteNativeTrade returned 0", signalId);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| UpdateBasketTPSL — Modify TP/SL for all open positions in basket |
+//+------------------------------------------------------------------+
+void UpdateBasketTPSL(double newTP, double newSL)
+{
+   MqlTradeRequest request;
+   MqlTradeResult  result;
+
+   for(int i=PositionsTotal()-1; i>=0; i--)
+   {
+      ulong posTicket = PositionGetTicket(i);
+      if(posTicket > 0)
+      {
+         string sym = PositionGetString(POSITION_SYMBOL);
+         long magic = PositionGetInteger(POSITION_MAGIC);
+
+         if(sym == _Symbol && magic == InpMagicNumber)
+         {
+            double currentTP = PositionGetDouble(POSITION_TP);
+            double currentSL = PositionGetDouble(POSITION_SL);
+            
+            // Normalize floats
+            newTP = NormalizeDouble(newTP, _Digits);
+            newSL = NormalizeDouble(newSL, _Digits);
+            currentTP = NormalizeDouble(currentTP, _Digits);
+            currentSL = NormalizeDouble(currentSL, _Digits);
+
+            if(currentTP != newTP || currentSL != newSL)
+            {
+               ZeroMemory(request);
+               ZeroMemory(result);
+               
+               request.action = TRADE_ACTION_SLTP;
+               request.position = posTicket;
+               request.symbol = _Symbol;
+               request.sl = newSL;
+               request.tp = newTP;
+               
+               if(!OrderSend(request, result))
+               {
+                  PrintFormat("[UpdateBasketTPSL] Failed to modify ticket %s. Err: %d", IntegerToString((long)posTicket), result.retcode);
+               }
+               else
+               {
+                  PrintFormat("[UpdateBasketTPSL] Modified ticket %s to TP=%.2f SL=%.2f", IntegerToString((long)posTicket), newTP, newSL);
+               }
+            }
+         }
+      }
    }
 }
 

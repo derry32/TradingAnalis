@@ -42,6 +42,8 @@ export interface BurstSignalPayload {
   warnings: string[];
   aiExplanation?: string;
   recommendedLot?: number; // Dynamically calculated total basket lot
+  action?: 'INIT' | 'BASKET_ADD';
+  updateIndex?: number;
 }
 
 export class SignalStateMachine {
@@ -223,9 +225,9 @@ export class SignalStateMachine {
       layers,
       reasons: evaluation.reasons,
       warnings: evaluation.warnings,
-      // We attach the dynamically calculated total lot to the payload
-      // We will override recommendedLot in MT5Bridge
-      recommendedLot: actualBasketLot 
+      recommendedLot: actualBasketLot,
+      action: 'INIT',
+      updateIndex: 0
     };
 
     // Update active cycle state
