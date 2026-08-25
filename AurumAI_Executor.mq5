@@ -5,42 +5,36 @@
 //+------------------------------------------------------------------+
 #property copyright   "Aurum AI Quant Systems 2026"
 #property link        "https://aurum-ai.io"
-#property version     "4.20"
-#property description "Aurum AI Ultra-Fast 5-Layer Burst Scalper v4.20"
+#property version     "5.00"
+#property description "AurumAI Basket Engine v5.0 — Phase 1 Baseline (1 Position Init)"
 
 //--- Inputs: API & High-Speed Polling
 input string InpApiUrl             = "http://43.156.79.235:3002";      // Backend URL
 input string InpApiToken           = "aurum_secret_bridge_token_2026"; // Secret Token
 input int    InpTimerSeconds       = 1;                                 // Polling Interval (sec)
 
-//=== Inputs: Multi-Layer Burst Scalping ===
-input int    InpMultiLayerCount    = 5;     // Number of Burst Layers (5 Layers)
-input double InpMicroTPMin         = 15.0;  // Base Micro TP (pips: 15.0 = $1.50 Gold)
-input double InpMicroTPStep        = 3.0;   // TP Step per layer (pips)
-input double InpDynamicMicroSL     = 10.0;  // Tight Micro SL (pips: 10.0 = $1.00 Gold)
-input double InpMinLot             = 0.01;  // Lot per layer for Conf < 75%
-input double InpMidLot             = 0.02;  // Lot per layer for Conf 75-84%
-input double InpMaxLot             = 0.03;  // Lot per layer for Conf >= 85%
-input int    InpMaxPositions       = 25;    // Max simultaneous open positions
-input double InpDailyLossLimitIDR  = 500000.0; // Daily Loss Limit (IDR/Cent) to stop EA if drawdown is too large
+//=== Inputs: Basket Engine v2 ===
+input double InpBasketLot          = 0.01;  // Base lot per position (fixed, no martingale)
+input int    InpMaxPositions       = 3;     // Max positions per basket (Phase 1: 1 effective)
+input double InpDailyLossLimitIDR  = 500000.0; // Daily Loss Limit (IDR/Cent)
 
 //=== Inputs: Anti-Chasing & Signal TTL Guard ===
 input int    InpSignalTTLSec       = 30;    // Signal TTL (sec) - Discard stale signals
-input double InpMaxChasingPips     = 15.0;  // Max price chasing deviation (pips: 15.0 = $1.50)
-input bool   InpAutoPullbackLimit  = true;  // Auto-convert to Limit Pullback if price chased
+input double InpMaxChasingPips     = 15.0;  // Max price chasing deviation (pips)
+input bool   InpAutoPullbackLimit  = true;  // Auto-use limit order if price chased
 
 //=== Inputs: Risk & Basic Guards ===
 input ulong  InpMagicNumber        = 778899; // Magic Number
-input int    InpMaxSpreadPoints    = 400;    // Max Spread pts (40 pips)
+input int    InpMaxSpreadPoints    = 400;    // Max Spread pts
 input ulong  InpSlippage           = 30;     // Slippage pts
 input bool   InpDemoOnlyGuard      = true;   // Demo Guard
 
 //=== Inputs: Smart Trailing & Break-Even ===
 input double InpBEMultiplier       = 0.6;    // BE Trigger at +6.0 pips profit
 input double InpTrailingStartPips  = 8.0;    // Trailing Start at +8.0 pips profit
-input double InpTrailingGapPips       = 5.0;    // Trailing Gap (5.0 pips)
-input int    InpPendingExpireMinutes  = 5;      // Max Wait Time for Limit Orders (minutes)
-input int    InpPositionExpireMinutes = 20;     // Max Hold Time for Active Scalp (minutes)
+input double InpTrailingGapPips    = 5.0;    // Trailing Gap (5.0 pips)
+input int    InpPendingExpireMinutes  = 5;   // Max Wait Time for Limit Orders (minutes)
+input int    InpPositionExpireMinutes = 20;  // Max Hold Time if no Basket TP hit (minutes)
 
 //--- State globals
 string   g_lastProcessedId   = "";
@@ -743,11 +737,35 @@ void OnTimer()
       return;
    }
 
-   string dir    = GetJsonString(json, "type");
-   double idealP = GetJsonDouble(json, "price");
-   double sl     = GetJsonDouble(json, "stopLoss");
-   double conf   = GetJsonDouble(json, "confidence");
-   if(conf <= 0.0) conf = 70.0;
+   // === BASKET ENGINE v2: Delegate all execution to ExecuteBasketInit ===
+   ExecuteBasketInit(json, signalId);
+
+}
+
+//+------------------------------------------------------------------+
+//| ExecuteBasketInit — Phase 1 Basket Engine                        |
+//| Opens EXACTLY 1 position. No burst. No multiple layers.          |
+//| Basket TP = basketTarget from backend (structural S/R)           |
+//| Basket SL = basketInvalidation from backend (structural level)   |
+//+------------------------------------------------------------------+
+void ExecuteBasketInit(string json, string signalId)
+{
+   // Guard: no new basket if one is already active
+   if(CountPositions() >= 1)
+   {
+      Print("[BASKET] Position already open - skipping new basket ", signalId);
+      return;
+   }
+
+   string dir        = GetJsonString(json, "type");
+   double idealP     = GetJsonDouble(json, "price");
+   double sl         = GetJsonDouble(json, "stopLoss");
+   double basketTP   = GetJsonDouble(json, "basketTarget");      // Structural target from backend
+   double basketInv  = GetJsonDouble(json, "basketInvalidation"); // Structural invalidation level
+
+   // Fallback if basketTarget not present (old signal format)
+   if(basketTP <= 0.0) basketTP = GetJsonDouble(json, "takeProfit2");
+   if(basketInv <= 0.0) basketInv = sl;
 
    double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -756,78 +774,42 @@ void OnTimer()
    // Anti-Chasing Check
    double priceDiffPips = MathAbs(livePrice - idealP) * 10.0;
    bool isChasing = (priceDiffPips > InpMaxChasingPips);
-   double pullbackLimit = GetJsonDouble(json, "pullbackLimitPrice");
-   if(pullbackLimit <= 0.0)
-   {
-      pullbackLimit = (dir == "BUY") ? (livePrice - 1.20) : (livePrice + 1.20);
-   }
 
    long currentSpread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    if(currentSpread > InpMaxSpreadPoints)
    {
-      PrintFormat("[SPREAD] Spread %d pts > %d pts - skipping %s",
-                  currentSpread, InpMaxSpreadPoints, signalId);
+      PrintFormat("[BASKET] Spread %d pts > %d pts - skipping %s", currentSpread, InpMaxSpreadPoints, signalId);
       return;
    }
 
-   double lot = LotByConf(conf);
-   int opened = 0;
-   ulong firstTicket = 0;
+   PrintFormat("[BASKET_INIT] %s %s | Ideal=%.2f Live=%.2f Diff=%.1fpips | TP=%.2f SL=%.2f | Chasing=%s",
+               signalId, dir, idealP, livePrice, priceDiffPips, basketTP, basketInv, isChasing ? "YES" : "NO");
 
-   PrintFormat("[BURST SIGNAL] %s %s Conf=%.1f%% | Ideal=%.2f Live=%.2f Diff=%.1fpips | Chasing=%s",
-               signalId, dir, conf, idealP, livePrice, priceDiffPips, isChasing ? "YES" : "NO");
+   ulong ticket = 0;
 
    if(!isChasing)
    {
-      // 5 Market Layers with Staggered TP (8-12 pips)
-      for(int layer = 1; layer <= InpMultiLayerCount; layer++)
-      {
-         double tpPips  = InpMicroTPMin + (layer - 1) * InpMicroTPStep;
-         double tpPrice = (dir == "BUY") ? (livePrice + tpPips * 0.1) : (livePrice - tpPips * 0.1);
-         double slPrice = (sl > 0.0) ? sl : ((dir == "BUY") ? (livePrice - InpDynamicMicroSL * 0.1) : (livePrice + InpDynamicMicroSL * 0.1));
-
-         ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
-         string comment = "Aurum-L" + IntegerToString(layer) + " " + signalId;
-
-         ulong t = ExecuteNativeTrade(ot, livePrice, slPrice, tpPrice, lot, comment);
-         if(t > 0)
-         {
-            opened++;
-            if(firstTicket == 0) firstTicket = t;
-            PrintFormat("[BURST_MKT #%d] Ticket #%s | Px=%.2f | TP=%.2f (+%.1fp) | SL=%.2f",
-                        layer, IntegerToString((long)t), livePrice, tpPrice, tpPips, slPrice);
-         }
-      }
+      // Market order — 1 position only
+      ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+      string comment = "AurumBasket-#1 " + signalId;
+      ticket = ExecuteNativeTrade(ot, livePrice, basketInv, basketTP, InpBasketLot, comment);
+      if(ticket > 0)
+         PrintFormat("[BASKET_INIT] Opened #1 | Ticket=%s | Px=%.2f | TP=%.2f | SL=%.2f",
+                     IntegerToString((long)ticket), livePrice, basketTP, basketInv);
    }
    else if(InpAutoPullbackLimit)
    {
-      // 5 Limit Pullback Layers in Golden Zone
-      PrintFormat("[ANTI-CHASING] Price chased %.1fp -> Stacking 5 Limit Orders @ %.2f",
-                  priceDiffPips, pullbackLimit);
-
-      for(int layer = 1; layer <= InpMultiLayerCount; layer++)
-      {
-         double offset  = (layer - 1) * 0.20;
-         double limitPx = (dir == "BUY") ? (pullbackLimit - offset) : (pullbackLimit + offset);
-         double tpPips  = InpMicroTPMin + (layer - 1) * InpMicroTPStep;
-         double tpPrice = (dir == "BUY") ? (limitPx + tpPips * 0.1) : (limitPx - tpPips * 0.1);
-         double slPrice = (sl > 0.0) ? sl : ((dir == "BUY") ? (limitPx - InpDynamicMicroSL * 0.1) : (limitPx + InpDynamicMicroSL * 0.1));
-
-         ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY_LIMIT : ORDER_TYPE_SELL_LIMIT;
-         string comment = "Aurum-Lmt" + IntegerToString(layer) + " " + signalId;
-
-         ulong t = ExecuteNativeTrade(ot, limitPx, slPrice, tpPrice, lot, comment);
-         if(t > 0)
-         {
-            opened++;
-            if(firstTicket == 0) firstTicket = t;
-            PrintFormat("[BURST_LMT #%d] Ticket #%s | LimitPx=%.2f | TP=%.2f (+%.1fp) | SL=%.2f",
-                        layer, IntegerToString((long)t), limitPx, tpPrice, tpPips, slPrice);
-         }
-      }
+      // Limit order at pullback zone if chasing
+      double limitPx = (dir == "BUY") ? (livePrice - 1.20) : (livePrice + 1.20);
+      ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY_LIMIT : ORDER_TYPE_SELL_LIMIT;
+      string comment = "AurumBasket-Lmt#1 " + signalId;
+      ticket = ExecuteNativeTrade(ot, limitPx, basketInv, basketTP, InpBasketLot, comment);
+      if(ticket > 0)
+         PrintFormat("[BASKET_INIT] Limit placed #1 | Ticket=%s | LimitPx=%.2f | TP=%.2f | SL=%.2f",
+                     IntegerToString((long)ticket), limitPx, basketTP, basketInv);
    }
 
-   if(opened > 0)
+   if(ticket > 0)
    {
       g_lastProcessedId = signalId;
       g_activeSignalId  = signalId;
@@ -836,12 +818,16 @@ void OnTimer()
       g_signalOpenTime  = TimeCurrent();
       g_beDone          = false;
 
-      SendAck(signalId, firstTicket, livePrice, "OPENED", currentSpread);
-      PrintFormat("[BURST COMPLETE] %s | %d Layers Opened | Target Potential: ~50 Pips",
-                  signalId, opened);
+      SendAck(signalId, ticket, livePrice, "BASKET_INIT", currentSpread);
+      PrintFormat("[BASKET_INIT COMPLETE] %s | 1 Position Opened | BasketTP=%.2f | BasketSL=%.2f",
+                  signalId, basketTP, basketInv);
+   }
+   else
+   {
+      PrintFormat("[BASKET_INIT FAILED] %s — ExecuteNativeTrade returned 0", signalId);
    }
 }
 
 //+------------------------------------------------------------------+// OnTradeTransaction removed - replaced by CheckAndReportClosedPositions() polling
-// in OnTimer which is more reliable for burst close scenarios (TP hits with empty comments)
+// in OnTimer which is more reliable for basket close scenarios
 //+------------------------------------------------------------------+
