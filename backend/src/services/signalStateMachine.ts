@@ -78,7 +78,7 @@ export class SignalStateMachine {
     accountBalance: number = 1000,
     riskPercent: number = 1.0
   ): BurstSignalPayload | null {
-    if (evaluation.direction === 'WAIT' || evaluation.totalScore < 65) {
+    if (evaluation.direction === 'WAIT' || evaluation.totalScore < 55) {
       this.currentState = 'WAITING';
       return null;
     }

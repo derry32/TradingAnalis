@@ -213,6 +213,13 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
             : Math.round((trade.entryPrice - trade.takeProfit1) * 10);
       }
       
+      // Jika signal tidak pernah di-ACK oleh MT5 (misal kena limit daily loss), set profit/loss ke 0
+      if (!mt5Bridge.hasAcknowledged(trade.id) && trade.status !== 'EXPIRED') {
+          console.log(`[Agent Derry][${strategy}] Trade ${trade.id} tidak pernah dieksekusi MT5. Set hasil ke 0.`);
+          pips = 0;
+          trade.status = 'EXPIRED'; // EXPIRED dirender abu-abu di frontend
+      }
+
       if (trade.dbId) {
           // dbId sudah ada, langsung update
           updateSignalStatus(trade.dbId, trade.status, hitTimeStr, durationMins, accuracy, pips);

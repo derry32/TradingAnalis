@@ -227,6 +227,10 @@ export class MT5BridgeService {
     };
   }
 
+  public hasAcknowledged(signalId: string): boolean {
+    return this.acknowledgedSignals.has(signalId);
+  }
+
   public recordTradeClose(
     token: string,
     payload: MT5ClosePayload
