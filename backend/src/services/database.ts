@@ -156,7 +156,7 @@ export async function updateSignalStatusByInternalId(internalId: string, status:
   }
 }
 
-export async function processSignalLayer(internalId: string, ticket: number, profit: number) {
+export async function processSignalLayer(internalId: string, ticket: number, profit: number, tradeStats?: { mfePips?: number; maePips?: number; timeToMfeSec?: number; timeToMaeSec?: number }) {
   if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return;
   
   // 1. Find the parent signal
@@ -208,10 +208,17 @@ export async function processSignalLayer(internalId: string, ticket: number, pro
   reasonObj.duration = Math.floor((new Date().getTime() - new Date(targetRow.timestamp).getTime()) / 60000);
   reasonObj.pips = totalProfit; // aggregated total
   reasonObj.accuracy = finalStatus === 'HIT_TP' ? 100 : 0;
+  if (tradeStats) {
+    reasonObj.mfePips = tradeStats.mfePips;
+    reasonObj.maePips = tradeStats.maePips;
+    reasonObj.timeToMfeSec = tradeStats.timeToMfeSec;
+    reasonObj.timeToMaeSec = tradeStats.timeToMaeSec;
+  }
   
   await supabase.from('signals').update({ reason: JSON.stringify(reasonObj) }).eq('id', targetRow.id);
   console.log(`[DB] Signal ${internalId} processed layer ticket ${ticket}. Total Profit: ${totalProfit}`);
 }
+
 
 export async function fetchSignalsByDate(startDate: string, endDate: string) {
   if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return [];

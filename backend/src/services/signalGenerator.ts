@@ -1,6 +1,8 @@
 import { config } from '../config';
 import { AnalysisResult } from './technicalAnalysis';
 
+export type AtrRegime = 'LOW' | 'NORMAL' | 'HIGH' | 'EXTREME';
+
 export interface Signal {
   id: string;
   type: 'BUY' | 'SELL' | 'WAIT';
@@ -25,9 +27,21 @@ export interface Signal {
   entryZoneMin?: number;
   entryZoneMax?: number;
   entryZoneType?: string;
+  // === BASKET ENGINE v2 fields ===
+  basketTarget?: number;       // Nearest structural target for basket TP
+  basketInvalidation?: number; // Price at which thesis is structurally invalid
+  atrRegime?: AtrRegime;       // Market volatility regime at signal time
 }
 
 export class SignalGenerator {
+
+  // ATR Regime Classifier — replaces single EXTREME hard veto with tiered logic
+  private getAtrRegime(atr: number): AtrRegime {
+    if (atr >= config.ATR_REGIME_HIGH_MAX) return 'EXTREME'; // Hard Veto
+    if (atr >= config.ATR_REGIME_NORMAL_MAX) return 'HIGH';
+    if (atr >= config.ATR_REGIME_LOW_MAX) return 'NORMAL';
+    return 'LOW'; // Market is quiet — require better score
+  }
 
   private getSession(hourWIB: number): { name: string, type: string } {
     if (hourWIB >= 19 && hourWIB < 23) return { name: 'London-New York Overlap', type: 'OVERLAP' };
@@ -305,14 +319,17 @@ export class SignalGenerator {
       }
     }
 
-    // 3. Volatility Hard Filters (Spread / Slippage Protection)
+    // 3. Volatility Regime Classification (Hard Veto only for EXTREME)
     const atr = analysis.atr_M15 || 1.5;
-    if (atr > 25.0 && !bypassEmergency) {
-      return this.createWaitSignal(`🚨 EMERGENCY MODE: Volatilitas terlalu liar (ATR ${atr.toFixed(2)} > 25.0). NO TRADE.`, activeStrategy);
+    const atrRegime = this.getAtrRegime(atr);
+
+    if (atrRegime === 'EXTREME' && !bypassEmergency) {
+      return this.createWaitSignal(`🚨 EMERGENCY MODE: Volatilitas terlalu liar (ATR ${atr.toFixed(2)} ≥ ${config.ATR_REGIME_HIGH_MAX}). NO TRADE.`, activeStrategy);
     }
     if (atr < 1.0) {
       return this.createWaitSignal(`⚠️ HARD FILTER: Volatilitas market terlalu mati (ATR ${atr.toFixed(2)} < 1.0). Ruang gerak minim.`, activeStrategy);
     }
+    // LOW regime: score threshold will be raised later, no veto here
 
     // 4. Momentum Exhaustion Hard Filter (Anti-Pucuk/Lembah jika >= 8 candle)
     if (analysis.consecutiveCandlesM5.count >= 8) {
@@ -324,29 +341,51 @@ export class SignalGenerator {
       return this.createWaitSignal("Struktur fase pasar (Market Phase) tidak jelas. Menunggu formasi yang rapi.", activeStrategy);
     }
 
-    // 6. Price Action Entry Trigger Check (Wajib konfirmasi candle atau structure break)
+    // 6. [v2 SOFT PENALTY] Price Action Entry Trigger — no longer a hard veto.
+    // Missing candle/structure trigger = SCORE PENALTY in calculateScoreV2, not WAIT.
     const hasCandleTrigger = analysis.patternM5 !== 'NONE' || analysis.strongVolumeM5 || analysis.volumeSpikeM5;
     const hasStructureTrigger = analysis.marketStructureM15.includes('BOS') || analysis.marketStructureM15.includes('CHOCH') || analysis.marketStructureM15.includes('FAKE_BREAKOUT') || isNewsBreakout;
+    // (Both flags are passed to score engine below, not used as vetoes)
 
-    if (!hasCandleTrigger && !hasStructureTrigger) {
-      return this.createWaitSignal("Menunggu konfirmasi Price Action Candle M5 atau Breakout Struktur M15.", activeStrategy);
-    }
-
-    // 7. Evaluasi Arah Trade & Dynamic Stop Loss
+    // 7. [v2] Evaluasi Arah Trade + Structural Invalidation Guard
+    // CHoCH berlawanan arah = HARD VETO terlepas dari score berapapun.
+    // Direction kini bisa bersumber dari H1 trend saja (tidak harus ada candle trigger).
     let possibleDirections: ('BUY' | 'SELL')[] = [];
     const strongBearishPA = ['THREE_BLACK_CROWS', 'MARUBOZU_BEAR', 'BEARISH_ENGULFING'].includes(analysis.patternM5);
     const strongBullishPA = ['THREE_WHITE_SOLDIERS', 'MARUBOZU_BULL', 'BULLISH_ENGULFING'].includes(analysis.patternM5);
 
-    if (!strongBearishPA && (analysis.patternM5.includes('BULL') || analysis.patternM5 === 'PIN_BAR' || analysis.marketStructureM15 === 'BOS_BULL' || analysis.marketStructureM15 === 'CHOCH_BULL' || analysis.marketStructureM15 === 'FAKE_BREAKOUT_BEAR' || (analysis.fibonacciZoneM15 === 'GOLDEN_BULL' && hasCandleTrigger) || analysis.trendM15 === 'BULLISH')) {
+    // Structural Invalidation: opposite CHoCH = thesis broken, HARD VETO for that direction
+    const bullishStructurallyInvalid = analysis.marketStructureM15 === 'CHOCH_BEAR';
+    const bearishStructurallyInvalid = analysis.marketStructureM15 === 'CHOCH_BULL';
+
+    // [v2] BUY direction: H1 bullish OR M15 bullish is sufficient (no candle trigger required)
+    if (!strongBearishPA && !bullishStructurallyInvalid && (
+      analysis.patternM5.includes('BULL') || analysis.patternM5 === 'PIN_BAR' ||
+      analysis.marketStructureM15 === 'BOS_BULL' || analysis.marketStructureM15 === 'CHOCH_BULL' ||
+      analysis.marketStructureM15 === 'FAKE_BREAKOUT_BEAR' ||
+      analysis.fibonacciZoneM15 === 'GOLDEN_BULL' ||
+      analysis.trendM15 === 'BULLISH' ||
+      analysis.trendH1 === 'BULLISH'  // [v2] H1 trend alone can trigger BUY consideration
+    )) {
       possibleDirections.push('BUY');
     }
-    if (!strongBullishPA && (analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'PIN_BAR' || analysis.marketStructureM15 === 'BOS_BEAR' || analysis.marketStructureM15 === 'CHOCH_BEAR' || analysis.marketStructureM15 === 'FAKE_BREAKOUT_BULL' || (analysis.fibonacciZoneM15 === 'GOLDEN_BEAR' && hasCandleTrigger) || analysis.trendM15 === 'BEARISH')) {
+
+    // [v2] SELL direction: H1 bearish OR M15 bearish is sufficient
+    if (!strongBullishPA && !bearishStructurallyInvalid && (
+      analysis.patternM5.includes('BEAR') || analysis.patternM5 === 'PIN_BAR' ||
+      analysis.marketStructureM15 === 'BOS_BEAR' || analysis.marketStructureM15 === 'CHOCH_BEAR' ||
+      analysis.marketStructureM15 === 'FAKE_BREAKOUT_BULL' ||
+      analysis.fibonacciZoneM15 === 'GOLDEN_BEAR' ||
+      analysis.trendM15 === 'BEARISH' ||
+      analysis.trendH1 === 'BEARISH'  // [v2] H1 trend alone can trigger SELL consideration
+    )) {
       possibleDirections.push('SELL');
     }
 
     if (possibleDirections.length === 0) {
       return this.createWaitSignal("Tidak ada sinyal arah trading yang valid.", activeStrategy);
     }
+
 
     let bestTrade: {
       dir: 'BUY' | 'SELL';
@@ -357,9 +396,13 @@ export class SignalGenerator {
       tp1: number;
       tp2: number;
       setupType: string;
+      maxTargetPrice: number; // [v2] track for basket target
     } | null = null;
 
-    let lastRejectionReason = `Skor probabilitas di bawah ambang batas minimal kelulusan (Minimal ${activeStrategy === 'HYPER_SCALPER' ? 55 : 65} Poin).`;
+    // [v2] Effective threshold: raised by +5 if ATR is LOW (quiet market requires better setup)
+    const baseThreshold = config.INITIAL_ENTRY_THRESHOLD;
+    const effectiveThreshold = atrRegime === 'LOW' ? baseThreshold + 5 : baseThreshold;
+    let lastRejectionReason = `Skor probabilitas di bawah ambang batas minimal kelulusan (Minimal ${effectiveThreshold} Poin).`;
 
     for (const dir of possibleDirections) {
       // Dynamic Stop Loss Calculation: Swing Point + ATR Buffer
@@ -420,8 +463,14 @@ export class SignalGenerator {
         roomPenalty = 6;
       }
 
+      // [v2] Soft penalty for missing entry triggers (not a veto)
+      let triggerPenalty = 0;
+      if (!hasCandleTrigger && !hasStructureTrigger) triggerPenalty = 15;
+      else if (!hasCandleTrigger) triggerPenalty = 8;
+      else if (!hasStructureTrigger) triggerPenalty = 5;
+
       // Hitung Skor 100-Point Matrix
-      const scoreResult = this.calculateScoreV2(dir, analysis, sessionInfo.type, isNewsMode, activeStrategy, roomPenalty, currentPrice);
+      const scoreResult = this.calculateScoreV2(dir, analysis, sessionInfo.type, isNewsMode, activeStrategy, roomPenalty + triggerPenalty, currentPrice);
 
       // Check Room To Target Validity first
       if (!roomToTargetValid) {
@@ -464,25 +513,24 @@ export class SignalGenerator {
           stopLoss: calculatedSL,
           tp1,
           tp2,
-          setupType
+          setupType,
+          maxTargetPrice,
         };
       }
     }
 
-    // 9. Strict Threshold Filter: Skor < Threshold LANGSUNG WAIT (Blokir Sinyal Lemah!)
-    const minScore = activeStrategy === 'HYPER_SCALPER' ? (isNewsMode ? 50 : 55) : (isNewsMode ? 60 : 65);
-    
-    if (!bestTrade || bestTrade.score < minScore) {
+    // 9. [v2] Threshold Filter using config-driven effectiveThreshold (ATR-regime-aware)
+    if (!bestTrade || bestTrade.score < effectiveThreshold) {
       if (bestTrade) {
-         console.log(`[M5 DEBUG] Setup ${bestTrade.dir} REJECTED. Score: ${bestTrade.score} < ${minScore}. Reasons: ${JSON.stringify(bestTrade.reasons)} Warnings: ${JSON.stringify(bestTrade.warnings)}`);
-         return this.createWaitSignal(`Skor probabilitas (${bestTrade.score}/100) di bawah ambang batas minimal kelulusan (Minimal ${minScore} Poin).`, activeStrategy);
+         console.log(`[M5 DEBUG] Setup ${bestTrade.dir} REJECTED. Score: ${bestTrade.score} < ${effectiveThreshold} (ATR Regime: ${atrRegime}). Reasons: ${JSON.stringify(bestTrade.reasons)} Warnings: ${JSON.stringify(bestTrade.warnings)}`);
+         return this.createWaitSignal(`Skor probabilitas (${bestTrade.score}/100) di bawah ambang batas minimal kelulusan (Minimal ${effectiveThreshold} Poin, Regime: ${atrRegime}).`, activeStrategy);
       } else {
          console.log(`[M5 DEBUG] All setups REJECTED. Last reason: ${lastRejectionReason}`);
          return this.createWaitSignal(lastRejectionReason, activeStrategy);
       }
     }
 
-    const { dir: tradeType, score, reasons, warnings, stopLoss, tp1, tp2, setupType } = bestTrade;
+    const { dir: tradeType, score, reasons, warnings, stopLoss, tp1, tp2, setupType, maxTargetPrice } = bestTrade;
 
     // 10. Probability Label (5-Star Classification)
     let probabilityLabel = '⭐⭐ Low';
@@ -569,6 +617,13 @@ export class SignalGenerator {
     const dateStr = wibDate.slice(0, 10).replace(/-/g, '');
     const randId = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
 
+    // [v2] Basket target = maxTargetPrice (nearest structural S/R)
+    // Basket invalidation = SL level (structural level thesis depends on)
+    const basketTarget = Number(maxTargetPrice.toFixed(2));
+    const basketInvalidation = Number(stopLoss.toFixed(2));
+
+    console.log(`[BasketEngine] BASKET_INIT approved. Dir=${tradeType} Score=${score}/${effectiveThreshold} ATR=${atrRegime} Target=${basketTarget} Invalidation=${basketInvalidation}`);
+
     return {
       id: `XAU-${dateStr}-${randId}`,
       type: tradeType,
@@ -592,7 +647,11 @@ export class SignalGenerator {
       entryZone: entryZoneStr,
       entryZoneMin: Number(entryZoneMin.toFixed(2)),
       entryZoneMax: Number(entryZoneMax.toFixed(2)),
-      entryZoneType
+      entryZoneType,
+      // === BASKET ENGINE v2 ===
+      basketTarget,
+      basketInvalidation,
+      atrRegime,
     };
   }
 
