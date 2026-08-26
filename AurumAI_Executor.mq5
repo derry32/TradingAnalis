@@ -149,12 +149,19 @@ void CheckAndReportClosedPositions()
             {
                string extracted = StringSubstr(openComment, spacePos + 1);
                StringTrimLeft(extracted);
-               // Sinyal ID kita formatnya selalu "AURUM-XXXXXX" (12 char).
-               // Cukup ambil 12 char pertama supaya broker suffix seperti [sl]/[tp] terbuang.
-               if(StringLen(extracted) >= 12)
-                  signalId = StringSubstr(extracted, 0, 12);
-               else
-                  signalId = extracted; // fallback
+               StringTrimRight(extracted);
+               
+               // Broker MT5 sering menambahkan "[sl]" atau "[tp]" di akhir comment.
+               // Ekstrak hanya kata pertama (signal ID sebenarnya) dengan mencari spasi berikutnya.
+               int nextSpace = StringFind(extracted, " ");
+               if(nextSpace > 0)
+               {
+                  signalId = StringSubstr(extracted, 0, nextSpace);
+               }
+               else if(StringLen(extracted) > 0)
+               {
+                  signalId = extracted;
+               }
             }
          }
          break;
