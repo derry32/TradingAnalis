@@ -108,30 +108,22 @@ class BasketEngine {
 
     if (basket.direction === 'BUY') {
       isPullbackZone = currentPrice <= basket.weightedAvgEntry - requiredSpacing;
-      isMomentumStrong = m1Momentum > 0.5;
+      isMomentumStrong = m1Momentum > 0.15;
     } else {
       isPullbackZone = currentPrice >= basket.weightedAvgEntry + requiredSpacing;
-      isMomentumStrong = m1Momentum < -0.5;
+      isMomentumStrong = m1Momentum < -0.15;
     }
 
     const microGridTrigger = isPullbackZone || (isTimePassed && isMomentumStrong);
 
-    if (!microGridTrigger) return;
-
-    // 7. Falling Knife = FALSE?
-    const isFallingKnife = basket.direction === 'BUY' ? m1Momentum < -0.5 : m1Momentum > 0.5;
-    if (isFallingKnife) {
-        if (Math.random() < 0.05) console.log(`[BasketEngine] ADD REJECTED: Falling Knife (Mom: ${m1Momentum.toFixed(2)})`);
-        return;
+    if (!microGridTrigger) {
+      if (Math.random() < 0.05) console.log(`[BasketEngine] ADD REJECTED: Not in Pullback (${isPullbackZone}) and Momentum not strong (${isMomentumStrong}, MACD: ${m1Momentum.toFixed(2)}) for ${basket.signalId}`);
+      return;
     }
 
-    // 8. Rejection confirmation = TRUE? (From closed candle)
-    const m1ClosedBullish = snapshot.m1.candle.close > snapshot.m1.candle.open;
-    const hasRejection = basket.direction === 'BUY' ? m1ClosedBullish : !m1ClosedBullish;
-    if (!hasRejection) {
-        if (Math.random() < 0.05) console.log(`[BasketEngine] ADD REJECTED: No Rejection yet (M1 Bullish: ${m1ClosedBullish})`);
-        return;
-    }
+    // Bypass Falling Knife dan Rejection Guard untuk Micro-Grid
+    // Karena jarak 3 pips terlalu sempit, wajar kalau tertangkap saat candle merah.
+    // Dan saat momentum nanjak, kita tidak mau tertahan oleh syarat falling knife.
 
     // Calculate simulated Add
     const newTotalLots = basket.layers.reduce((sum, l) => sum + l.lot, 0) + ADD_LOT;
