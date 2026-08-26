@@ -7,7 +7,10 @@
 - **Signal Frequency Boost:** Menurunkan batas minimal skor probabilitas (*Confidence Score*) di `signalGenerator.ts` (melalui `config.ts`) dari 70 menjadi 60. Hal ini meningkatkan frekuensi kemunculan sinyal (dari 30-60 menit menjadi tiap 5-15 menit).
 
 ### Diperbaiki
-- **Workspace Cleanup:** Menghapus 11 file sementara (*scratch scripts* dan *logs* format `.exp`, `.txt`, `.sh`) sisa sesi *debugging* sebelumnya demi menjaga kebersihan repositori utama.
+- **MT5 Signal Overwrite Bug:** Memperbaiki *race condition* di mana sinyal `HYPER_SCALPER` menimpa sinyal `SNIPER` di memori *bridge* (karena di-*generate* bersamaan). Kini sinyal `SNIPER` diberikan jeda *delay* otomatis selama 30 detik sebelum dikirim ke MT5, sehingga kedua sinyal dapat dieksekusi secara berurutan dengan target SL/TP masing-masing.
+- **Backend Profit Overwrite Bug (Minus 35 Pips):** Mematikan *legacy tracker* di backend (`index.ts`) yang seringkali salah menimpa (*overwrite*) data profit aktual dari MT5 dengan angka tebakan kasarnya sendiri (`-35 pips`). Data di Supabase kini 100% menggunakan nominal asli hasil eksekusi MT5.
+- **Database History Patch:** Menyuntikkan (*inject*) ulang riwayat profit/loss yang sebelumnya tertimpa `-35` agar kembali sinkron dengan data *real* MT5.
+- **Workspace Cleanup:** Menghapus banyak file sementara (*scratch scripts* dan *logs* format `.exp`, `.txt`, `.sh`) sisa sesi *debugging* sebelumnya demi menjaga kebersihan repositori utama.
 
 ## [1.4.0] - Sprint 5 (Dual-Engine AI & Timing Engine)
 ### Ditambahkan

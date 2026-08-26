@@ -223,11 +223,17 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
 
       if (trade.dbId) {
           // dbId sudah ada, langsung update
-          updateSignalStatus(trade.dbId, trade.status, hitTimeStr, durationMins, accuracy, pips);
+          if (!mt5Bridge.hasAcknowledged(trade.id) || trade.status === 'EXPIRED') {
+              updateSignalStatus(trade.dbId, trade.status, hitTimeStr, durationMins, accuracy, pips);
+          } else {
+              console.log(`[Agent Derry][${strategy}] Trade ${trade.id} dikelola MT5, skip update DB internal untuk menjaga profit asli.`);
+          }
       } else {
           // dbId belum tersedia (race condition), simpan sebagai pending
-          console.log(`[Agent Derry][${strategy}] dbId belum ada saat close, menyimpan sebagai pending...`);
-          trade.pendingClose = { status: trade.status, hitTime: hitTimeStr, durationMins, accuracy, pips };
+          if (!mt5Bridge.hasAcknowledged(trade.id) || trade.status === 'EXPIRED') {
+              console.log(`[Agent Derry][${strategy}] dbId belum ada saat close, menyimpan sebagai pending...`);
+              trade.pendingClose = { status: trade.status, hitTime: hitTimeStr, durationMins, accuracy, pips };
+          }
       }
 
       // S5-A: Increment drawdown counter jika HIT_SL
@@ -468,7 +474,16 @@ marketData.setOnM5Closed(async (data) => {
               
               // CRITICAL FIX REVERTED: Mengirim kembali sinyal M5 ke MT5 sesuai permintaan user
               // MT5 Bridge sekarang menerima kedua sinyal (M1 Burst dan M5 Legacy)
-              mt5Bridge.setLatestSignal(signal as any);
+              if (strategy === 'SNIPER') {
+                  // Delay SNIPER 30 detik agar tidak bentrok dengan HYPER_SCALPER
+                  setTimeout(() => {
+                      mt5Bridge.setLatestSignal(signal as any);
+                      console.log(`[Agent Derry][SNIPER] Sinyal dikirim ke MT5 setelah jeda 30 detik.`);
+                  }, 30000);
+              } else {
+                  // HYPER_SCALPER dikirim instan
+                  mt5Bridge.setLatestSignal(signal as any);
+              }
           }
         } else if (signal.type === 'WAIT') {
           console.log(`[Agent Derry][${strategy}] Decision: WAIT. Reason: ${signal.reason.split('\n')[0]}`);

@@ -836,6 +836,22 @@ void ExecuteBasketInit(string json, string signalId)
       return;
    }
 
+   // --- LIVE PRICE SAFETY GUARD ---
+   // Prevent instant SL/TP hit if backend absolute price is stale
+   double minStopDist = 1.50; // $1.50 or 15 pips
+   double minTpDist = 2.00;   // $2.00 or 20 pips
+   if (dir == "BUY") 
+   {
+      if (basketInv >= livePrice - minStopDist) basketInv = livePrice - minStopDist;
+      if (basketTP <= livePrice + minTpDist) basketTP = livePrice + minTpDist;
+   } 
+   else 
+   {
+      if (basketInv <= livePrice + minStopDist) basketInv = livePrice + minStopDist;
+      if (basketTP >= livePrice - minTpDist) basketTP = livePrice - minTpDist;
+   }
+   // -------------------------------
+
    PrintFormat("[BASKET_INIT] %s %s | Ideal=%.2f Live=%.2f Diff=%.1fpips | TP=%.2f SL=%.2f | Chasing=%s",
                signalId, dir, idealP, livePrice, priceDiffPips, basketTP, basketInv, isChasing ? "YES" : "NO");
 
@@ -910,9 +926,20 @@ void ExecuteBasketAdd(string json, string signalId)
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double livePrice = (dir == "BUY") ? ask : bid;
 
-   // Final safety guard: TP validity
-   if (dir == "BUY" && basketTP <= livePrice) return;
-   if (dir == "SELL" && basketTP >= livePrice) return;
+   // --- LIVE PRICE SAFETY GUARD ---
+   double minStopDist = 1.50; 
+   double minTpDist = 2.00;   
+   if (dir == "BUY") 
+   {
+      if (basketInv >= livePrice - minStopDist) basketInv = livePrice - minStopDist;
+      if (basketTP <= livePrice + minTpDist) basketTP = livePrice + minTpDist;
+   } 
+   else 
+   {
+      if (basketInv <= livePrice + minStopDist) basketInv = livePrice + minStopDist;
+      if (basketTP >= livePrice - minTpDist) basketTP = livePrice - minTpDist;
+   }
+   // -------------------------------
 
    ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
    string comment = "AurumBasket-ADD " + signalId;
