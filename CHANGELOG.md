@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.0] - 2026-08-26 (Micro-Grid Scalping Engine)
+### Ditambahkan
+- **Micro-Grid Scalping (Option C):** Merombak sistem `BasketEngine` agar lebih sensitif terhadap pergerakan harga mikro (3-5 pips) alih-alih menunggu *pullback* besar (0.5x ATR). Hal ini mengizinkan EA menembak Layer 2 dan Layer 3 secara dinamis untuk mengunci profit lebih besar.
+- **Momentum-Based Pyramiding:** Fitur *time-based momentum trigger*. Jika harga bergerak searah (profit) selama >15 detik dan momentum MACD sangat kuat, sistem tetap diizinkan menambah layer untuk memaksimalkan cuan saat tren terjadi.
+- **Signal Frequency Boost:** Menurunkan batas minimal skor probabilitas (*Confidence Score*) di `signalGenerator.ts` (melalui `config.ts`) dari 70 menjadi 60. Hal ini meningkatkan frekuensi kemunculan sinyal (dari 30-60 menit menjadi tiap 5-15 menit).
+
+### Diperbaiki
+- **Workspace Cleanup:** Menghapus 11 file sementara (*scratch scripts* dan *logs* format `.exp`, `.txt`, `.sh`) sisa sesi *debugging* sebelumnya demi menjaga kebersihan repositori utama.
+
 ## [1.4.0] - Sprint 5 (Dual-Engine AI & Timing Engine)
 ### Ditambahkan
 - **M1 Timing Engine:** Mengubah arsitektur AI menjadi "Dual-Engine". M1 kini bertugas secara eksklusif sebagai penentu titik *entry* (Timing), sementara H1/M15/M5 bertugas mencari arah tren (Direction/Setup). AI kini tidak akan memaksakan masuk saat M5 *extended*, melainkan mewajibkan *Wait for Pullback*.
