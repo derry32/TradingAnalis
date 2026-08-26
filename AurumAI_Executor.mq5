@@ -16,7 +16,7 @@ input int    InpTimerSeconds       = 1;                                 // Polli
 //=== Inputs: Basket Engine v2 ===
 input double InpBasketLot          = 0.01;  // Base lot per position (fixed, no martingale)
 input int    InpMaxPositions       = 3;     // Max positions per basket (Phase 1: 1 effective)
-input double InpDailyLossLimitIDR  = 500000.0; // Daily Loss Limit (IDR/Cent)
+input double InpDailyLossLimitIDR  = 5000000.0; // Daily Loss Limit (IDR/Cent)
 
 //=== Inputs: Anti-Chasing & Signal TTL Guard ===
 input int    InpSignalTTLSec       = 30;    // Signal TTL (sec) - Discard stale signals
