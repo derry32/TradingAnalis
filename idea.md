@@ -43,3 +43,18 @@ Walaupun sinyal mendapat skor tinggi (95 Poin), namun jika AI mendeteksi bahwa *
 1. Ubah logika *multiplier* TP1 dan TP2 di `signalGenerator.ts`.
 2. Evaluasi kondisi *Market Phase* untuk menerapkan batas *Capping* (*Opsi 3*).
 3. Lakukan pengujian di jam sibuk (*London/NY Overlap*) untuk melihat efektivitas pengambilan TP lebih awal pada sinyal berisiko.
+
+---
+
+# 💡 Ide & Backlog: The Machine Gun (Time-Spread Burst) Basket
+**Status:** Disimpan dari Sesi Brainstorming (26 Agustus 2026)
+
+## 📌 Latar Belakang
+User ingin profit besar dan cepat seperti Phase 1 (5 layer langsung), tetapi tanpa risiko 5 posisi dieksekusi di 1 harga yang sama secara kaku.
+
+## 🎯 Solusi yang Diusulkan
+- **Frekuensi Sinyal:** Turunkan batas minimal skor AI di backend agar sinyal muncul tiap 5-15 menit sekali.
+- **Cara 3 Entry:** Begitu sinyal valid, EA buka Entry 1. Kalau dalam 10 detik ke depan trennya masih searah (belum kena TP), EA tembak Entry 2, lalu 10 detik kemudian nembak Entry 3.
+- **Tradeoff:** Hampir pasti dapet 3 entry di setiap sinyal (profit besar jika kena TP). Tapi jika market whipsaw tiba-tiba, floating minusnya besar (mirip Phase 1).
+
+**Kesimpulan Sementara:** Disimpan sebagai cadangan jika sistem *Micro-Grid Scalping* dirasa masih kurang agresif.

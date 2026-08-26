@@ -19,7 +19,7 @@ export const config = {
 
   // === BASKET ENGINE v2 (AurumAI v2 — FROZEN) ===
   // Entry Thresholds (tunable via env, no code change needed)
-  INITIAL_ENTRY_THRESHOLD: process.env.INITIAL_ENTRY_THRESHOLD ? parseInt(process.env.INITIAL_ENTRY_THRESHOLD) : 70,
+  INITIAL_ENTRY_THRESHOLD: process.env.INITIAL_ENTRY_THRESHOLD ? parseInt(process.env.INITIAL_ENTRY_THRESHOLD) : 60,
   ADD_2_THRESHOLD:         process.env.ADD_2_THRESHOLD         ? parseInt(process.env.ADD_2_THRESHOLD)         : 75,
   ADD_3_THRESHOLD:         process.env.ADD_3_THRESHOLD         ? parseInt(process.env.ADD_3_THRESHOLD)         : 80,
 

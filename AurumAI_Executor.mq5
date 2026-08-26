@@ -140,8 +140,9 @@ void CheckAndReportClosedPositions()
          if(HistoryDealGetInteger(openDeal, DEAL_ENTRY) != DEAL_ENTRY_IN) continue;
          
          string openComment = HistoryDealGetString(openDeal, DEAL_COMMENT);
-         string prefix = "Aurum";
-         int prefixPos = StringFind(openComment, prefix);
+         
+         // 1. Try to match EA's format: "AurumBasket-#1 XAU-2026..."
+         int prefixPos = StringFind(openComment, "Aurum");
          if(prefixPos >= 0)
          {
             int spacePos = StringFind(openComment, " ", prefixPos);
@@ -151,17 +152,27 @@ void CheckAndReportClosedPositions()
                StringTrimLeft(extracted);
                StringTrimRight(extracted);
                
-               // Broker MT5 sering menambahkan "[sl]" atau "[tp]" di akhir comment.
-               // Ekstrak hanya kata pertama (signal ID sebenarnya) dengan mencari spasi berikutnya.
                int nextSpace = StringFind(extracted, " ");
-               if(nextSpace > 0)
-               {
-                  signalId = StringSubstr(extracted, 0, nextSpace);
-               }
-               else if(StringLen(extracted) > 0)
-               {
-                  signalId = extracted;
-               }
+               if(nextSpace > 0) signalId = StringSubstr(extracted, 0, nextSpace);
+               else signalId = extracted;
+            }
+         }
+         // 2. Try to match manual input like "AURUM-123456" or "XAU-20260806"
+         else
+         {
+            int aurumPos = StringFind(openComment, "AURUM-");
+            int xauPos = StringFind(openComment, "XAU-");
+            
+            int startPos = -1;
+            if (aurumPos >= 0) startPos = aurumPos;
+            else if (xauPos >= 0) startPos = xauPos;
+            
+            if (startPos >= 0)
+            {
+               string extracted = StringSubstr(openComment, startPos);
+               int nextSpace = StringFind(extracted, " ");
+               if(nextSpace > 0) signalId = StringSubstr(extracted, 0, nextSpace);
+               else signalId = extracted;
             }
          }
          break;

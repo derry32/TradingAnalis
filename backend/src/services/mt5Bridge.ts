@@ -70,8 +70,8 @@ export class MT5BridgeService {
 
     const isReset = Date.now() < this.resetRequestedUntil;
 
-    // Prioritaskan Burst Signal State Machine jika tersedia dan belum kadaluarsa
-    const currentBurst = signalStateMachine.getCurrentSignal() || this.latestBurstSignal;
+    // Prioritaskan latestBurstSignal (Phase 2) karena bisa berisi BASKET_ADD
+    const currentBurst = this.latestBurstSignal || signalStateMachine.getCurrentSignal();
     if (currentBurst && signalStateMachine.isSignalValid(currentBurst) && currentBurst.state !== 'EXPIRED') {
       const isAlreadyAcked = this.acknowledgedSignals.has(currentBurst.id);
       
@@ -175,8 +175,18 @@ export class MT5BridgeService {
     if (confidence >= 80) recommendedLot = 0.09;
     else if (confidence >= 70) recommendedLot = 0.05;
 
+    let displayId = this.latestSignal.id;
+    if (this.latestSignal.reason) {
+      try {
+        const parsed = typeof this.latestSignal.reason === 'string' ? JSON.parse(this.latestSignal.reason) : this.latestSignal.reason;
+        if (parsed.id) {
+          displayId = parsed.id;
+        }
+      } catch (e) {}
+    }
+
     const payload: MT5SignalPayload = {
-      id: this.latestSignal.id,
+      id: displayId,
       symbol: 'XAUUSD',
       type: this.latestSignal.type as 'BUY' | 'SELL',
       executionType: isLimit ? 'LIMIT' : 'MARKET',

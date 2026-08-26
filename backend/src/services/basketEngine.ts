@@ -29,7 +29,7 @@ export interface ActiveBasket {
 const MAX_BASKET_LAYERS = 3;
 const BASE_LOT = 0.01;
 const ADD_LOT = 0.01;
-const MIN_SPACING_ABSOLUTE = 0.50; // $0.50 for XAUUSD (50 points)
+const MIN_SPACING_ABSOLUTE = 0.30; // $0.30 for XAUUSD (30 points - Micro Grid)
 const REQUIRED_RR = 1.3;
 
 class BasketEngine {
@@ -96,22 +96,29 @@ class BasketEngine {
     if (!h1TrendMatch || !m15TrendMatch || invalidationTouched) return;
 
     // 5. Harga sudah masuk Pullback Zone? & 6. Minimum spacing terpenuhi?
-    const atrM5 = snapshot.m5.features.atr || 1.0;
-    const availableSpaceToSL = Math.abs(basket.initPrice - basket.basketInvalidation);
-    const maxAllowedSpacing = Math.max(availableSpaceToSL / 3, MIN_SPACING_ABSOLUTE);
-    const requiredSpacing = Math.min(Math.max(0.5 * atrM5, MIN_SPACING_ABSOLUTE), maxAllowedSpacing);
-    
+    // Micro-Grid Scalping Logic
+    const requiredSpacing = MIN_SPACING_ABSOLUTE;
+    const lastLayer = basket.layers[basket.layers.length - 1];
+    const timeSinceLastAddMs = Date.now() - lastLayer.hitTimeMs;
+    const isTimePassed = timeSinceLastAddMs > 15000; // 15 seconds
+
     let isPullbackZone = false;
+    let isMomentumStrong = false;
+    const m1Momentum = snapshot.m1.features.macd.histogram;
+
     if (basket.direction === 'BUY') {
-      isPullbackZone = currentPrice <= basket.lastLayerPrice - requiredSpacing;
+      isPullbackZone = currentPrice <= basket.weightedAvgEntry - requiredSpacing;
+      isMomentumStrong = m1Momentum > 0.5;
     } else {
-      isPullbackZone = currentPrice >= basket.lastLayerPrice + requiredSpacing;
+      isPullbackZone = currentPrice >= basket.weightedAvgEntry + requiredSpacing;
+      isMomentumStrong = m1Momentum < -0.5;
     }
 
-    if (!isPullbackZone) return;
+    const microGridTrigger = isPullbackZone || (isTimePassed && isMomentumStrong);
+
+    if (!microGridTrigger) return;
 
     // 7. Falling Knife = FALSE?
-    const m1Momentum = snapshot.m1.features.macd.histogram;
     const isFallingKnife = basket.direction === 'BUY' ? m1Momentum < -0.5 : m1Momentum > 0.5;
     if (isFallingKnife) {
         if (Math.random() < 0.05) console.log(`[BasketEngine] ADD REJECTED: Falling Knife (Mom: ${m1Momentum.toFixed(2)})`);
