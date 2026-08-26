@@ -25,6 +25,6 @@ Sinyal `BasketEngine` saat ini memiliki aturan yang terlalu kaku sehingga sering
 ### D. Dynamic Spacing Logic
 - **Komponen:** `basketEngine.ts`
 - **Perubahan:** Jarak antar layer tidak lagi tetap (statis). Sistem akan membaca tipe strategi dari sinyal:
-  - **HYPER_SCALPER (M1 & M5):** Jarak tembak Layer 2 adalah mundur 30 poin ($0.30).
-  - **SNIPER (M5):** Jarak tembak Layer 2 adalah mundur 150 poin ($1.50).
+  - **HYPER_SCALPER (M1 & M5):** Jarak tembak Layer 2 adalah mundur 20 poin ($0.20).
+  - **SNIPER (M5):** Jarak tembak Layer 2 adalah mundur 100 poin ($1.00).
 - **Tujuan:** Menyelaraskan lebar nafas *pullback* dengan profil risiko dari masing-masing strategi.
