@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.1] - 2026-08-26 (Smart Exits & Basket Engine Update)
+### Ditambahkan
+- **ATR-Adjusted Dynamic Spacing:** Sistem `BasketEngine` kini menggunakan *Dynamic Spacing* (Jarak Dinamis) yang beradaptasi dengan volatilitas (*Average True Range* / ATR). Jarak dasar untuk `HYPER_SCALPER` adalah 20 poin dan `SNIPER` adalah 100 poin. Jarak ini akan otomatis melebar (x1.25) saat pasar ekstrem dan menyempit (x0.8) saat pasar landai.
+- **Unified Basket Routing:** Sinyal `SNIPER` dan `HYPER_SCALPER` M5 kini resmi diintegrasikan ke dalam `BasketEngine` agar tidak lagi berstatus *Single-Shot* dan bisa memicu perlindungan 3 lapis saat harga mengalami koreksi (*pullback*).
+- **Soft Thesis Health Check:** Aturan penambahan Layer 2 dan 3 kini tidak lagi secara absolut membatalkan *Add* jika tren H1/M15 bergeser sedikit. Pembatalan (HARD VETO) hanya terjadi apabila terdapat arah tren ekstrem yang berlawanan (*Opposite CHoCH*) di M15 atau harga menyentuh batas Invalidation.
+
+### Diperbaiki
+- **Smart Exits (Break-Even) Minus Bug:** Memperbaiki sistem *Break-Even* di robot MT5 (`AurumAI_Executor.mq5`). Sebelumnya, SL dipindah tepat ke harga *Entry* yang menyebabkan kerugian kecil akibat komisi broker (-500 IDR). Kini SL digeser ke `Entry ± 2.0 Pips` (Untung $0.20) untuk menjamin posisi ditutup dalam keadaan profit bersih.
+
 ## [1.5.0] - 2026-08-26 (Micro-Grid Scalping Engine)
 ### Ditambahkan
 - **Micro-Grid Scalping (Option C):** Merombak sistem `BasketEngine` agar lebih sensitif terhadap pergerakan harga mikro (3-5 pips) alih-alih menunggu *pullback* besar (0.5x ATR). Hal ini mengizinkan EA menembak Layer 2 dan Layer 3 secara dinamis untuk mengunci profit lebih besar.
