@@ -149,8 +149,12 @@ void CheckAndReportClosedPositions()
             {
                string extracted = StringSubstr(openComment, spacePos + 1);
                StringTrimLeft(extracted);
-               StringTrimRight(extracted);
-               if(StringLen(extracted) > 0) signalId = extracted;
+               // Sinyal ID kita formatnya selalu "AURUM-XXXXXX" (12 char).
+               // Cukup ambil 12 char pertama supaya broker suffix seperti [sl]/[tp] terbuang.
+               if(StringLen(extracted) >= 12)
+                  signalId = StringSubstr(extracted, 0, 12);
+               else
+                  signalId = extracted; // fallback
             }
          }
          break;

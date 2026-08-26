@@ -90,14 +90,16 @@ class BasketEngine {
 
     // 4. Trend / Thesis masih valid?
     const expectedTrend = basket.direction === 'BUY' ? 'BULLISH' : 'BEARISH';
-    const h1TrendMatch = snapshot.h1.features.trend === expectedTrend;
-    const m15TrendMatch = snapshot.m15.features.trend === expectedTrend;
+    const h1TrendMatch = snapshot.h1.features.trend === expectedTrend || snapshot.h1.features.trend === 'NEUTRAL';
+    const m15TrendMatch = snapshot.m15.features.trend === expectedTrend || snapshot.m15.features.trend === 'NEUTRAL';
     const invalidationTouched = basket.direction === 'BUY' ? currentPrice <= basket.basketInvalidation : currentPrice >= basket.basketInvalidation;
     if (!h1TrendMatch || !m15TrendMatch || invalidationTouched) return;
 
     // 5. Harga sudah masuk Pullback Zone? & 6. Minimum spacing terpenuhi?
     const atrM5 = snapshot.m5.features.atr || 1.0;
-    const requiredSpacing = Math.max(0.5 * atrM5, MIN_SPACING_ABSOLUTE);
+    const availableSpaceToSL = Math.abs(basket.initPrice - basket.basketInvalidation);
+    const maxAllowedSpacing = Math.max(availableSpaceToSL / 3, MIN_SPACING_ABSOLUTE);
+    const requiredSpacing = Math.min(Math.max(0.5 * atrM5, MIN_SPACING_ABSOLUTE), maxAllowedSpacing);
     
     let isPullbackZone = false;
     if (basket.direction === 'BUY') {
@@ -111,12 +113,18 @@ class BasketEngine {
     // 7. Falling Knife = FALSE?
     const m1Momentum = snapshot.m1.features.macd.histogram;
     const isFallingKnife = basket.direction === 'BUY' ? m1Momentum < -0.5 : m1Momentum > 0.5;
-    if (isFallingKnife) return;
+    if (isFallingKnife) {
+        if (Math.random() < 0.05) console.log(`[BasketEngine] ADD REJECTED: Falling Knife (Mom: ${m1Momentum.toFixed(2)})`);
+        return;
+    }
 
     // 8. Rejection confirmation = TRUE? (From closed candle)
     const m1ClosedBullish = snapshot.m1.candle.close > snapshot.m1.candle.open;
     const hasRejection = basket.direction === 'BUY' ? m1ClosedBullish : !m1ClosedBullish;
-    if (!hasRejection) return;
+    if (!hasRejection) {
+        if (Math.random() < 0.05) console.log(`[BasketEngine] ADD REJECTED: No Rejection yet (M1 Bullish: ${m1ClosedBullish})`);
+        return;
+    }
 
     // Calculate simulated Add
     const newTotalLots = basket.layers.reduce((sum, l) => sum + l.lot, 0) + ADD_LOT;
