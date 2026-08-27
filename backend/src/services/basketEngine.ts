@@ -88,42 +88,87 @@ class BasketEngine {
     const riskPass = true;
     if (!riskPass) return;
 
-    // 4. Trend / Thesis masih valid?
+    // 4. Soft Thesis Health Check
     const expectedTrend = basket.direction === 'BUY' ? 'BULLISH' : 'BEARISH';
     const h1TrendMatch = snapshot.h1.features.trend === expectedTrend || snapshot.h1.features.trend === 'NEUTRAL';
     const m15TrendMatch = snapshot.m15.features.trend === expectedTrend || snapshot.m15.features.trend === 'NEUTRAL';
     const invalidationTouched = basket.direction === 'BUY' ? currentPrice <= basket.basketInvalidation : currentPrice >= basket.basketInvalidation;
-    if (!h1TrendMatch || !m15TrendMatch || invalidationTouched) return;
+    
+    // Hard Veto: Invalidation touched or opposite trend (CHoCH) on M15
+    const oppositeCHoCH = basket.direction === 'BUY' ? snapshot.m15.features.trend === 'BEARISH' : snapshot.m15.features.trend === 'BULLISH';
+    if (invalidationTouched) {
+        console.log(`[BasketEngine] HARD VETO: Invalidation touched for ${basket.signalId}`);
+        return;
+    }
+    if (oppositeCHoCH) {
+        console.log(`[BasketEngine] HARD VETO: Opposite M15 CHoCH detected for ${basket.signalId}`);
+        return;
+    }
+
+    // Soft Penalty for minor deviations (H1/M15 mismatch)
+    if (!h1TrendMatch || !m15TrendMatch) {
+        // Log warning but allow evaluation to continue based on pullback
+        console.log(`[BasketEngine] WARNING: Thesis Health Check minor deviation for ${basket.signalId} (H1: ${snapshot.h1.features.trend}, M15: ${snapshot.m15.features.trend}). Proceeding with pullback check.`);
+    }
 
     // 5. Harga sudah masuk Pullback Zone? & 6. Minimum spacing terpenuhi?
-    // Micro-Grid Scalping Logic
-    const requiredSpacing = MIN_SPACING_ABSOLUTE;
-    const lastLayer = basket.layers[basket.layers.length - 1];
-    const timeSinceLastAddMs = Date.now() - lastLayer.hitTimeMs;
-    const isTimePassed = timeSinceLastAddMs > 15000; // 15 seconds
+    // Dynamic ATR-Adjusted Spacing Logic
+    const strategy = basket.basePayload.tier?.toUpperCase() || '';
+    let baseSpacing = 0.50; // Fallback
+    if (strategy.includes('SNIPER')) {
+        baseSpacing = 1.00; // 100 poin
+    } else if (strategy.includes('HYPER_SCALPER')) {
+        baseSpacing = 0.20; // 20 poin
+    }
 
-    let isPullbackZone = false;
-    let isMomentumStrong = false;
+    // ATR Adjustment
+    // Assume average ATR is around 2.0. If higher, increase spacing. If lower, decrease.
+    const currentAtr = snapshot.m15.features.atr || 2.0;
+    let atrMultiplier = 1.0;
+    if (currentAtr < 1.5) atrMultiplier = 0.8;       // Low Volatility
+    else if (currentAtr > 3.0) atrMultiplier = 1.25; // High Volatility
+    
+    const requiredSpacing = baseSpacing * atrMultiplier;
+
+    // Safety net: Extreme ATR
+    if (currentAtr > 4.5) {
+        console.log(`[BasketEngine] EXTREME ATR VETO: ATR is ${currentAtr.toFixed(2)} for ${basket.signalId}`);
+        return;
+    }
+
+    const lastLayer = basket.layers[basket.layers.length - 1];
+    const distanceToLast = Math.abs(currentPrice - lastLayer.entryPrice);
+    const isSpacingOk = distanceToLast >= requiredSpacing;
+
+    if (!isSpacingOk) return; // Spacing is mandatory
+
     const m1Momentum = snapshot.m1.features.macd.histogram;
+    let isPullback = false;
+    let isContinuation = false;
+    let momentumScore = 0; // WEAK=0, MEDIUM=5, STRONG=10
 
     if (basket.direction === 'BUY') {
-      isPullbackZone = currentPrice <= basket.weightedAvgEntry - requiredSpacing;
-      isMomentumStrong = m1Momentum > 0.15;
+      isPullback = currentPrice < lastLayer.entryPrice;
+      isContinuation = currentPrice > lastLayer.entryPrice;
+      if (m1Momentum > 0.15) momentumScore = 10;
+      else if (m1Momentum > 0.05) momentumScore = 5;
     } else {
-      isPullbackZone = currentPrice >= basket.weightedAvgEntry + requiredSpacing;
-      isMomentumStrong = m1Momentum < -0.15;
+      isPullback = currentPrice > lastLayer.entryPrice;
+      isContinuation = currentPrice < lastLayer.entryPrice;
+      if (m1Momentum < -0.15) momentumScore = 10;
+      else if (m1Momentum < -0.05) momentumScore = 5;
     }
 
-    const microGridTrigger = isPullbackZone || (isTimePassed && isMomentumStrong);
+    // Type A: Pullback ADD
+    const isTypeA = isPullback;
 
-    if (!microGridTrigger) {
-      if (Math.random() < 0.05) console.log(`[BasketEngine] ADD REJECTED: Not in Pullback (${isPullbackZone}) and Momentum not strong (${isMomentumStrong}, MACD: ${m1Momentum.toFixed(2)}) for ${basket.signalId}`);
+    // Type B: Continuation ADD
+    const isTypeB = isContinuation && (momentumScore >= 5);
+
+    if (!isTypeA && !isTypeB) {
+      if (Math.random() < 0.05) console.log(`[BasketEngine] ADD REJECTED: Neither Pullback nor valid Continuation Momentum for ${basket.signalId}`);
       return;
     }
-
-    // Bypass Falling Knife dan Rejection Guard untuk Micro-Grid
-    // Karena jarak 3 pips terlalu sempit, wajar kalau tertangkap saat candle merah.
-    // Dan saat momentum nanjak, kita tidak mau tertahan oleh syarat falling knife.
 
     // Calculate simulated Add
     const newTotalLots = basket.layers.reduce((sum, l) => sum + l.lot, 0) + ADD_LOT;
@@ -132,14 +177,53 @@ class BasketEngine {
     sumProduct += (currentPrice * ADD_LOT);
     const newWeightedAvg = sumProduct / newTotalLots;
 
-    // Calculate new Risk and TP
-    const newRisk = Math.abs(newWeightedAvg - basket.basketInvalidation);
-    const marketTarget = basket.direction === 'BUY' ? basket.basePayload.entryPrice + (newRisk * 2) : basket.basePayload.entryPrice - (newRisk * 2); 
+    // Risk Budget Validation
+    const riskDistance = Math.abs(newWeightedAvg - basket.basketInvalidation);
+    const ASSUMED_EQUITY = 1000;
+    const maxBasketRiskMoney = ASSUMED_EQUITY * 0.02; // 2% Equity
+    const basketRiskMoney = riskDistance * newTotalLots * 100; // XAUUSD: 1 point = $1 per 0.01 lot => distance * lots * 100
     
-    // 9. RR setelah ADD >= minimum?
-    const availableReward = Math.abs(marketTarget - newWeightedAvg);
-    const requiredReward = newRisk * REQUIRED_RR;
-    if (availableReward < requiredReward) return;
+    if (basketRiskMoney > maxBasketRiskMoney) {
+        console.log(`[BasketEngine] REJECTED: Risk budget exceeded ($${basketRiskMoney.toFixed(2)} > $${maxBasketRiskMoney.toFixed(2)}) for ${basket.signalId}`);
+        return;
+    }
+
+    // Calculate Market Target (Structural)
+    let marketTarget = 0;
+    if (basket.direction === 'BUY') {
+        marketTarget = Math.max(snapshot.m15.structure.swingHigh, snapshot.h1.structure.swingHigh, newWeightedAvg + 1.0);
+    } else {
+        marketTarget = Math.min(snapshot.m15.structure.swingLow, snapshot.h1.structure.swingLow, newWeightedAvg - 1.0);
+    }
+    
+    // Strict requirements for Layer #3
+    if (basket.layers.length === 2) {
+       const availableReward = Math.abs(marketTarget - newWeightedAvg);
+       const requiredReward = riskDistance * 1.20; // RR >= 1.20
+       if (availableReward < requiredReward) {
+           console.log(`[BasketEngine] LAYER #3 REJECTED: RR ${availableReward.toFixed(2)} < ${requiredReward.toFixed(2)}`);
+           return;
+       }
+       
+       if (momentumScore < 5) {
+           console.log(`[BasketEngine] LAYER #3 REJECTED: Momentum is WEAK`);
+           return;
+       }
+
+       let confirmations = 0;
+       // Conf A: BOS / CHoCH
+       if (snapshot.m5.structure.lastBOS !== 'NONE' || snapshot.m5.structure.lastCHoCH !== 'NONE') confirmations++;
+       // Conf B: Displacement
+       const m5Body = Math.abs(snapshot.m5.candle.close - snapshot.m5.candle.open);
+       if (m5Body > (snapshot.m5.features.atr * 0.8)) confirmations++;
+       // Conf C: FVG
+       if (snapshot.m5.structure.hasFVG) confirmations++;
+
+       if (confirmations < 2) {
+           console.log(`[BasketEngine] LAYER #3 REJECTED: 2/3 Confirmations failed (Score: ${confirmations})`);
+           return;
+       }
+    }
 
     // 10. ADD_EXECUTING lock = FALSE?
     if (basket.addExecutingLock) return;

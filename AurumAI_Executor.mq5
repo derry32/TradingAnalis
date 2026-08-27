@@ -30,11 +30,12 @@ input ulong  InpSlippage           = 30;     // Slippage pts
 input bool   InpDemoOnlyGuard      = true;   // Demo Guard
 
 //=== Inputs: Smart Trailing & Break-Even ===
-input double InpBEMultiplier       = 0.6;    // BE Trigger at +6.0 pips profit
-input double InpTrailingStartPips  = 8.0;    // Trailing Start at +8.0 pips profit
-input double InpTrailingGapPips    = 5.0;    // Trailing Gap (5.0 pips)
+input double InpBEMultiplier       = 0.8;    // BE Trigger at 0.8R profit
+input double InpBEOffsetR          = 0.05;   // BE Buffer (0.05R offset)
+input double InpTrailingStartR     = 1.2;    // Trailing Start at 1.2R profit
+input double InpTrailingGapR       = 0.5;    // Trailing Gap (0.5R)
 input int    InpPendingExpireMinutes  = 5;   // Max Wait Time for Limit Orders (minutes)
-input int    InpPositionExpireMinutes = 20;  // Max Hold Time if no Basket TP hit (minutes)
+input int    InpPositionExpireMinutes = 0;   // 0 = Disable hard expiration, use Intelligent Time Stop
 
 //--- State globals
 string   g_lastProcessedId   = "";
@@ -42,6 +43,7 @@ string   g_activeSignalId    = "";
 string   g_activeDir         = "";
 int      g_lastProcessedUpdateIndex = -1;
 double   g_signalOpenPx      = 0.0;
+double   g_initialSL         = 0.0;
 datetime g_signalOpenTime    = 0;
 bool     g_beDone            = false;
 
@@ -504,17 +506,34 @@ void CheckSmartExits()
       }
    }
 
-   // 2. Time Stop for Active Positions
+   // 2. Intelligent Time Stop for Active Positions
    for(int i = PositionsTotal() - 1; i >= 0; i--)
    {
       ulong t = PositionGetTicket(i);
       if(t > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
       {
          datetime posTime = (datetime)PositionGetInteger(POSITION_TIME);
-         if((TimeCurrent() - posTime) >= limitPositionSeconds)
+         int ageSeconds = (int)(TimeCurrent() - posTime);
+         
+         if(limitPositionSeconds > 0 && ageSeconds >= limitPositionSeconds)
          {
-            PrintFormat("[TIME STOP] Closing expired position #%d (Age: %d sec)", t, (TimeCurrent() - posTime));
+            PrintFormat("[TIME STOP] Closing expired position #%d (Age: %d sec)", t, ageSeconds);
             ClosePositionByTicket(t);
+         }
+         else if(limitPositionSeconds == 0 && ageSeconds >= 1800) // Intelligent Time Stop (30m)
+         {
+            double currPx = PositionGetDouble(POSITION_PRICE_CURRENT);
+            double openPx = PositionGetDouble(POSITION_PRICE_OPEN);
+            double posProfit = (g_activeDir == "BUY") ? (currPx - openPx) : (openPx - currPx);
+            
+            double R = MathAbs(g_signalOpenPx - g_initialSL);
+            if(R <= 0.10) R = 2.0; // fallback $2.00
+            
+            if(posProfit < (0.3 * R))
+            {
+               PrintFormat("[INTELLIGENT TIME STOP] Stagnant position #%d closed (Age: %d sec, Profit: %.2f < 0.3R)", t, ageSeconds, posProfit);
+               ClosePositionByTicket(t);
+            }
          }
       }
    }
@@ -529,8 +548,13 @@ void CheckSmartExits()
    double profitDist = (g_activeDir == "BUY") ? (bid - g_signalOpenPx) : (g_signalOpenPx - ask);
    int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
 
-   // Adaptive Break-Even Trigger (+6.0 pips = $0.60)
-   double beTrigger = InpBEMultiplier * 1.0;
+   double R = MathAbs(g_signalOpenPx - g_initialSL);
+   if (R <= 0.10) R = 2.0; // fallback $2.00 (200 pts)
+
+   // Adaptive Break-Even Trigger based on R
+   double beTrigger = InpBEMultiplier * R;
+   double beOffset = InpBEOffsetR * R;
+   
    if(!g_beDone && profitDist >= beTrigger)
    {
       for(int i = PositionsTotal() - 1; i >= 0; i--)
@@ -541,8 +565,15 @@ void CheckSmartExits()
             double curSL = PositionGetDouble(POSITION_SL);
             double curTP = PositionGetDouble(POSITION_TP);
             bool needBE = false;
-            if(g_activeDir == "BUY" && curSL < g_signalOpenPx) needBE = true;
-            if(g_activeDir == "SELL" && (curSL > g_signalOpenPx || curSL == 0.0)) needBE = true;
+            double candSL = g_signalOpenPx;
+            if(g_activeDir == "BUY" && curSL < g_signalOpenPx) {
+               needBE = true;
+               candSL = g_signalOpenPx + beOffset;
+            }
+            if(g_activeDir == "SELL" && (curSL > g_signalOpenPx || curSL == 0.0)) {
+               needBE = true;
+               candSL = g_signalOpenPx - beOffset;
+            }
             if(needBE)
             {
                MqlTradeRequest req;
@@ -552,7 +583,7 @@ void CheckSmartExits()
                req.action   = TRADE_ACTION_SLTP;
                req.symbol   = _Symbol;
                req.position = t;
-               req.sl       = NormalizeDouble(g_signalOpenPx, digits);
+               req.sl       = NormalizeDouble(candSL, digits);
                req.tp       = curTP;
                if(!OrderSend(req, res))
                   Print("[BE] OrderSend failed err=", GetLastError());
@@ -560,12 +591,12 @@ void CheckSmartExits()
          }
       }
       g_beDone = true;
-      PrintFormat("[BE TRIGGERED] SL moved to Entry %.2f (Profit=%.2f >= %.2f)", g_signalOpenPx, profitDist, beTrigger);
+      PrintFormat("[BE TRIGGERED] SL moved to BE Offset %.2f (Profit=%.2f >= %.2f)", (g_activeDir == "BUY" ? g_signalOpenPx + beOffset : g_signalOpenPx - beOffset), profitDist, beTrigger);
    }
 
-   // Trailing Stop
-   double trailStart = InpTrailingStartPips * 0.1; // +8.0 pips = $0.80
-   double trailGap   = InpTrailingGapPips * 0.1;   // 5.0 pips = $0.50
+   // Trailing Stop based on R
+   double trailStart = InpTrailingStartR * R;
+   double trailGap   = InpTrailingGapR * R;
    if(profitDist >= trailStart)
    {
       double candSL = (g_activeDir == "BUY") ? (bid - trailGap) : (ask + trailGap);
@@ -885,6 +916,7 @@ void ExecuteBasketInit(string json, string signalId)
       g_activeSignalId  = signalId;
       g_activeDir       = dir;
       g_signalOpenPx    = livePrice;
+      g_initialSL       = basketInv;
       g_signalOpenTime  = TimeCurrent();
       g_beDone          = false;
 

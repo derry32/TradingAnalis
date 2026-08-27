@@ -126,12 +126,13 @@ export async function updateSignalStatus(dbId: number | string, status: string, 
 export async function updateSignalStatusByInternalId(internalId: string, status: string, hitTime: string, profit: number) {
   if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return;
   
-  // Search for the signal in the last 2 days
-  const past48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  // Search for the signal in the last 14 days
+  const past14d = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  const cleanInternalId = internalId ? internalId.trim() : '';
   const { data, error } = await supabase
     .from('signals')
     .select('id, reason, timestamp')
-    .gte('timestamp', past48h)
+    .gte('timestamp', past14d)
     .order('timestamp', { ascending: false });
 
   if (error || !data) return;
@@ -142,7 +143,7 @@ export async function updateSignalStatusByInternalId(internalId: string, status:
       reasonObj = JSON.parse(row.reason);
     } catch(e) {}
     
-    if (reasonObj.id === internalId) {
+    if (reasonObj.id === cleanInternalId) {
       reasonObj.finalStatus = status;
       reasonObj.hitTime = hitTime;
       reasonObj.duration = Math.floor((new Date().getTime() - new Date(row.timestamp).getTime()) / 60000);
@@ -160,11 +161,12 @@ export async function processSignalLayer(internalId: string, ticket: number, pro
   if (!config.SUPABASE_URL || !config.SUPABASE_KEY) return;
   
   // 1. Find the parent signal
-  const past48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  const past14d = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  const cleanInternalId = internalId ? internalId.trim() : '';
   const { data, error } = await supabase
     .from('signals')
     .select('id, reason, timestamp')
-    .gte('timestamp', past48h)
+    .gte('timestamp', past14d)
     .order('timestamp', { ascending: false });
     
   if (error || !data) return;
@@ -173,7 +175,7 @@ export async function processSignalLayer(internalId: string, ticket: number, pro
   let reasonObj: any = {};
   for (const row of data) {
     try { reasonObj = JSON.parse(row.reason); } catch(e) {}
-    if (reasonObj.id === internalId) {
+    if (reasonObj.id === cleanInternalId) {
       targetRow = row;
       break;
     }
