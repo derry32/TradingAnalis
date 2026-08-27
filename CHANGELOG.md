@@ -6,6 +6,9 @@
 - **2/3 Confirmations untuk Layer 3:** Aturan *hard veto* pada momentum MACD kini dicabut. Layer 3 diizinkan masuk jika memenuhi minimal 2 dari 3 konfirmasi Price Action: *M5 BOS / CHoCH*, *Displacement (Body > 0.8x ATR)*, dan pembentukan *M5 Fair Value Gap (FVG)*.
 - **Monetary Risk Budget:** Sistem kini melacak estimasi nilai risiko finansial Layer 3 menggunakan rasio 2% *Equity* maksimum per keranjang sinyal (*basket*). Stop Loss pada Payload kini digunakan murni sebagai titik *Invalidation*, bukan anggaran lot.
 - **Relaxed RR Threshold:** Persyaratan *Risk-to-Reward* pada penambahan Layer 3 kini diturunkan dan dilonggarkan dari 1.30 menjadi 1.20 dengan target struktural.
+- **Intelligent Time Stop (EA):** Menghapus mekanisme kedaluwarsa statis (20 menit) di robot MT5 dan menggantinya dengan logika dinamis. Posisi hanya akan ditutup paksa jika usia transaksi > 30 menit DAN profit stagnan < 0.3R.
+- **R-Multiples untuk BE & Trailing (EA):** Sistem *Break-Even* dan *Trailing Stop* di MT5 tidak lagi menggunakan nilai *pips* kaku, melainkan menggunakan pengali R (*R-multiples*), menyesuaikan jarak SL aktual per sinyal.
+- **Pullback & Continuation Engine (Layer 2):** Menambahkan logika *Type A (Pullback)* dan *Type B (Continuation)* pada `BasketEngine`. Syarat penambahan Layer 2 kini jauh lebih longgar, mengizinkan entri Averaging selama jarak jarak aman (*spacing*) terpenuhi dan tesis awal masih valid tanpa memerlukan momentum ekstra kuat.
 
 ### Diperbaiki
 - **48-Hour Signal Fetch Limit:** Memperbaiki sistem pencarian sinyal pada `database.ts` agar hanya mengambil riwayat dalam rentang maksimal 48 jam terakhir, sehingga *query* lebih ringan tanpa *overhead*.
