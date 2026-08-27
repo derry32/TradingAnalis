@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.5.2] - 2026-08-27 (Basket Engine Layer 3 Relaxation)
+### Ditambahkan
+- **Structural Market Target:** Mengganti kalkulasi *Reward/Target* yang sebelumnya bersifat sintetis (kaku 2x lipat Risk) menjadi *Market Target* dinamis berdasarkan struktur H1/M15 (Swing High/Low aktual).
+- **2/3 Confirmations untuk Layer 3:** Aturan *hard veto* pada momentum MACD kini dicabut. Layer 3 diizinkan masuk jika memenuhi minimal 2 dari 3 konfirmasi Price Action: *M5 BOS / CHoCH*, *Displacement (Body > 0.8x ATR)*, dan pembentukan *M5 Fair Value Gap (FVG)*.
+- **Monetary Risk Budget:** Sistem kini melacak estimasi nilai risiko finansial Layer 3 menggunakan rasio 2% *Equity* maksimum per keranjang sinyal (*basket*). Stop Loss pada Payload kini digunakan murni sebagai titik *Invalidation*, bukan anggaran lot.
+- **Relaxed RR Threshold:** Persyaratan *Risk-to-Reward* pada penambahan Layer 3 kini diturunkan dan dilonggarkan dari 1.30 menjadi 1.20 dengan target struktural.
+
+### Diperbaiki
+- **48-Hour Signal Fetch Limit:** Memperbaiki sistem pencarian sinyal pada `database.ts` agar hanya mengambil riwayat dalam rentang maksimal 48 jam terakhir, sehingga *query* lebih ringan tanpa *overhead*.
+- **Whitespace ID Cleanup:** Membersihkan format Signal ID di backend yang sebelumnya sering mengalami *bug* spasi berlebih saat dipasangkan dengan API Supabase.
+
 ## [1.5.1] - 2026-08-26 (Smart Exits & Basket Engine Update)
 ### Ditambahkan
 - **ATR-Adjusted Dynamic Spacing:** Sistem `BasketEngine` kini menggunakan *Dynamic Spacing* (Jarak Dinamis) yang beradaptasi dengan volatilitas (*Average True Range* / ATR). Jarak dasar untuk `HYPER_SCALPER` adalah 20 poin dan `SNIPER` adalah 100 poin. Jarak ini akan otomatis melebar (x1.25) saat pasar ekstrem dan menyempit (x0.8) saat pasar landai.
