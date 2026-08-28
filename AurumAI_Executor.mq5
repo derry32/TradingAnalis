@@ -30,10 +30,10 @@ input ulong  InpSlippage           = 30;     // Slippage pts
 input bool   InpDemoOnlyGuard      = true;   // Demo Guard
 
 //=== Inputs: Smart Trailing & Break-Even ===
-input double InpBEMultiplier       = 1.5;    // BE Trigger at 1.5R profit (was 0.8)
-input double InpBEOffsetR          = 0.1;    // BE Buffer (0.1R offset, was 0.05)
-input double InpTrailingStartR     = 2.0;    // Trailing Start at 2.0R profit
-input double InpTrailingGapR       = 1.0;    // Trailing Gap (1.0R)
+input double InpBEMultiplier       = 1.0;    // BE Trigger at 1.0R profit (was 1.5)
+input double InpBEOffsetR          = 0.1;    // BE Buffer (0.1R offset)
+input double InpTrailingStartR     = 1.5;    // Trailing Start at 1.5R profit (was 2.0)
+input double InpTrailingGapR       = 0.8;    // Trailing Gap (0.8R, was 1.0)
 input int    InpPendingExpireMinutes  = 5;   // Max Wait Time for Limit Orders (minutes)
 input int    InpPositionExpireMinutes = 0;   // 0 = Disable hard expiration, use Intelligent Time Stop
 
