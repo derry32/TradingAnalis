@@ -546,7 +546,7 @@ void CheckSmartExits()
    // Calculate Average Open Price of all active positions
    double totalVolume = 0.0;
    double totalValue = 0.0;
-   int posCount = 0;
+   int activeCount = 0;
    for(int i = PositionsTotal() - 1; i >= 0; i--)
    {
       ulong t = PositionGetTicket(i);
@@ -556,11 +556,11 @@ void CheckSmartExits()
          double px = PositionGetDouble(POSITION_PRICE_OPEN);
          totalVolume += vol;
          totalValue += (px * vol);
-         posCount++;
+         activeCount++;
       }
    }
    
-   if(posCount == 0 || totalVolume == 0.0) return;
+   if(activeCount == 0 || totalVolume == 0.0) return;
    
    double avgOpenPx = totalValue / totalVolume;
 
