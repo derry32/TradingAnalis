@@ -543,21 +543,42 @@ void CheckSmartExits()
 
    if(g_activeSignalId == "" || g_signalOpenPx == 0.0) return;
 
+   // Calculate Average Open Price of all active positions
+   double totalVolume = 0.0;
+   double totalValue = 0.0;
+   int posCount = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      ulong t = PositionGetTicket(i);
+      if(t > 0 && PositionGetString(POSITION_SYMBOL) == _Symbol && (ulong)PositionGetInteger(POSITION_MAGIC) == InpMagicNumber)
+      {
+         double vol = PositionGetDouble(POSITION_VOLUME);
+         double px = PositionGetDouble(POSITION_PRICE_OPEN);
+         totalVolume += vol;
+         totalValue += (px * vol);
+         posCount++;
+      }
+   }
+   
+   if(posCount == 0 || totalVolume == 0.0) return;
+   
+   double avgOpenPx = totalValue / totalVolume;
+
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   double profitDist = (g_activeDir == "BUY") ? (bid - g_signalOpenPx) : (g_signalOpenPx - ask);
+   double profitDist = (g_activeDir == "BUY") ? (bid - avgOpenPx) : (avgOpenPx - ask);
    int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
 
-   double R = MathAbs(g_signalOpenPx - g_initialSL);
+   double R = MathAbs(avgOpenPx - g_initialSL);
    if (R <= 0.10) R = 2.0; // fallback $2.00 (200 pts)
 
-   // Fixed Break-Even Trigger for Split Targets Strategy
-   // Trigger when profit hits 25 pips (TP1 level), Offset SL to +10 pips (+1.0 point)
-   double beTrigger = 2.50;
-   double beOffset = 1.00;
+   // Smart Break-Even based on Average Price
+   double beTrigger = 2.50; // 25 pips
+   double beOffset = 1.00;  // 10 pips
    
-   if(!g_beDone && profitDist >= beTrigger)
+   if(profitDist >= beTrigger)
    {
+      bool beTriggeredNow = false;
       for(int i = PositionsTotal() - 1; i >= 0; i--)
       {
          ulong t = PositionGetTicket(i);
@@ -566,15 +587,16 @@ void CheckSmartExits()
             double curSL = PositionGetDouble(POSITION_SL);
             double curTP = PositionGetDouble(POSITION_TP);
             bool needBE = false;
-            double candSL = g_signalOpenPx;
-            if(g_activeDir == "BUY" && curSL < g_signalOpenPx) {
-               needBE = true;
-               candSL = g_signalOpenPx + beOffset;
+            double candSL = avgOpenPx;
+            if(g_activeDir == "BUY") {
+               candSL = avgOpenPx + beOffset;
+               if(curSL < candSL - 0.02) needBE = true; // Use epsilon for float comparison
             }
-            if(g_activeDir == "SELL" && (curSL > g_signalOpenPx || curSL == 0.0)) {
-               needBE = true;
-               candSL = g_signalOpenPx - beOffset;
+            if(g_activeDir == "SELL") {
+               candSL = avgOpenPx - beOffset;
+               if(curSL > candSL + 0.02 || curSL == 0.0) needBE = true;
             }
+            
             if(needBE)
             {
                MqlTradeRequest req;
@@ -588,14 +610,18 @@ void CheckSmartExits()
                req.tp       = curTP;
                if(!OrderSend(req, res))
                   Print("[BE] OrderSend failed err=", GetLastError());
+               else
+                  beTriggeredNow = true;
             }
          }
       }
-      g_beDone = true;
-      PrintFormat("[BE TRIGGERED] SL moved to BE Offset %.2f (Profit=%.2f >= %.2f)", (g_activeDir == "BUY" ? g_signalOpenPx + beOffset : g_signalOpenPx - beOffset), profitDist, beTrigger);
+      if(beTriggeredNow) {
+         PrintFormat("[SMART BE TRIGGERED] SL moved to Offset %.2f from AvgPx %.2f (Profit=%.2f >= %.2f)", 
+                     (g_activeDir == "BUY" ? avgOpenPx + beOffset : avgOpenPx - beOffset), avgOpenPx, profitDist, beTrigger);
+      }
    }
 
-   // Trailing Stop based on R
+   // Trailing Stop based on R from Average Price
    double trailStart = InpTrailingStartR * R;
    double trailGap   = InpTrailingGapR * R;
    if(profitDist >= trailStart)
@@ -900,26 +926,23 @@ void ExecuteBasketInit(string json, string signalId)
 
    if(!isChasing)
    {
-      // Market order — 3 Split Target positions
+      // Market order — 2 Split Target positions
       ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
       
       double tp1_dist = 2.50; // 25 pips
-      double tp2_dist = 3.00; // 30 pips
       double tp1 = (dir == "BUY") ? livePrice + tp1_dist : livePrice - tp1_dist;
-      double tp2 = (dir == "BUY") ? livePrice + tp2_dist : livePrice - tp2_dist;
-      double tp3 = basketTP; // Full Target
+      double tp2 = basketTP; // Full Target
 
-      if (dir == "BUY" && tp3 < tp2) tp3 = tp2 + 1.0;
-      if (dir == "SELL" && tp3 > tp2) tp3 = tp2 - 1.0;
+      if (dir == "BUY" && tp2 < tp1) tp2 = tp1 + 1.0;
+      if (dir == "SELL" && tp2 > tp1) tp2 = tp1 - 1.0;
 
       ulong t1 = ExecuteNativeTrade(ot, livePrice, basketInv, tp1, layerLot, "Aurum-L1 " + signalId);
       ulong t2 = ExecuteNativeTrade(ot, livePrice, basketInv, tp2, layerLot, "Aurum-L2 " + signalId);
-      ulong t3 = ExecuteNativeTrade(ot, livePrice, basketInv, tp3, layerLot, "Aurum-L3 " + signalId);
       
-      ticket = (t1 > 0) ? t1 : ((t2 > 0) ? t2 : t3);
+      ticket = (t1 > 0) ? t1 : t2;
       if(ticket > 0)
-         PrintFormat("[BASKET_INIT] Opened 3 Layers | Lot=%.2f/layer | L1_TP=%.2f | L2_TP=%.2f | L3_TP=%.2f | SL=%.2f",
-                     layerLot, tp1, tp2, tp3, basketInv);
+         PrintFormat("[BASKET_INIT] Opened 2 Layers | Lot=%.2f/layer | L1_TP=%.2f | L2_TP=%.2f | SL=%.2f",
+                     layerLot, tp1, tp2, basketInv);
    }
    else if(InpAutoPullbackLimit)
    {
@@ -928,22 +951,19 @@ void ExecuteBasketInit(string json, string signalId)
       ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY_LIMIT : ORDER_TYPE_SELL_LIMIT;
       
       double tp1_dist = 2.50; // 25 pips
-      double tp2_dist = 3.00; // 30 pips
       double tp1 = (dir == "BUY") ? limitPx + tp1_dist : limitPx - tp1_dist;
-      double tp2 = (dir == "BUY") ? limitPx + tp2_dist : limitPx - tp2_dist;
-      double tp3 = basketTP;
+      double tp2 = basketTP;
 
-      if (dir == "BUY" && tp3 < tp2) tp3 = tp2 + 1.0;
-      if (dir == "SELL" && tp3 > tp2) tp3 = tp2 - 1.0;
+      if (dir == "BUY" && tp2 < tp1) tp2 = tp1 + 1.0;
+      if (dir == "SELL" && tp2 > tp1) tp2 = tp1 - 1.0;
 
       ulong t1 = ExecuteNativeTrade(ot, limitPx, basketInv, tp1, layerLot, "Aurum-LmtL1 " + signalId);
       ulong t2 = ExecuteNativeTrade(ot, limitPx, basketInv, tp2, layerLot, "Aurum-LmtL2 " + signalId);
-      ulong t3 = ExecuteNativeTrade(ot, limitPx, basketInv, tp3, layerLot, "Aurum-LmtL3 " + signalId);
 
-      ticket = (t1 > 0) ? t1 : ((t2 > 0) ? t2 : t3);
+      ticket = (t1 > 0) ? t1 : t2;
       if(ticket > 0)
-         PrintFormat("[BASKET_INIT] Limits Placed | Lot=%.2f/layer | L1_TP=%.2f | L2_TP=%.2f | L3_TP=%.2f | SL=%.2f",
-                     layerLot, tp1, tp2, tp3, basketInv);
+         PrintFormat("[BASKET_INIT] Limits Placed | Lot=%.2f/layer | L1_TP=%.2f | L2_TP=%.2f | SL=%.2f",
+                     layerLot, tp1, tp2, basketInv);
    }
 
    if(ticket > 0)
@@ -972,8 +992,6 @@ void ExecuteBasketInit(string json, string signalId)
 //+------------------------------------------------------------------+
 void ExecuteBasketAdd(string json, string signalId)
 {
-   Print("[BASKET_ADD_REJECTED] Averaging disabled. Using Split Targets Strategy instead.");
-   return;
 
    string dir        = GetJsonString(json, "type");
    double idealP     = GetJsonDouble(json, "price");
