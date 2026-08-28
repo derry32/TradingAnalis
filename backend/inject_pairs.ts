@@ -15,10 +15,17 @@ const supabase = createClient(
 const missingTrades = [
   // Pasangan Gambar 2 (Web) & Gambar 3 (MT5 History)
   {
-    signalId: "AURUM-121059", // <-- GANTI DENGAN ID DI GAMBAR 2
-    profit: 3897.72,             // <-- GANTI DENGAN PROFIT DI GAMBAR 3 (contoh: 152.50 atau -45.00)
-    ticket: 275100873           // <-- GANTI DENGAN TICKET MT5 DI GAMBAR 3 (atau bebas)
+    signalId: "XAU-20260828-960", // <-- GANTI DENGAN ID DI GAMBAR 2
+    profit: -7449.98,             // <-- GANTI DENGAN PROFIT DI GAMBAR 3 (contoh: 152.50 atau -45.00)
+    ticket: 286133051           // <-- GANTI DENGAN TICKET MT5 DI GAMBAR 3 (atau bebas)
   },
+
+  {
+    signalId: "XAU-20260828-707", // <-- GANTI DENGAN ID DI GAMBAR 2
+    profit: -99109.03,             // <-- GANTI DENGAN PROFIT DI GAMBAR 3 (contoh: 152.50 atau -45.00)
+    ticket: 285348796           // <-- GANTI DENGAN TICKET MT5 DI GAMBAR 3 (atau bebas)
+  },
+
 
 ];
 

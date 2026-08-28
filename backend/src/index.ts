@@ -472,6 +472,21 @@ marketData.setOnM5Closed(async (data) => {
               const displaySignal = { ...signal, strategy: `${signal.strategy} (Analisis Candle M5)` };
               telegramBot.sendSignal(displaySignal);
               
+              // Register to BasketEngine to support multi-layer averaging
+              // Ensure we pass a complete payload mimicking the burst signal format
+              const basketPayload = {
+                  ...signal,
+                  direction: signal.type,
+                  tier: strategy,
+                  layers: [],
+                  entryZoneMin: signal.entryPrice - 1.0,
+                  entryZoneMax: signal.entryPrice + 1.0,
+                  pullbackLimitPrice: signal.type === 'BUY' ? signal.entryPrice - 2.0 : signal.entryPrice + 2.0,
+                  currentReEntryCycle: 0,
+                  maxReEntryCycles: 3
+              };
+              basketEngine.initializeBasket(basketPayload as any);
+              
               // CRITICAL FIX REVERTED: Mengirim kembali sinyal M5 ke MT5 sesuai permintaan user
               // MT5 Bridge sekarang menerima kedua sinyal (M1 Burst dan M5 Legacy)
               if (strategy === 'SNIPER') {

@@ -4,7 +4,7 @@ set ip "43.156.79.235"
 set user "ubuntu"
 set password "thunder-29%-quantum"
 
-spawn scp -o StrictHostKeyChecking=no backend/src/index.ts backend/src/services/basketEngine.ts backend/src/services/database.ts $user@$ip:/home/ubuntu/
+spawn scp -o StrictHostKeyChecking=no backend/src/index.ts backend/src/services/basketEngine.ts backend/src/services/database.ts backend/src/services/signalGenerator.ts $user@$ip:/home/ubuntu/
 expect {
     "password:" {
         send "$password\r"
@@ -13,7 +13,7 @@ expect {
     eof
 }
 
-spawn ssh -o StrictHostKeyChecking=no $user@$ip "sudo docker cp /home/ubuntu/index.ts ai-backend:/app/src/index.ts && sudo docker cp /home/ubuntu/basketEngine.ts ai-backend:/app/src/services/basketEngine.ts && sudo docker cp /home/ubuntu/database.ts ai-backend:/app/src/services/database.ts && sudo docker restart ai-backend"
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "sudo docker cp /home/ubuntu/index.ts ai-backend:/app/src/index.ts && sudo docker cp /home/ubuntu/basketEngine.ts ai-backend:/app/src/services/basketEngine.ts && sudo docker cp /home/ubuntu/database.ts ai-backend:/app/src/services/database.ts && sudo docker cp /home/ubuntu/signalGenerator.ts ai-backend:/app/src/services/signalGenerator.ts && sudo docker restart ai-backend"
 expect {
     "password:" {
         send "$password\r"
