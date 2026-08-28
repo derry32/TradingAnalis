@@ -551,9 +551,10 @@ void CheckSmartExits()
    double R = MathAbs(g_signalOpenPx - g_initialSL);
    if (R <= 0.10) R = 2.0; // fallback $2.00 (200 pts)
 
-   // Adaptive Break-Even Trigger based on R
-   double beTrigger = InpBEMultiplier * R;
-   double beOffset = InpBEOffsetR * R;
+   // Fixed Break-Even Trigger for Split Targets Strategy
+   // Trigger when profit hits 25 pips (TP1 level), Offset SL to +10 pips (+1.0 point)
+   double beTrigger = 2.50;
+   double beOffset = 1.00;
    
    if(!g_beDone && profitDist >= beTrigger)
    {
@@ -890,24 +891,50 @@ void ExecuteBasketInit(string json, string signalId)
 
    if(!isChasing)
    {
-      // Market order — 1 position only
+      // Market order — 3 Split Target positions
       ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
-      string comment = "AurumBasket-#1 " + signalId;
-      ticket = ExecuteNativeTrade(ot, livePrice, basketInv, basketTP, InpBasketLot, comment);
+      
+      double tp1_dist = 2.50; // 25 pips
+      double tp2_dist = 3.00; // 30 pips
+      double tp1 = (dir == "BUY") ? livePrice + tp1_dist : livePrice - tp1_dist;
+      double tp2 = (dir == "BUY") ? livePrice + tp2_dist : livePrice - tp2_dist;
+      double tp3 = basketTP; // Full Target
+
+      if (dir == "BUY" && tp3 < tp2) tp3 = tp2 + 1.0;
+      if (dir == "SELL" && tp3 > tp2) tp3 = tp2 - 1.0;
+
+      ulong t1 = ExecuteNativeTrade(ot, livePrice, basketInv, tp1, InpBasketLot, "Aurum-L1 " + signalId);
+      ulong t2 = ExecuteNativeTrade(ot, livePrice, basketInv, tp2, InpBasketLot, "Aurum-L2 " + signalId);
+      ulong t3 = ExecuteNativeTrade(ot, livePrice, basketInv, tp3, InpBasketLot, "Aurum-L3 " + signalId);
+      
+      ticket = (t1 > 0) ? t1 : ((t2 > 0) ? t2 : t3);
       if(ticket > 0)
-         PrintFormat("[BASKET_INIT] Opened #1 | Ticket=%s | Px=%.2f | TP=%.2f | SL=%.2f",
-                     IntegerToString((long)ticket), livePrice, basketTP, basketInv);
+         PrintFormat("[BASKET_INIT] Opened 3 Layers | L1_TP=%.2f | L2_TP=%.2f | L3_TP=%.2f | SL=%.2f",
+                     tp1, tp2, tp3, basketInv);
    }
    else if(InpAutoPullbackLimit)
    {
       // Limit order at pullback zone if chasing
       double limitPx = (dir == "BUY") ? (livePrice - 1.20) : (livePrice + 1.20);
       ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY_LIMIT : ORDER_TYPE_SELL_LIMIT;
-      string comment = "AurumBasket-Lmt#1 " + signalId;
-      ticket = ExecuteNativeTrade(ot, limitPx, basketInv, basketTP, InpBasketLot, comment);
+      
+      double tp1_dist = 2.50; // 25 pips
+      double tp2_dist = 3.00; // 30 pips
+      double tp1 = (dir == "BUY") ? limitPx + tp1_dist : limitPx - tp1_dist;
+      double tp2 = (dir == "BUY") ? limitPx + tp2_dist : limitPx - tp2_dist;
+      double tp3 = basketTP;
+
+      if (dir == "BUY" && tp3 < tp2) tp3 = tp2 + 1.0;
+      if (dir == "SELL" && tp3 > tp2) tp3 = tp2 - 1.0;
+
+      ulong t1 = ExecuteNativeTrade(ot, limitPx, basketInv, tp1, InpBasketLot, "Aurum-LmtL1 " + signalId);
+      ulong t2 = ExecuteNativeTrade(ot, limitPx, basketInv, tp2, InpBasketLot, "Aurum-LmtL2 " + signalId);
+      ulong t3 = ExecuteNativeTrade(ot, limitPx, basketInv, tp3, InpBasketLot, "Aurum-LmtL3 " + signalId);
+
+      ticket = (t1 > 0) ? t1 : ((t2 > 0) ? t2 : t3);
       if(ticket > 0)
-         PrintFormat("[BASKET_INIT] Limit placed #1 | Ticket=%s | LimitPx=%.2f | TP=%.2f | SL=%.2f",
-                     IntegerToString((long)ticket), limitPx, basketTP, basketInv);
+         PrintFormat("[BASKET_INIT] Limits Placed | L1_TP=%.2f | L2_TP=%.2f | L3_TP=%.2f | SL=%.2f",
+                     tp1, tp2, tp3, basketInv);
    }
 
    if(ticket > 0)
@@ -936,12 +963,8 @@ void ExecuteBasketInit(string json, string signalId)
 //+------------------------------------------------------------------+
 void ExecuteBasketAdd(string json, string signalId)
 {
-   int currentLayers = CountPositions();
-   if(currentLayers >= 3)
-   {
-      Print("[BASKET_ADD_REJECTED] Max basket layers (3) reached.");
-      return;
-   }
+   Print("[BASKET_ADD_REJECTED] Averaging disabled. Using Split Targets Strategy instead.");
+   return;
 
    string dir        = GetJsonString(json, "type");
    double idealP     = GetJsonDouble(json, "price");
