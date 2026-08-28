@@ -853,6 +853,15 @@ void ExecuteBasketInit(string json, string signalId)
    if(basketTP <= 0.0) basketTP = GetJsonDouble(json, "takeProfit2");
    if(basketInv <= 0.0) basketInv = sl;
 
+   // Dynamic Lot Sizing based on Confidence
+   double recLot = GetJsonDouble(json, "recommendedLot");
+   double layerLot = InpBasketLot; // default fallback
+   if(recLot > 0)
+   {
+      layerLot = NormalizeDouble(recLot / 3.0, 2);
+      if(layerLot < 0.01) layerLot = 0.01;
+   }
+
    double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double livePrice = (dir == "BUY") ? ask : bid;
@@ -903,14 +912,14 @@ void ExecuteBasketInit(string json, string signalId)
       if (dir == "BUY" && tp3 < tp2) tp3 = tp2 + 1.0;
       if (dir == "SELL" && tp3 > tp2) tp3 = tp2 - 1.0;
 
-      ulong t1 = ExecuteNativeTrade(ot, livePrice, basketInv, tp1, InpBasketLot, "Aurum-L1 " + signalId);
-      ulong t2 = ExecuteNativeTrade(ot, livePrice, basketInv, tp2, InpBasketLot, "Aurum-L2 " + signalId);
-      ulong t3 = ExecuteNativeTrade(ot, livePrice, basketInv, tp3, InpBasketLot, "Aurum-L3 " + signalId);
+      ulong t1 = ExecuteNativeTrade(ot, livePrice, basketInv, tp1, layerLot, "Aurum-L1 " + signalId);
+      ulong t2 = ExecuteNativeTrade(ot, livePrice, basketInv, tp2, layerLot, "Aurum-L2 " + signalId);
+      ulong t3 = ExecuteNativeTrade(ot, livePrice, basketInv, tp3, layerLot, "Aurum-L3 " + signalId);
       
       ticket = (t1 > 0) ? t1 : ((t2 > 0) ? t2 : t3);
       if(ticket > 0)
-         PrintFormat("[BASKET_INIT] Opened 3 Layers | L1_TP=%.2f | L2_TP=%.2f | L3_TP=%.2f | SL=%.2f",
-                     tp1, tp2, tp3, basketInv);
+         PrintFormat("[BASKET_INIT] Opened 3 Layers | Lot=%.2f/layer | L1_TP=%.2f | L2_TP=%.2f | L3_TP=%.2f | SL=%.2f",
+                     layerLot, tp1, tp2, tp3, basketInv);
    }
    else if(InpAutoPullbackLimit)
    {
@@ -927,14 +936,14 @@ void ExecuteBasketInit(string json, string signalId)
       if (dir == "BUY" && tp3 < tp2) tp3 = tp2 + 1.0;
       if (dir == "SELL" && tp3 > tp2) tp3 = tp2 - 1.0;
 
-      ulong t1 = ExecuteNativeTrade(ot, limitPx, basketInv, tp1, InpBasketLot, "Aurum-LmtL1 " + signalId);
-      ulong t2 = ExecuteNativeTrade(ot, limitPx, basketInv, tp2, InpBasketLot, "Aurum-LmtL2 " + signalId);
-      ulong t3 = ExecuteNativeTrade(ot, limitPx, basketInv, tp3, InpBasketLot, "Aurum-LmtL3 " + signalId);
+      ulong t1 = ExecuteNativeTrade(ot, limitPx, basketInv, tp1, layerLot, "Aurum-LmtL1 " + signalId);
+      ulong t2 = ExecuteNativeTrade(ot, limitPx, basketInv, tp2, layerLot, "Aurum-LmtL2 " + signalId);
+      ulong t3 = ExecuteNativeTrade(ot, limitPx, basketInv, tp3, layerLot, "Aurum-LmtL3 " + signalId);
 
       ticket = (t1 > 0) ? t1 : ((t2 > 0) ? t2 : t3);
       if(ticket > 0)
-         PrintFormat("[BASKET_INIT] Limits Placed | L1_TP=%.2f | L2_TP=%.2f | L3_TP=%.2f | SL=%.2f",
-                     tp1, tp2, tp3, basketInv);
+         PrintFormat("[BASKET_INIT] Limits Placed | Lot=%.2f/layer | L1_TP=%.2f | L2_TP=%.2f | L3_TP=%.2f | SL=%.2f",
+                     layerLot, tp1, tp2, tp3, basketInv);
    }
 
    if(ticket > 0)
