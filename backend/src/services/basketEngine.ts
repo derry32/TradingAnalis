@@ -566,8 +566,14 @@ class BasketEngine {
     let structureScore = 0;
 
     if (
-      m5.structure.lastBOS !== 'NONE' ||
-      m5.structure.lastCHoCH !== 'NONE'
+      (basket.direction === 'BUY' && (
+        m5.structure.lastBOS === 'BULLISH_BOS' ||
+        m5.structure.lastCHoCH === 'BULLISH_CHOCH'
+      )) ||
+      (basket.direction === 'SELL' && (
+        m5.structure.lastBOS === 'BEARISH_BOS' ||
+        m5.structure.lastCHoCH === 'BEARISH_CHOCH'
+      ))
     ) {
       structureScore += 10;
     }
@@ -576,8 +582,14 @@ class BasketEngine {
      * M15 structure.
      */
     if (
-      m15.structure.lastBOS !== 'NONE' ||
-      m15.structure.lastCHoCH !== 'NONE'
+      (basket.direction === 'BUY' && (
+        m15.structure.lastBOS === 'BULLISH_BOS' ||
+        m15.structure.lastCHoCH === 'BULLISH_CHOCH'
+      )) ||
+      (basket.direction === 'SELL' && (
+        m15.structure.lastBOS === 'BEARISH_BOS' ||
+        m15.structure.lastCHoCH === 'BEARISH_CHOCH'
+      ))
     ) {
       structureScore += 5;
     }

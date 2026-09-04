@@ -238,22 +238,17 @@ function updateTradeState(trade: TradeState | null, currentM5: any, strategy: st
 
       // S5-A: Increment drawdown counter jika HIT_SL
       if (trade.status === 'HIT_SL') {
-        checkAndResetDailyDrawdown();
-        dailySLCount++;
-        lastSLDateWIB = getTodayWIB();
-        
-        const DRAWDOWN_LIMIT = 10;
-        if (dailySLCount >= DRAWDOWN_LIMIT) {
-          drawdownGuardActive = true;
-          // Hanya kirim notifikasi saat pertama kali mencapai limit hari ini (mencegah spam)
-          if (dailySLCount === DRAWDOWN_LIMIT) {
-            const msg = `[DrawdownGuard] ⛔ AKTIF! ${DRAWDOWN_LIMIT} SL hari ini. Semua sinyal diblokir hingga besok.`;
-            console.log(msg);
-            insertSystemLog('WARN', 'DrawdownGuard', msg, { count: dailySLCount });
-          }
+        riskEngine.registerTradeResult(false);
+        const guardState = riskEngine.isTradingBlocked();
+        if (guardState.blocked) {
+          const msg = `[DrawdownGuard] ⛔ AKTIF! ${guardState.reason}. Semua sinyal diblokir.`;
+          console.log(msg);
+          insertSystemLog('WARN', 'DrawdownGuard', msg, { reason: guardState.reason });
         } else {
-          console.log(`[DrawdownGuard] SL ke-${dailySLCount} hari ini. Batas: ${DRAWDOWN_LIMIT}.`);
+          console.log(`[DrawdownGuard] Loss ke-${riskEngine.getConsecutiveLosses()}.`);
         }
+      } else if (trade.status === 'HIT_TP') {
+        riskEngine.registerTradeResult(true);
       }
   }
 
@@ -317,15 +312,21 @@ marketData.setOnM1Closed((data) => {
     currentPrice
   );
 
+  // Sync equity dari riskEngine ke basketEngine setiap M1 candle
+  // Gunakan equity (bukan balance) agar risk limit akurat termasuk floating P&L
+  const currentEquity = riskEngine.getEquity();
+  if (currentEquity > 0) {
+    basketEngine.setAccountEquity(currentEquity);
+  }
+
   basketEngine.onM1Closed(snapshot);
 
   // 2. Deterministic Quant Confidence Evaluation (<5ms, Zero LLM)
   const evaluation = confidenceEngine.evaluate(snapshot);
 
   // 3. Check Drawdown Guard
-  checkAndResetDailyDrawdown();
-  const DRAWDOWN_LIMIT = 10;
-  const isGuardActive = dailySLCount >= DRAWDOWN_LIMIT;
+  const guardState = riskEngine.isTradingBlocked();
+  const isGuardActive = guardState.blocked;
 
   // DEBUG LOG UNTUK MELIHAT EVALUASI M1
   console.log(`[M1 DEBUG] Score: ${evaluation.totalScore}, Dir: ${evaluation.direction}`);
@@ -333,7 +334,7 @@ marketData.setOnM1Closed((data) => {
       console.log(`[M1 DEBUG] Reasons:`, evaluation.reasons);
   }
 
-  if (evaluation.direction !== 'WAIT' && evaluation.totalScore >= 55 && !isGuardActive) {
+  if (evaluation.direction !== 'WAIT' && !isGuardActive) {
     if (data.isStaleData) {
        console.log(`[StaleDataGuard] ⛔ Sinyal ${evaluation.direction} diblokir! Koneksi mati (message terakhir ${data.lastMessageAgeSec?.toFixed(1)}s lalu, tick terakhir ${data.lastTickAgeSec?.toFixed(1)}s lalu).`);
        return;
@@ -351,7 +352,9 @@ marketData.setOnM1Closed((data) => {
 
       // ⚡ CRITICAL PATH (<100ms Push to MT5 & Telegram)
       mt5Bridge.setLatestBurstSignal(burst);
-      basketEngine.initializeBasket(burst);
+      if (!basketEngine.hasActiveBasket(burst.direction)) {
+        basketEngine.initializeBasket(burst);
+      }
 
       // Construct legacy Signal format for DB & Telegram compatibility
       const legacySignal: Signal = {
@@ -422,19 +425,17 @@ marketData.setOnM5Closed(async (data) => {
         
         if (activeTrade && activeTrade.status === 'ACTIVE') {
            if (activeTrade.type !== signal.type) {
-              console.log(`[Agent Derry][${strategy}] REVERSAL DETECTED! Closing previous ${activeTrade.type} and opening ${signal.type}.`);
-              activeTrade.status = 'EXPIRED'; // Close previous
+              console.log(`[Agent Derry][${strategy}] REVERSAL DETECTED! Posisi ${activeTrade.type} masih aktif. Sinyal ${signal.type} diblokir.`);
+              shouldSend = false;
            }
         }
 
         // S5-A: Blokir semua sinyal jika Drawdown Guard aktif
-        checkAndResetDailyDrawdown();
-        // Since we changed the limit to 10, we check dailySLCount here instead of relying solely on the old boolean
-        const DRAWDOWN_LIMIT = 10;
-        const isGuardActive = dailySLCount >= DRAWDOWN_LIMIT;
+        const guardState = riskEngine.isTradingBlocked();
+        const isGuardActive = guardState.blocked;
         
         if (isGuardActive && signal.type !== 'WAIT') {
-          console.log(`[DrawdownGuard] ⛔ Sinyal ${signal.type} diblokir. Drawdown Guard aktif (${dailySLCount}/${DRAWDOWN_LIMIT} SL hari ini).`);
+          console.log(`[DrawdownGuard] ⛔ Sinyal ${signal.type} diblokir. Drawdown Guard aktif: ${guardState.reason}.`);
           continue;
         }
 
@@ -473,7 +474,6 @@ marketData.setOnM5Closed(async (data) => {
               telegramBot.sendSignal(displaySignal);
               
               // Register to BasketEngine to support multi-layer averaging
-              // Ensure we pass a complete payload mimicking the burst signal format
               const basketPayload = {
                   ...signal,
                   direction: signal.type,
@@ -485,13 +485,19 @@ marketData.setOnM5Closed(async (data) => {
                   currentReEntryCycle: 0,
                   maxReEntryCycles: 3
               };
-              basketEngine.initializeBasket(basketPayload as any);
+              if (!basketEngine.hasActiveBasket(signal.type as any)) {
+                  basketEngine.initializeBasket(basketPayload as any);
+              }
               
               // CRITICAL FIX REVERTED: Mengirim kembali sinyal M5 ke MT5 sesuai permintaan user
               // MT5 Bridge sekarang menerima kedua sinyal (M1 Burst dan M5 Legacy)
               if (strategy === 'SNIPER') {
                   // Delay SNIPER 30 detik agar tidak bentrok dengan HYPER_SCALPER
                   setTimeout(() => {
+                      if (basketEngine.hasActiveBasket(signal.type as any)) {
+                          console.log(`[Agent Derry][SNIPER] Skip M5 send — basket ${signal.type} sudah aktif (mungkin dari M1).`);
+                          return;
+                      }
                       mt5Bridge.setLatestSignal(signal as any);
                       console.log(`[Agent Derry][SNIPER] Sinyal dikirim ke MT5 setelah jeda 30 detik.`);
                   }, 30000);
@@ -530,8 +536,7 @@ setInterval(() => {
 
 // === Wire Telegram Bot Commands ===
 telegramBot.setOnReset(() => {
-  dailySLCount = 0;
-  drawdownGuardActive = false;
+  riskEngine.resetGuard();
   mt5Bridge.triggerResetGuard();
   console.log('[DrawdownGuard] ✅ Guard & MT5 EA direset via Telegram.');
   insertSystemLog('INFO', 'DrawdownGuard', 'Drawdown Guard & MT5 EA direset secara manual via Telegram.');
@@ -539,12 +544,12 @@ telegramBot.setOnReset(() => {
 });
 
 telegramBot.setGetStatus(() => {
-  checkAndResetDailyDrawdown();
+  const guardState = riskEngine.isTradingBlocked();
   return {
     session: getCurrentSession(),
-    isGuardActive: dailySLCount >= 10,
-    dailySLCount,
-    maxDailySL: 10,
+    isGuardActive: guardState.blocked,
+    dailySLCount: riskEngine.getConsecutiveLosses(),
+    maxDailySL: 3,
     activeSniper: activeTradeSniper,
     activeScalper: activeTradeScalper
   };
@@ -552,18 +557,30 @@ telegramBot.setGetStatus(() => {
 
 // === S5-A: Drawdown Guard Endpoints ===
 app.get('/api/risk/drawdown-status', (req, res) => {
-  checkAndResetDailyDrawdown();
+  const guardState = riskEngine.isTradingBlocked();
   res.json({
-    active: drawdownGuardActive,
-    dailySLCount,
-    maxDailySL: 10,
-    resetDate: lastSLDateWIB || getTodayWIB()
+    active: guardState.blocked,
+    reason: guardState.reason,
+    consecutiveLosses: riskEngine.getConsecutiveLosses(),
+    maxConsecutiveLosses: 3,
+    dailyDrawdownPercent: riskEngine.getDailyDrawdownPercent()
   });
+});
+
+app.post('/api/mt5/account', (req, res) => {
+  const { balance, equity, freeMargin } = req.body;
+  if (typeof balance === 'number' && typeof equity === 'number' && typeof freeMargin === 'number') {
+    riskEngine.updateAccount({ balance, equity, freeMargin, timestamp: Date.now() });
+    res.json({ success: true, balance, equity, freeMargin });
+  } else {
+    res.status(400).json({ success: false, error: 'Invalid payload' });
+  }
 });
 
 app.post('/api/risk/reset-drawdown', (req, res) => {
   dailySLCount = 0;
   drawdownGuardActive = false;
+  riskEngine.resetGuard();
   mt5Bridge.triggerResetGuard();
   console.log('[DrawdownGuard] ✅ Guard direset secara manual oleh user.');
   insertSystemLog('INFO', 'DrawdownGuard', 'Drawdown Guard berhasil direset secara manual. Sistem Trading AI kembali aktif.');

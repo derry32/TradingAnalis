@@ -329,6 +329,27 @@ bool SendCloseAck(string signalId, ulong ticket, double profit, double closePric
    return false;
 }
 
+//+------------------------------------------------------------------+
+//| HTTP POST Account Info Sync                                      |
+//+------------------------------------------------------------------+
+void SendAccountInfo()
+{
+   string url = InpApiUrl + "/api/mt5/account";
+   double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+   double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   double freeMargin = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+   
+   string payload = StringFormat("{\"token\":\"%s\",\"balance\":%s,\"equity\":%s,\"freeMargin\":%s}",
+                                 InpApiToken, DoubleToString(balance, 2), DoubleToString(equity, 2), DoubleToString(freeMargin, 2));
+                                 
+   char postData[];
+   StringToCharArray(payload, postData, 0, StringLen(payload));
+   char serverResult[];
+   string serverHeaders;
+   string headers = "Content-Type: application/json\r\n";
+   WebRequest("POST", url, headers, 15000, postData, serverResult, serverHeaders);
+}
+
 
 //+------------------------------------------------------------------+
 //| Execute Order Send using Pure Native MQL5 API                    |
@@ -794,6 +815,15 @@ double GetTodayRealizedLoss()
 void OnTimer()
 {
    if(!g_isInitialized) return;
+
+   // Selalu sync account info ke backend SEBELUM circuit breaker check
+   // agar backend isTradingBlocked() punya equity terkini
+   static datetime lastAccountSync = 0;
+   if(TimeCurrent() - lastAccountSync >= 5) 
+   {
+      SendAccountInfo();
+      lastAccountSync = TimeCurrent();
+   }
 
    // === DAILY LOSS CIRCUIT BREAKER ===
    if(InpDailyLossLimitIDR > 0)
