@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.5.3] - 2026-09-04 (Risk & MT5 Account Sync Fixes)
+### Ditambahkan
+- **Real-Time Account Sync:** Robot MT5 (`AurumAI_Executor.mq5`) kini secara mandiri mengirimkan sinkronisasi nilai `ACCOUNT_BALANCE`, `ACCOUNT_EQUITY`, dan `ACCOUNT_MARGIN_FREE` yang riil ke *backend* setiap 5 detik. Hal ini mengeliminasi *hardcode* modal di *backend*.
+- **Equity-Based Drawdown Guard:** Modul `riskEngine` telah dirombak total untuk melacak kerugian (*drawdown*) harian secara persentase berdasarkan ekuitas (*equity*), bukan saldo tetap. Batas kerugian maksimum harian dikunci pada angka **3% Equity**, dan rentetan kekalahan (*Consecutive Losses*) maksimum dikunci di **3 kali SL berturut-turut** (memicu status *PAUSE*).
+- **Backend Environment Guard:** Pembaruan pada *script deploy* Docker VPS untuk memastikan file `.env` selalu disertakan (`--env-file`), menyelesaikan insiden *crash-loop* *backend* karena kehilangan akses ke Supabase.
+
+### Diperbaiki
+- **Opposing Reversal Block:** Memperbaiki logika konflik sinyal di `index.ts`. Sebelumnya, sinyal pembalikan arah (misal: muncul SELL saat posisi BUY masih terbuka) akan memaksa posisi lama menjadi `EXPIRED`. Kini sinyal baru akan diblokir, membiarkan posisi yang sedang aktif mencapai SL/TP aslinya dengan natural tanpa tumpang tindih.
+- **Double Basket Guard:** Memperbaiki celah *race condition* di mana sinyal `SNIPER` (M5) dan `BURST` (M1) bisa menciptakan *basket* ganda untuk arah yang sama. Penambahan fungsi `hasActiveBasket()` memastikan MT5 tidak lagi membuka order duplikat.
+- **Structure Direction Validation:** Memperbaiki cacat logika (*logical flaw*) di `basketEngine` terkait skor struktur *Break of Structure (BOS)* dan *Change of Character (CHoCH)*. Sebelumnya skor struktur ditambahkan tanpa memeriksa arah tren. Kini `BULLISH_BOS` hanya menambah skor untuk keranjang BUY, dan `BEARISH_BOS` khusus untuk keranjang SELL.
+- **Hardcode Threshold Cleanup:** Menghapus paksaan skor statis (misal: `score >= 55`) di akar pengeksekusi sinyal `index.ts` agar sepenuhnya tunduk pada `ConfidenceEngine` yang memiliki mode ganda (*Normal* 60 vs *Counter-Trend* 85).
 ## [1.5.2] - 2026-08-27 (Basket Engine Layer 3 Relaxation)
 ### Ditambahkan
 - **Structural Market Target:** Mengganti kalkulasi *Reward/Target* yang sebelumnya bersifat sintetis (kaku 2x lipat Risk) menjadi *Market Target* dinamis berdasarkan struktur H1/M15 (Swing High/Low aktual).
