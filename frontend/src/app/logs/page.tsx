@@ -9,7 +9,7 @@ import Link from 'next/link';
 export default function LogsPage() {
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [drawdown, setDrawdown] = useState<{active: boolean, dailySLCount: number, maxDailySL: number} | null>(null);
+  const [drawdown, setDrawdown] = useState<{active: boolean, consecutiveLosses: number, maxConsecutiveLosses: number, dailyDrawdownPercent: number} | null>(null);
   const [resetting, setResetting] = useState(false);
   const BACKEND_URL = 'Next.js Proxy (/api/*)';
 
@@ -46,7 +46,7 @@ export default function LogsPage() {
     try {
       const res = await fetch(`/api/risk/reset-drawdown`, { method: 'POST' });
       if (res.ok) {
-        setDrawdown(prev => prev ? { ...prev, active: false, dailySLCount: 0 } : null);
+        setDrawdown(prev => prev ? { ...prev, active: false, consecutiveLosses: 0, dailyDrawdownPercent: 0 } : null);
         // Add a log artificially to UI so user gets feedback without reload
         setLogs(prev => [{
           id: Date.now().toString(),
@@ -103,12 +103,22 @@ export default function LogsPage() {
                     {drawdown.active ? 'Blocked' : 'Secure'}
                   </span>
                 </h2>
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <span>Daily Stop Loss:</span>
-                  <div className="flex gap-1 items-center">
-                    <span className="text-white font-mono">{drawdown.dailySLCount}</span>
-                    <span className="text-gray-600">/</span>
-                    <span className="text-gray-500">{drawdown.maxDailySL}</span>
+                <div className="flex flex-wrap items-center gap-4 mt-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <span>Drawdown:</span>
+                    <div className="flex gap-1 items-center bg-black/20 px-2 py-0.5 rounded border border-white/5">
+                      <span className="text-white font-mono">{drawdown.dailyDrawdownPercent.toFixed(2)}%</span>
+                      <span className="text-gray-600">/</span>
+                      <span className="text-gray-500">3%</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <span>Loss Streak:</span>
+                    <div className="flex gap-1 items-center bg-black/20 px-2 py-0.5 rounded border border-white/5">
+                      <span className="text-white font-mono">{drawdown.consecutiveLosses}</span>
+                      <span className="text-gray-600">/</span>
+                      <span className="text-gray-500">{drawdown.maxConsecutiveLosses}</span>
+                    </div>
                   </div>
                 </div>
               </div>
