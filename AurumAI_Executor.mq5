@@ -106,6 +106,14 @@ void CheckAndReportClosedPositions()
    if(!HistorySelect(since, TimeCurrent())) return;
 
    int total = HistoryDealsTotal();
+   
+   struct TempDeal {
+      ulong posId;
+      double profit;
+      double closePrice;
+   };
+   TempDeal closedDeals[];
+   
    for(int i = 0; i < total; i++)
    {
       ulong dealTicket = HistoryDealGetTicket(i);
@@ -127,57 +135,69 @@ void CheckAndReportClosedPositions()
          if(g_reportedPositions[j] == posId) { alreadyDone = true; break; }
       if(alreadyDone) continue;
 
-      double profit     = HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
-      double closePrice = HistoryDealGetDouble(dealTicket, DEAL_PRICE);
+      int sz = ArraySize(closedDeals);
+      ArrayResize(closedDeals, sz + 1);
+      closedDeals[sz].posId = posId;
+      closedDeals[sz].profit = HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
+      closedDeals[sz].closePrice = HistoryDealGetDouble(dealTicket, DEAL_PRICE);
+   }
 
-      // Get signalId from the OPENING deal's comment (closing deals have empty comments)
+   // Now process collected closed deals safely using HistorySelectByPosition
+   for(int i = 0; i < ArraySize(closedDeals); i++)
+   {
+      ulong posId = closedDeals[i].posId;
+      double profit = closedDeals[i].profit;
+      double closePrice = closedDeals[i].closePrice;
+
       string signalId = g_activeSignalId; // fallback
       
-      // Find opening deal of this position to read original comment
-      for(int k = 0; k < total; k++)
+      if(HistorySelectByPosition(posId))
       {
-         ulong openDeal = HistoryDealGetTicket(k);
-         if(openDeal == 0) continue;
-         if((ulong)HistoryDealGetInteger(openDeal, DEAL_POSITION_ID) != posId) continue;
-         if(HistoryDealGetInteger(openDeal, DEAL_ENTRY) != DEAL_ENTRY_IN) continue;
-         
-         string openComment = HistoryDealGetString(openDeal, DEAL_COMMENT);
-         
-         // 1. Try to match EA's format: "AurumBasket-#1 XAU-2026..."
-         int prefixPos = StringFind(openComment, "Aurum");
-         if(prefixPos >= 0)
+         int posTotal = HistoryDealsTotal();
+         for(int k = 0; k < posTotal; k++)
          {
-            int spacePos = StringFind(openComment, " ", prefixPos);
-            if(spacePos > 0)
+            ulong openDeal = HistoryDealGetTicket(k);
+            if(openDeal == 0) continue;
+            if(HistoryDealGetInteger(openDeal, DEAL_ENTRY) != DEAL_ENTRY_IN) continue;
+            
+            string openComment = HistoryDealGetString(openDeal, DEAL_COMMENT);
+            
+            // 1. Try to match EA's format: "AurumBasket-#1 XAU-2026..." or "Aurum-L1 ..."
+            int prefixPos = StringFind(openComment, "Aurum");
+            if(prefixPos >= 0)
             {
-               string extracted = StringSubstr(openComment, spacePos + 1);
-               StringTrimLeft(extracted);
-               StringTrimRight(extracted);
+               int spacePos = StringFind(openComment, " ", prefixPos);
+               if(spacePos > 0)
+               {
+                  string extracted = StringSubstr(openComment, spacePos + 1);
+                  StringTrimLeft(extracted);
+                  StringTrimRight(extracted);
+                  
+                  int nextSpace = StringFind(extracted, " ");
+                  if(nextSpace > 0) signalId = StringSubstr(extracted, 0, nextSpace);
+                  else signalId = extracted;
+               }
+            }
+            // 2. Try to match manual input like "AURUM-123456" or "XAU-20260806"
+            else
+            {
+               int aurumPos = StringFind(openComment, "AURUM-");
+               int xauPos = StringFind(openComment, "XAU-");
                
-               int nextSpace = StringFind(extracted, " ");
-               if(nextSpace > 0) signalId = StringSubstr(extracted, 0, nextSpace);
-               else signalId = extracted;
+               int startPos = -1;
+               if (aurumPos >= 0) startPos = aurumPos;
+               else if (xauPos >= 0) startPos = xauPos;
+               
+               if (startPos >= 0)
+               {
+                  string extracted = StringSubstr(openComment, startPos);
+                  int nextSpace = StringFind(extracted, " ");
+                  if(nextSpace > 0) signalId = StringSubstr(extracted, 0, nextSpace);
+                  else signalId = extracted;
+               }
             }
+            break;
          }
-         // 2. Try to match manual input like "AURUM-123456" or "XAU-20260806"
-         else
-         {
-            int aurumPos = StringFind(openComment, "AURUM-");
-            int xauPos = StringFind(openComment, "XAU-");
-            
-            int startPos = -1;
-            if (aurumPos >= 0) startPos = aurumPos;
-            else if (xauPos >= 0) startPos = xauPos;
-            
-            if (startPos >= 0)
-            {
-               string extracted = StringSubstr(openComment, startPos);
-               int nextSpace = StringFind(extracted, " ");
-               if(nextSpace > 0) signalId = StringSubstr(extracted, 0, nextSpace);
-               else signalId = extracted;
-            }
-         }
-         break;
       }
 
       if(signalId != "")
@@ -187,6 +207,9 @@ void CheckAndReportClosedPositions()
          QueueCloseAck(signalId, posId, profit, closePrice);
       }
    }
+   
+   // Restore original history selection to avoid breaking outer loops if any
+   HistorySelect(since, TimeCurrent());
 }
 
 bool     g_isInitialized     = false;
