@@ -757,7 +757,8 @@ app.post('/api/mt5/signals/ack', (req, res) => {
   }
 
   // ACK-first insert: baru simpan ke DB setelah MT5 konfirmasi eksekusi
-  if (req.body.status === 'OPENED') {
+  // EA mengirim status "BASKET_INIT" (bukan "OPENED") saat berhasil buka posisi
+  if (req.body.status === 'BASKET_INIT') {
     const pendingSignal = mt5Bridge.popPendingSignal(req.body.signalId);
     if (pendingSignal) {
       insertSignal(pendingSignal).then(dbId => {
