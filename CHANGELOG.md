@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.4] - 2026-09-08 (Ghost Signal Fix & TP Equalization)
+### Diperbaiki
+- **Ghost Signal Eliminated:** Sinyal M1 kini tidak lagi langsung disimpan ke Supabase saat dibuat. `insertSignal()` dipindahkan ke handler `/api/mt5/signals/ack` dan hanya dipanggil setelah MT5 mengirim konfirmasi ACK (`status: OPENED`). Sinyal yang ditolak MT5 (TTL habis, spread tinggi, dll) tidak akan pernah muncul sebagai hantu di riwayat.
+- **TP Equalization (Confidence-Based):** Logika pemilihan TP pada sinyal 2–3 layer diperbaiki. Untuk sinyal dengan confidence < 90%, semua layer kini menggunakan target yang lebih dekat dan realistis (TP2 = 1.2R untuk 2 layer; TP1/TP2/TP3 untuk 3 layer). Hanya sinyal confidence ≥ 90% yang diizinkan mengincar target lebih jauh (TP4 = 2.0R untuk layer terakhir). Perubahan ini dirancang untuk meningkatkan win rate pada sinyal QUICK_SCALP dan MOMENTUM_SCALP (skor 60–89).
+
 ## [1.5.3] - 2026-09-04 (Risk & MT5 Account Sync Fixes)
 ### Ditambahkan
 - **Real-Time Account Sync:** Robot MT5 (`AurumAI_Executor.mq5`) kini secara mandiri mengirimkan sinkronisasi nilai `ACCOUNT_BALANCE`, `ACCOUNT_EQUITY`, dan `ACCOUNT_MARGIN_FREE` yang riil ke *backend* setiap 5 detik. Hal ini mengeliminasi *hardcode* modal di *backend*.
