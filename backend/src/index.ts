@@ -379,16 +379,9 @@ marketData.setOnM1Closed((data) => {
       };
 
       telegramBot.sendSignal(legacySignal);
-      insertSignal(legacySignal).then((dbId) => {
-        if (dbId) {
-          insertSystemLog('INFO', 'RealTimeEngine', `⚡ Early Sinyal M1: ${burst.direction} @ ${burst.entryPrice}`, {
-            id: burst.id,
-            score: burst.confidenceScore,
-            tier: burst.tier,
-            layers: burst.layers.length,
-          });
-        }
-      });
+      // Simpan sinyal ke buffer dulu — insertSignal dipanggil setelah MT5 ACK (status: OPENED)
+      // agar tidak ada ghost signal di Supabase kalau MT5 menolak/TTL habis
+      mt5Bridge.setPendingSignal(burst.id, legacySignal);
     }
   }
 });
@@ -762,6 +755,23 @@ app.post('/api/mt5/signals/ack', (req, res) => {
   if (!result.success) {
     return res.status(401).json({ error: result.message });
   }
+
+  // ACK-first insert: baru simpan ke DB setelah MT5 konfirmasi eksekusi
+  if (req.body.status === 'OPENED') {
+    const pendingSignal = mt5Bridge.popPendingSignal(req.body.signalId);
+    if (pendingSignal) {
+      insertSignal(pendingSignal).then(dbId => {
+        if (dbId) {
+          insertSystemLog('INFO', 'MT5Bridge', `✅ ACK-confirmed insert: ${req.body.signalId} | Tiket #${req.body.ticket}`, {
+            signal_id: req.body.signalId,
+            ticket: req.body.ticket,
+            executed_price: req.body.executedPrice
+          });
+        }
+      });
+    }
+  }
+
   res.json(result);
 });
 

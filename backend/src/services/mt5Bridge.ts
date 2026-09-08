@@ -48,6 +48,18 @@ export class MT5BridgeService {
   private latestBurstSignal: BurstSignalPayload | null = null;
   private acknowledgedSignals: Map<string, MT5AckPayload> = new Map();
   private resetRequestedUntil: number = 0;
+  // Buffer sinyal M1 yang menunggu ACK dari MT5 sebelum disimpan ke DB
+  private pendingSignalBuffer: Map<string, any> = new Map();
+
+  public setPendingSignal(signalId: string, legacySignal: any): void {
+    this.pendingSignalBuffer.set(signalId, legacySignal);
+  }
+
+  public popPendingSignal(signalId: string): any | undefined {
+    const signal = this.pendingSignalBuffer.get(signalId);
+    this.pendingSignalBuffer.delete(signalId);
+    return signal;
+  }
 
   public triggerResetGuard(): void {
     this.resetRequestedUntil = Date.now() + 30000; // Keep reset flag active for 30 seconds

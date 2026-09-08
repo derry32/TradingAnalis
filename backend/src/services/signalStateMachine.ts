@@ -179,12 +179,26 @@ export class SignalStateMachine {
     
     // Spread the targets depending on numLayers
     // Example: If 3 layers -> we pick indices [0, 2, 4] from targetTps (TP1, TP3, TP5)
+    // Gunakan TP lebih dekat (TP2) untuk semua layer jika confidence < 90
+    // Hanya sinyal confidence tinggi (>= 90) yang boleh kejar TP jauh
+    const isHighConfidence = evaluation.totalScore >= 90;
+
     for (let i = 0; i < numLayers; i++) {
       let tpIndex = i;
       if (numLayers === 1) tpIndex = 2; // TP3
-      else if (numLayers === 2) tpIndex = i === 0 ? 1 : 4; // TP2, TP5
-      else if (numLayers === 3) tpIndex = i === 0 ? 0 : (i === 1 ? 2 : 4); // TP1, TP3, TP5
-      else if (numLayers === 4) tpIndex = i === 3 ? 4 : i; // TP1, TP2, TP3, TP5
+      else if (numLayers === 2) {
+        if (isHighConfidence) {
+          tpIndex = i === 0 ? 1 : 3; // TP2 (1.2R), TP4 (2.0R)
+        } else {
+          tpIndex = 1; // Semua layer: TP2 (1.2R)
+        }
+      } else if (numLayers === 3) {
+        if (isHighConfidence) {
+          tpIndex = i === 0 ? 0 : (i === 1 ? 2 : 4); // TP1, TP3, TP5
+        } else {
+          tpIndex = i; // TP1, TP2, TP3 (1.0R, 1.2R, 1.5R)
+        }
+      } else if (numLayers === 4) tpIndex = i === 3 ? 4 : i; // TP1, TP2, TP3, TP5
 
       const tpPips = targetTps[tpIndex] || 10;
       const tpPrice =
