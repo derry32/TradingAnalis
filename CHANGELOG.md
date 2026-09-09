@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.5] - 2026-09-09 (EA TP Sync Fix)
+### Diperbaiki
+- **EA TP L1 Sync:** `AurumAI_Executor.mq5` kini membaca `takeProfit1` dari payload backend untuk Layer 1, menggantikan logika hardcode 25 pips dari live price. Layer 2 tetap menggunakan `basketTarget` (= `takeProfit2`). Fallback 25 pips aktif hanya jika field `takeProfit1` tidak tersedia (sinyal lama). Perubahan ini memastikan kedua layer menggunakan harga TP yang dihitung confidence-aware di backend secara konsisten.
+
 ## [1.5.4] - 2026-09-08 (Ghost Signal Fix & TP Equalization)
 ### Diperbaiki
 - **Ghost Signal Eliminated:** Sinyal M1 kini tidak lagi langsung disimpan ke Supabase saat dibuat. `insertSignal()` dipindahkan ke handler `/api/mt5/signals/ack` dan hanya dipanggil setelah MT5 mengirim konfirmasi ACK (`status: OPENED`). Sinyal yang ditolak MT5 (TTL habis, spread tinggi, dll) tidak akan pernah muncul sebagai hantu di riwayat.

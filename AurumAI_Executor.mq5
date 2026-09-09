@@ -982,9 +982,9 @@ void ExecuteBasketInit(string json, string signalId)
       // Market order — 2 Split Target positions
       ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
       
-      double tp1_dist = 2.50; // 25 pips
-      double tp1 = (dir == "BUY") ? livePrice + tp1_dist : livePrice - tp1_dist;
-      double tp2 = basketTP; // Full Target
+      double tp1 = GetJsonDouble(json, "takeProfit1");
+      if(tp1 <= 0.0) tp1 = (dir == "BUY") ? livePrice + 2.50 : livePrice - 2.50; // fallback 25 pips
+      double tp2 = basketTP; // Full Target (= takeProfit2)
 
       if (dir == "BUY" && tp2 < tp1) tp2 = tp1 + 1.0;
       if (dir == "SELL" && tp2 > tp1) tp2 = tp1 - 1.0;
@@ -1003,8 +1003,8 @@ void ExecuteBasketInit(string json, string signalId)
       double limitPx = (dir == "BUY") ? (livePrice - 1.20) : (livePrice + 1.20);
       ENUM_ORDER_TYPE ot = (dir == "BUY") ? ORDER_TYPE_BUY_LIMIT : ORDER_TYPE_SELL_LIMIT;
       
-      double tp1_dist = 2.50; // 25 pips
-      double tp1 = (dir == "BUY") ? limitPx + tp1_dist : limitPx - tp1_dist;
+      double tp1 = GetJsonDouble(json, "takeProfit1");
+      if(tp1 <= 0.0) tp1 = (dir == "BUY") ? limitPx + 2.50 : limitPx - 2.50; // fallback 25 pips
       double tp2 = basketTP;
 
       if (dir == "BUY" && tp2 < tp1) tp2 = tp1 + 1.0;
