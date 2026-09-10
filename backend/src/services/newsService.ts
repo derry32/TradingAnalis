@@ -60,7 +60,7 @@ export class NewsService {
   public getUpcomingHighImpactNews(): NewsEvent | null {
     const now = Date.now();
     const upcoming = this.newsCache
-      .filter(event => event.country === 'USD' && event.impact === 'High')
+      .filter(event => (event.country === 'USD' || event.country === 'CHF') && event.impact === 'High')
       .map(event => ({ ...event, parsedDate: new Date(event.date).getTime() }))
       .filter(event => {
          const severity = NewsService.getNewsSeverity(event.title);
@@ -105,6 +105,13 @@ export class NewsService {
     if (phase === 'NONE') return null;
 
     return { event: upcoming, severity, phase };
+  }
+
+  public getWeeklySchedule(): NewsEvent[] {
+    return this.newsCache
+      .filter(event => (event.country === 'USD' || event.country === 'CHF') && event.impact === 'High')
+      .map(event => ({ ...event, parsedDate: new Date(event.date).getTime() }))
+      .sort((a, b) => (a as any).parsedDate - (b as any).parsedDate);
   }
 
   // Legacy method for backward compatibility if needed elsewhere

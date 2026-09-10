@@ -101,6 +101,9 @@ export default function Home() {
           <Link href="/performance" className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">
             <BarChart2 size={14} /> Performa
           </Link>
+          <Link href="/news" className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:bg-cyber-bg hover:text-gray-200 transition-all mr-1">
+            <RadioTower size={14} /> News
+          </Link>
           <div className="flex-shrink-0 w-[1px] h-6 bg-cyber-border mr-1"></div>
           <button 
             onClick={() => toggleStrategy('SNIPER')}

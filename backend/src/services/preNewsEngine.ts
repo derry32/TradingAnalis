@@ -191,6 +191,21 @@ export class PreNewsEngine {
       `Executing ${signal.type} at ${signal.entryPrice} for ${this.targetNews?.title}.\n` +
       `Spread Limit akan diberlakukan oleh MT5 Bridge.`;
     telegramBot.sendMessage(msg);
+
+    // Post-news confirmation: check price action 5 minutes after release
+    const lockedBias = this.lockedPrediction.bias;
+    const entryPrice = signal.entryPrice;
+    setTimeout(() => {
+      const candles = marketDataService.getCandles();
+      if (candles.length === 0) return;
+      const latestPrice = candles[candles.length - 1].close;
+      const priceDiff = lockedBias === 'BUY' ? latestPrice - entryPrice : entryPrice - latestPrice;
+      const confirmed = priceDiff > 0;
+      const confirmMsg = confirmed
+        ? `✅ *POST-NEWS +5m CONFIRMED*\nArah *${lockedBias}* terkonfirmasi. Δ ${priceDiff.toFixed(1)} pips dari entry ${entryPrice.toFixed(2)} → ${latestPrice.toFixed(2)}`
+        : `⚠️ *POST-NEWS +5m COUNTER-TREND*\nHarga berbalik dari prediksi *${lockedBias}*. Δ ${Math.abs(priceDiff).toFixed(1)} pips berlawanan arah. Entry ${entryPrice.toFixed(2)} → ${latestPrice.toFixed(2)}`;
+      telegramBot.sendMessage(confirmMsg);
+    }, 5 * 60 * 1000);
   }
 
   private generatePrediction(marketDataService: MarketDataService): PreNewsPrediction {

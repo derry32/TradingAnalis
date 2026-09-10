@@ -560,6 +560,16 @@ app.get('/api/risk/drawdown-status', (req, res) => {
   });
 });
 
+app.get('/api/news/status', (req, res) => {
+  res.json({
+    weeklySchedule: news.getWeeklySchedule(),
+    activeContext: news.getActiveNewsContext(),
+    engineState: preNewsEngine.getState(),
+    lockedPrediction: preNewsEngine.getLockedPrediction(),
+    nextEvent: news.getUpcomingHighImpactNews(),
+  });
+});
+
 app.post('/api/mt5/account', (req, res) => {
   const { balance, equity, freeMargin } = req.body;
   if (typeof balance === 'number' && typeof equity === 'number' && typeof freeMargin === 'number') {
