@@ -1982,19 +1982,20 @@ export class SignalGenerator {
       );
 
     /**
-     * IMPORTANT:
-     *
-     * Minimum = 60.
-     *
-     * Tidak lagi menggunakan Math.max(62,...)
+     * Fix 3: Strategy-aware minimum threshold.
+     * SNIPER = 75 (long hold, butuh setup solid)
+     * HYPER_SCALPER = 70 (naik dari 60 untuk kurangi noise)
      */
+    const strategyMinThreshold =
+      activeStrategy === 'SNIPER' ? 75 : 70;
+
     const baseThreshold =
       Number.isFinite(configuredThreshold)
         ? Math.max(
-          60,
+          strategyMinThreshold,
           configuredThreshold
         )
-        : 60;
+        : strategyMinThreshold;
 
     /**
      * LOW ATR tetap lebih selektif.
@@ -2045,6 +2046,25 @@ export class SignalGenerator {
           directionSafety;
 
         continue;
+      }
+
+      // Fix 2: SNIPER butuh minimal H1 ATAU M15 selaras.
+      // Kalau keduanya tidak selaras, SNIPER terlalu berisiko.
+      if (activeStrategy === 'SNIPER') {
+        const h1Aligned =
+          (direction === 'BUY' && analysis.trendH1 === 'BULLISH') ||
+          (direction === 'SELL' && analysis.trendH1 === 'BEARISH');
+        const m15Aligned =
+          (direction === 'BUY' && analysis.trendM15 === 'BULLISH') ||
+          (direction === 'SELL' && analysis.trendM15 === 'BEARISH');
+
+        if (!h1Aligned && !m15Aligned) {
+          lastRejectionReason =
+            `⛔ SNIPER BLOCKED: H1 ${analysis.trendH1} + ` +
+            `M15 ${analysis.trendM15} tidak selaras dengan ${direction}.`;
+          console.log(`[SG] ${lastRejectionReason}`);
+          continue;
+        }
       }
 
       const scoreWarnings:
@@ -2400,6 +2420,20 @@ export class SignalGenerator {
           `${adjustedScore}/100 ` +
           `< ${effectiveThreshold}.`;
 
+        continue;
+      }
+
+      // Fix 1: Hard H1 Countertrend Block.
+      // Sinyal berlawanan H1 hanya boleh lewat jika score >= 85.
+      const h1IsCountertrend =
+        (direction === 'BUY' && analysis.trendH1 === 'BEARISH') ||
+        (direction === 'SELL' && analysis.trendH1 === 'BULLISH');
+
+      if (h1IsCountertrend && adjustedScore < 85) {
+        lastRejectionReason =
+          `⛔ COUNTERTREND BLOCKED: H1 ${analysis.trendH1} ` +
+          `berlawanan ${direction}. Score ${adjustedScore}/100 < 85.`;
+        console.log(`[SG] ${lastRejectionReason}`);
         continue;
       }
 
