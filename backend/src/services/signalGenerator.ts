@@ -118,7 +118,7 @@ export class SignalGenerator {
   // TRUE RR
   // ============================================================
 
-  private readonly MIN_TRUE_RR = 1.15;
+  private readonly MIN_TRUE_RR = 1.50; // Fix: was 1.15, min 1.5R to ensure positive EV after spread
 
   // ============================================================
   // SL BOUNDARY
@@ -1762,6 +1762,15 @@ export class SignalGenerator {
       );
     }
 
+    // Fix: SNIPER disabled — historical WR 4%, asymmetric loss vs gain.
+    // Re-enable when backtested with positive EV evidence.
+    if (activeStrategy === 'SNIPER') {
+      return this.createWaitSignal(
+        'SNIPER sementara dinonaktifkan (WR historis 4%). Menunggu perbaikan strategi.',
+        activeStrategy
+      );
+    }
+
     // ==========================================================
     // 2. SESSION
     // ==========================================================
@@ -1982,12 +1991,10 @@ export class SignalGenerator {
       );
 
     /**
-     * Fix 3: Strategy-aware minimum threshold.
-     * SNIPER = 75 (long hold, butuh setup solid)
-     * HYPER_SCALPER = 70 (naik dari 60 untuk kurangi noise)
+     * Fix 3: Minimum threshold 70 untuk HYPER_SCALPER (naik dari 60).
+     * (SNIPER dinonaktifkan — tidak mencapai titik ini)
      */
-    const strategyMinThreshold =
-      activeStrategy === 'SNIPER' ? 75 : 70;
+    const strategyMinThreshold = 70;
 
     const baseThreshold =
       Number.isFinite(configuredThreshold)
@@ -2048,24 +2055,7 @@ export class SignalGenerator {
         continue;
       }
 
-      // Fix 2: SNIPER butuh minimal H1 ATAU M15 selaras.
-      // Kalau keduanya tidak selaras, SNIPER terlalu berisiko.
-      if (activeStrategy === 'SNIPER') {
-        const h1Aligned =
-          (direction === 'BUY' && analysis.trendH1 === 'BULLISH') ||
-          (direction === 'SELL' && analysis.trendH1 === 'BEARISH');
-        const m15Aligned =
-          (direction === 'BUY' && analysis.trendM15 === 'BULLISH') ||
-          (direction === 'SELL' && analysis.trendM15 === 'BEARISH');
-
-        if (!h1Aligned && !m15Aligned) {
-          lastRejectionReason =
-            `⛔ SNIPER BLOCKED: H1 ${analysis.trendH1} + ` +
-            `M15 ${analysis.trendM15} tidak selaras dengan ${direction}.`;
-          console.log(`[SG] ${lastRejectionReason}`);
-          continue;
-        }
-      }
+      // (SNIPER alignment gate dihapus — SNIPER dinonaktifkan)
 
       const scoreWarnings:
         string[] = [];
