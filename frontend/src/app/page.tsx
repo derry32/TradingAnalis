@@ -106,10 +106,11 @@ export default function Home() {
           </Link>
           <div className="flex-shrink-0 w-[1px] h-6 bg-cyber-border mr-1"></div>
           <button 
-            onClick={() => toggleStrategy('SNIPER')}
-            className={`flex-shrink-0 flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${status?.config?.strategy === 'SNIPER' ? 'bg-cyber-purple/90 text-white shadow-lg shadow-cyber-purple/30 border border-cyber-purple/50 drop-shadow-[0_0_5px_rgba(139,92,246,0.8)]' : 'text-gray-500 hover:text-gray-300'}`}
+            disabled
+            title="SNIPER sementara dinonaktifkan (WR historis 4%). Hanya SCALPER yang aktif."
+            className="flex-shrink-0 flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 text-gray-600 cursor-not-allowed opacity-40 line-through"
           >
-            <Crosshair size={14} /> Sniper (M15)
+            <Crosshair size={14} /> Sniper (M15) <span className="text-[10px] bg-gray-700 text-gray-400 px-1.5 py-0.5 rounded ml-1 no-underline" style={{textDecoration:'none'}}>OFF</span>
           </button>
           <button 
             onClick={() => toggleStrategy('HYPER_SCALPER')}
