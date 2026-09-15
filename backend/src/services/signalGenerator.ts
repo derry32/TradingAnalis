@@ -2413,16 +2413,18 @@ export class SignalGenerator {
         continue;
       }
 
-      // Fix 1: Hard H1 Countertrend Block.
-      // Sinyal berlawanan H1 hanya boleh lewat jika score >= 85.
-      const h1IsCountertrend =
+      // Fix: Hard block total countertrend.
+      // BUY hanya boleh kalau H1 BULLISH atau NEUTRAL.
+      // SELL hanya boleh kalau H1 BEARISH atau NEUTRAL.
+      // Alasan: sinyal berlawanan H1 = penyebab loss utama (34% dari sinyal Sept).
+      const h1IsHardCountertrend =
         (direction === 'BUY' && analysis.trendH1 === 'BEARISH') ||
         (direction === 'SELL' && analysis.trendH1 === 'BULLISH');
 
-      if (h1IsCountertrend && adjustedScore < 85) {
+      if (h1IsHardCountertrend) {
         lastRejectionReason =
-          `⛔ COUNTERTREND BLOCKED: H1 ${analysis.trendH1} ` +
-          `berlawanan ${direction}. Score ${adjustedScore}/100 < 85.`;
+          `⛔ H1 COUNTERTREND HARD BLOCK: ` +
+          `H1=${analysis.trendH1}, direction=${direction}. No exception.`;
         console.log(`[SG] ${lastRejectionReason}`);
         continue;
       }

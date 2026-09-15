@@ -656,11 +656,10 @@ app.get('/api/status', (req, res) => {
 
   const currentSession = getCurrentSession();
   
+  // Fix UI: H1 NEUTRAL = SIDEWAYS. Jangan pakai M15 sebagai fallback
+  // supaya label di dashboard tidak menyesatkan user.
   let activeTrend = latestTechResult ? latestTechResult.trendH1 : 'NEUTRAL';
-  if (activeTrend === 'NEUTRAL' && latestTechResult) {
-    if (latestTechResult.marketStructureM15?.includes('BULL')) activeTrend = 'BULLISH';
-    else if (latestTechResult.marketStructureM15?.includes('BEAR')) activeTrend = 'BEARISH';
-  }
+  if (activeTrend === 'NEUTRAL') activeTrend = 'SIDEWAYS';
 
   res.json({
     technicalStatus: activeTrend,
