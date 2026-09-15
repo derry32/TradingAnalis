@@ -1,6 +1,42 @@
 # Changelog
 
-## [1.5.5] - 2026-09-09 (EA TP Sync Fix)
+## [1.5.6] - 2026-09-15 (Signal Quality & EV Fix)
+
+### Root Cause Analysis
+Analisis 367 sinyal September menunjukkan kerugian sistematis:
+- Win rate: 48% (di bawah break-even)
+- 34% sinyal adalah countertrend (BUY di H1 BEARISH / SELL di H1 BULLISH)
+- SNIPER win rate historis: 4% (1 TP dari 24 trade)
+- Average loss 1.54× lebih besar dari average win → EV negatif
+- MIN_TRUE_RR terlalu rendah (1.15) → TP sering terlalu dekat setelah structural cap
+
+### Diperbaiki
+
+- **Hard Block Countertrend (signalGenerator.ts):** BUY hanya diizinkan saat H1 = BULLISH atau NEUTRAL. SELL hanya saat H1 = BEARISH atau NEUTRAL. Sebelumnya ada exception score ≥ 85 yang masih meloloskan beberapa sinyal melawan tren. Kini diblokir total tanpa exception.
+
+- **SNIPER Dinonaktifkan (signalGenerator.ts):** Strategy SNIPER di-disable sementara. Win rate historis 4% dan satu hari saja menyumbang kerugian -426k dari satu trade. Akan diaktifkan kembali setelah ada bukti backtest positif.
+
+- **MIN_TRUE_RR naik 1.15 → 1.50 (signalGenerator.ts):** Memastikan structural target selalu ≥ 1.5× SL distance sebelum sinyal diizinkan. Setelah TP di-cap oleh structural target, TP aktual tetap ≥ 1.5R. Dengan WR 54%, ini menghasilkan EV = +0.35R per trade (positif).
+
+- **Base Threshold naik 60 → 70 (signalGenerator.ts):** Minimum skor sinyal dinaikkan untuk memotong sinyal berkualitas rendah (range 60–69) yang secara historis mengalami kerugian.
+
+- **Fix Label SIDEWAYS di Dashboard (index.ts):** Sebelumnya, saat H1 = NEUTRAL, label "Technical" di frontend mengambil fallback dari M15 structure dan menampilkan "BULLISH" atau "BEARISH" — menyesatkan user. Kini ditampilkan "SIDEWAYS" yang akurat.
+
+### Dampak yang Diharapkan
+| Metrik | Sebelum | Target |
+|--------|---------|--------|
+| Win Rate | 48% | 55-60% |
+| Countertrend signals | 34% | 0% |
+| EV per trade | negatif | +0.35R |
+| SNIPER trades | 24/bulan (WR 4%) | 0 (disabled) |
+
+### Commit History
+- `ad689f0` – countertrend block score < 85, threshold 70, SNIPER H1+M15 gate
+- `79d36dc` – threshold naik, countertrend gate (initial)
+- `7149be2` – SNIPER disabled, MIN_TRUE_RR 1.50
+- `10d4017` – countertrend HARD BLOCK (no exception), SIDEWAYS UI fix
+
+
 ### Diperbaiki
 - **EA TP L1 Sync:** `AurumAI_Executor.mq5` kini membaca `takeProfit1` dari payload backend untuk Layer 1, menggantikan logika hardcode 25 pips dari live price. Layer 2 tetap menggunakan `basketTarget` (= `takeProfit2`). Fallback 25 pips aktif hanya jika field `takeProfit1` tidak tersedia (sinyal lama). Perubahan ini memastikan kedua layer menggunakan harga TP yang dihitung confidence-aware di backend secara konsisten.
 
